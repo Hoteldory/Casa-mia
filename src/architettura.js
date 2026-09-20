@@ -38,7 +38,10 @@ function aperturePerMuro() {
   }
   for (const f of plan.finestre) {
     const pf = f.tipo === 'portafinestra';
-    push(f.muro, { ...f, a: f.x_da ?? f.y_da, b: f.x_a ?? f.y_a, bottom: pf ? 0 : A.finestra_davanzale_cm, top: pf ? A.portafinestra_h_cm : A.finestra_davanzale_cm + A.finestra_h_cm, kind: pf ? 'portafinestra' : 'finestra' });
+    // davanzale e altezza si possono sovrascrivere per singola finestra (es. sopra il piano cucina)
+    const dav = f.davanzale_cm ?? A.finestra_davanzale_cm;
+    const alt = f.altezza_cm ?? A.finestra_h_cm;
+    push(f.muro, { ...f, a: f.x_da ?? f.y_da, b: f.x_a ?? f.y_a, bottom: pf ? 0 : dav, top: pf ? A.portafinestra_h_cm : dav + alt, kind: pf ? 'portafinestra' : 'finestra' });
   }
   for (const k in map) map[k].sort((p, q) => p.a - q.a);
   return map;

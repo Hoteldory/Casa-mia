@@ -68,14 +68,19 @@ export function baseCucina(ctx, { x0, z0, z1, hobZ, sinkZ }) {
 }
 
 // ---- rivestimento in maiolica: paraspruzzi lungo la base e nicchia alta dietro il piano cottura ----
-export function rivestimentoMaiolica(ctx, { x, z0, z1, hobZ }) {
+export function rivestimentoMaiolica(ctx, { x, z0, z1, hobZ, salto = null }) {
   const M = MAT();
   const g = new THREE.Group();
-  g.add(plane(z1 - z0, 0.6, M.maiolica, x + 0.02, 1.2, (z0 + z1) / 2, 'x+'));
-  g.add(plane(1.1, 0.6, M.maiolica, x + 0.02, 1.8, hobZ, 'x+'));
+  g.add(plane(z1 - z0, 0.5, M.maiolica, x + 0.02, 1.15, (z0 + z1) / 2, 'x+')); // paraspruzzi fino al davanzale
+  g.add(plane(1.1, 0.68, M.maiolica, x + 0.02, 1.76, hobZ, 'x+')); // nicchia dietro il piano cottura
   // cornice in pietra della nicchia
   g.add(box(0.05, 0.04, 1.16, M.pietra, x + 0.025, 2.12, hobZ));
-  g.add(box(0.05, 0.04, z1 - z0 + 0.04, M.pietra, x + 0.025, 1.52, (z0 + z1) / 2));
+  // listello di coronamento: si interrompe dove il davanzale della finestra prende il suo posto
+  const tratti = salto ? [[z0 - 0.02, salto[0]], [salto[1], z1 + 0.02]] : [[z0 - 0.02, z1 + 0.02]];
+  for (const [a, b] of tratti) {
+    if (b - a < 0.05) continue;
+    g.add(box(0.05, 0.04, b - a, M.pietra, x + 0.025, 1.42, (a + b) / 2));
+  }
   return g;
 }
 
@@ -108,12 +113,12 @@ export function mensole(ctx, { x, z0, z1, ys = [1.62, 2.02] }) {
     }
   }
   // oggetti: barattoli in ceramica, piatti in piedi, libri di cucina, pianta
-  for (let i = 0; i < 5; i++) g.add(cyl(0.06, 0.055, 0.16 + (i % 2) * 0.06, M.ceramicaSalvia, x + 0.14, ys[0] + 0.1 + (i % 2) * 0.03, z0 + 0.25 + i * 0.22, 14));
+  for (let i = 0; i < 4; i++) g.add(cyl(0.06, 0.055, 0.16 + (i % 2) * 0.06, M.ceramicaSalvia, x + 0.14, ys[0] + 0.1 + (i % 2) * 0.03, z0 + 0.22 + i * 0.2, 14));
   for (let i = 0; i < 3; i++) {
-    const p = cyl(0.12, 0.12, 0.012, M.ceramica, x + 0.06, ys[1] + 0.14, z0 + 0.3 + i * 0.3, 20);
+    const p = cyl(0.12, 0.12, 0.012, M.ceramica, x + 0.06, ys[1] + 0.14, z0 + 0.28 + i * 0.28, 20);
     p.rotation.z = Math.PI / 2; p.rotation.y = 0; p.rotation.x = 0.15; g.add(p);
   }
-  g.add(libri(0.6, x + 0.14, ys[1] + 0.02, z1 - 0.5, 4).rotateY(Math.PI / 2));
+  g.add(libri(0.55, x + 0.14, ys[1] + 0.02, z1 - 0.42, 4).rotateY(Math.PI / 2));
   return g;
 }
 
@@ -236,10 +241,11 @@ export function arredaCucina(ctx, stanze) {
   const R = stanze.soggiorno.rects[0]; // x 0.25-4.16, z 0.28-9.40
   const xW = R.x, xE = R.x + R.w;
   const runZ0 = R.z + 0.08, runZ1 = 4.4, hobZ = 0.95, sinkZ = 3.55;
-  g.add(rivestimentoMaiolica(ctx, { x: xW, z0: runZ0, z1: runZ1, hobZ }));
+  // la finestra sul lavello (F-cucina-lavello) interrompe il listello del paraspruzzi
+  g.add(rivestimentoMaiolica(ctx, { x: xW, z0: runZ0, z1: runZ1, hobZ, salto: [2.85, 4.25] }));
   g.add(baseCucina(ctx, { x0: xW, z0: runZ0, z1: runZ1, hobZ, sinkZ }));
   g.add(cappaMuratura(ctx, { x: xW, z: hobZ }));
-  g.add(mensole(ctx, { x: xW, z0: 1.7, z1: 4.3 }));
+  g.add(mensole(ctx, { x: xW, z0: 1.7, z1: 2.85 })); // si fermano prima della finestra sul lavello
   g.add(colonne(ctx, { x1: xE, z0: R.z + 0.05, z1: R.z + 1.35 }));
   const isoX0 = 1.75, isoZ0 = 1.8, isoZ1 = 3.9;
   g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1 }));
