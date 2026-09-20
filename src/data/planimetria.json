@@ -10,7 +10,8 @@
       "rimossa F-cucina-ovest (finestra 60 cm sul muro ovest della cucina)",
       "F-soggiorno-nord trasformata in portafinestra PF-soggiorno-nord verso il terrazzo nord",
       "F-camera-nord trasformata in portafinestra PF-camera-nord (124 cm, come quella della cucina)",
-      "aggiunta F-cucina-lavello sul muro ovest (124 cm, dal piano di lavoro a 90 cm fino a 220 cm) in asse con il lavello"
+      "aggiunta F-cucina-lavello sul muro ovest (124 cm, dal piano di lavoro a 90 cm fino a 220 cm) in asse con il lavello",
+      "camera est: lavanderia sostituita dalla scala a chiocciola esistente (diametro 150 cm) con foro nel solaio"
     ]
   },
   "altezze": {
@@ -245,7 +246,7 @@
       "note": "letto matrimoniale e armadio a nord disegnati"
     },
     "camera_est": {
-      "nome": "Camera 9,74 (est, singola/studio)",
+      "nome": "Camera est (vano scala e studio)",
       "rect": {
         "x": 614,
         "y": 422,
@@ -255,7 +256,23 @@
       "larghezza_cm": 412,
       "profondita_cm": 229,
       "superficie_calcolata_mq": 9.43,
-      "superficie_quotata_mq": 9.74
+      "superficie_quotata_mq": 9.74,
+      "vano_scala": {
+        "tipo": "scala a chiocciola al secondo piano",
+        "diametro_cm": 150,
+        "centro_cm": {
+          "x": 826,
+          "y": 488
+        },
+        "foro_solaio_cm": {
+          "x0": 741,
+          "x1": 911,
+          "y0": 408,
+          "y1": 570
+        },
+        "assunto": true,
+        "nota": "scala preesistente, collocata dove erano lavatrice e lavatoio"
+      }
     },
     "camera_sud": {
       "nome": "Camera 16,52 (sud-est, matrimoniale)",

@@ -1,8 +1,11 @@
-// Camera est (piccola): studio con letto singolo e zona lavanderia.
-// Dettaglio: parete nord in terracotta bruciata con lavanderia in noce e libreria in ferro e noce.
+// Camera est: vano della scala a chiocciola che sale al secondo piano, con angolo studio.
+// Dettaglio: parete nord in terracotta bruciata, su cui si staglia la scala bianca.
+// Le funzioni della lavanderia restano disponibili se l'attrezzatura trovera' un'altra stanza.
 import * as THREE from 'three';
 import { box, cyl, plane, place, cuscino, tappeto, quadro, pendente, applique, lampadaTavolo, tende, pianta, libri, antaTelaio, manigliaOttone, MAT } from './comune.js';
 import { scrittoio } from './camera_sud.js';
+import { libreria } from './soggiorno.js';
+import { scalaChiocciola } from './scala.js';
 import { sedia } from './cucina.js';
 
 // ---- colonna lavatrice + asciugatrice in mobile noce ----
@@ -99,25 +102,23 @@ export function mensoleParete(ctx, x, y, z, normal = 'z+', w = 1.6) {
 export function arredaCameraEst(ctx, stanze) {
   const M = MAT();
   const g = new THREE.Group();
-  const R = stanze.camera_est.rects[0]; // x 6.14-10.26, z 4.22-6.50; porta ovest z 4.26-5.07; finestra est z 4.81-5.94
+  const R = stanze.camera_est.rects[0]; // x 6.14-10.26, z 4.22-6.51
   const zS = R.z + R.d;
-  // parete nord in terracotta bruciata
+  // parete nord in terracotta bruciata: fondo per la scala bianca
   ctx.pareti.add(plane(R.w, ctx.H, M.terracottaPittura, R.cx, ctx.H / 2, R.z + 0.02, 'z+'));
-  // lavanderia lungo la parete nord (oltre la porta): colonna + banco
-  g.add(colonnaLavanderia(ctx, R.x + 1.4, R.z + 0.33));
-  g.add(bancoLavanderia(ctx, { x0: R.x + 1.78, x1: R.x + 3.5, z: R.z }));
-  // letto singolo sulla parete sud, mensole sopra
-  g.add(lettoSingolo(ctx, R.x + 2.1, zS - 0.47, Math.PI / 2));
-  ctx.pareti.add(mensoleParete(ctx, R.x + 2.1, 1.35, zS - 0.02, 'z-', 1.7));
-  ctx.pareti.add(applique(ctx, R.x + 3.2, 1.5, zS - 0.02, 'z-', { intensita: 4 }));
-  // scrittoio sotto la finestra est con sedia
+  // scala a chiocciola bianca (diametro 150 cm) dove prima c'era la lavanderia
+  g.add(scalaChiocciola(ctx, { cx: 8.4, cz: 5.1, r: 0.75, partenza: 260 }));
+  // angolo studio sotto la finestra a est
   g.add(scrittoio(ctx, R.x + R.w - 0.3, R.z + 1.37, -Math.PI / 2, 1.0));
-  g.add(sedia(ctx, R.x + R.w - 0.92, R.z + 1.37, Math.PI / 2));
+  g.add(sedia(ctx, R.x + 3.31, R.z + 1.37, Math.PI / 2));
   g.add(lampadaTavolo(ctx, R.x + R.w - 0.3, 0.77, R.z + 1.75, { colore: 'salvia', intensita: 4, h: 0.42 }));
   ctx.pareti.add(tende(1.14, 1.5, R.x + R.w - 0.03, 1.62, 5.37, 'x-'));
-  g.add(tappeto(1.6, 0.8, M.linoTortora, R.x + 2.1, zS - 1.2));
-  g.add(pianta(R.x + 0.4, zS - 0.35, { h: 0.8, vaso: 0.14 }));
-  ctx.pareti.add(quadro(0.4, 0.5, M.cartaBotanica, R.x + 0.03, 1.6, zS - 0.55, 'x+'));
-  g.add(pendente(ctx, R.cx, R.cz + 0.1, { yTop: ctx.H, calata: 0.4, raggio: 0.18, intensita: 12 }));
+  ctx.pareti.add(applique(ctx, R.x + 3.2, 1.5, zS - 0.02, 'z-', { intensita: 4 }));
+  // pianerottolo d'ingresso a ovest: libreria sulla parete sud, pianta, quadro e lampada
+  g.add(libreria(ctx, { w: 1.2, h: 2.2, x: 6.82, z: zS - 0.18, ry: Math.PI }));
+  g.add(tappeto(1.0, 1.5, M.linoTortora, 6.9, 5.3));
+  g.add(pianta(R.x + 0.38, R.z + 0.42, { h: 0.8, vaso: 0.14 }));
+  ctx.pareti.add(quadro(0.4, 0.5, M.cartaBotanica, R.x + 0.03, 1.6, 5.55, 'x+'));
+  g.add(pendente(ctx, 6.85, 5.15, { yTop: ctx.H, calata: 0.4, raggio: 0.18, intensita: 12 }));
   return g;
 }

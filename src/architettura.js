@@ -15,6 +15,23 @@ const ESTERNO_NORMALE = {
 
 const r2m = (r) => ({ x: r.x * C, z: r.y * C, w: r.w * C, d: r.d * C, cx: (r.x + r.w / 2) * C, cz: (r.y + r.d / 2) * C });
 
+// Foro del vano scala nella camera est: attraversa soffitto e solaio di copertura
+export const VANO_SCALA = { x0: 7.55, x1: 9.25, z0: 4.30, z1: 5.92 };
+
+// Spezza un rettangolo attorno a un foro rettangolare (fino a 4 pezzi)
+function pezziConForo(rx0, rz0, rx1, rz1, h) {
+  const out = [];
+  const push = (a, c, b, d) => {
+    if (b - a > 0.01 && d - c > 0.01) out.push({ cx: (a + b) / 2, cz: (c + d) / 2, w: b - a, d: d - c });
+  };
+  const hx0 = Math.max(rx0, h.x0), hx1 = Math.min(rx1, h.x1);
+  push(rx0, rz0, hx0, rz1);
+  push(hx1, rz0, rx1, rz1);
+  push(hx0, rz0, hx1, Math.max(rz0, h.z0));
+  push(hx0, Math.min(rz1, h.z1), hx1, rz1);
+  return out;
+}
+
 // Stanze con rettangoli in metri (per pavimenti, soffitti, UI)
 export function stanze() {
   const S = plan.stanze;
@@ -441,7 +458,14 @@ export function costruisciArchitettura(ctx) {
     for (const r of st[k].rects) {
       floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0, r.cz, 'y+'));
       // soffitto 1 cm sotto la sommità dei muri: mai complanare con solaio o teste dei muri
-      ceilings.add(plane(r.w, r.d, ceilMat[k] || M.intonacoSoffitto, r.cx, H - 0.012, r.cz, 'y-'));
+      const matSoff = ceilMat[k] || M.intonacoSoffitto;
+      if (k === 'camera_est') {
+        for (const p of pezziConForo(r.x, r.z, r.x + r.w, r.z + r.d, VANO_SCALA)) {
+          ceilings.add(plane(p.w, p.d, matSoff, p.cx, H - 0.012, p.cz, 'y-'));
+        }
+      } else {
+        ceilings.add(plane(r.w, r.d, matSoff, r.cx, H - 0.012, r.cz, 'y-'));
+      }
     }
   }
   ceilings.add(travi(st));
@@ -450,9 +474,35 @@ export function costruisciArchitettura(ctx) {
   const W = I.larghezza_cm * C;
   // solaio: faccia superiore in cotto tramite materiale per faccia (niente piano sovrapposto)
   const matTetto = [M.intonacoEsterno, M.intonacoEsterno, M.cotto, M.intonacoEsterno, M.intonacoEsterno, M.intonacoEsterno];
-  const roof = box(W + 0.5, 0.26, 9.65 + 0.5, matTetto, W / 2, H + 0.15, 9.65 / 2);
+  for (const p of pezziConForo(-0.25, -0.25, W + 0.25, 9.9, VANO_SCALA)) {
+    ceilings.add(box(p.w, 0.26, p.d, matTetto, p.cx, H + 0.15, p.cz));
+  }
+  // torrino del vano scala: chiude il foro sul tetto e porta luce dall'alto alla chiocciola
+  {
+    const V = VANO_SCALA, t = 0.16, hMuro = 2.0, hVetro = 0.32;
+    const y0 = H + 0.28;
+    const lati = [
+      [V.x0 - t, V.z0 - t, V.x1 + t, V.z0],
+      [V.x0 - t, V.z1, V.x1 + t, V.z1 + t],
+      [V.x0 - t, V.z0, V.x0, V.z1],
+      [V.x1, V.z0, V.x1 + t, V.z1],
+    ];
+    for (const [a, c, b, d] of lati) {
+      ceilings.add(box(b - a, hMuro, d - c, M.intonacoEsterno, (a + b) / 2, y0 + hMuro / 2, (c + d) / 2));
+      // nastro vetrato continuo sotto la copertura
+      const v = box(b - a, hVetro, d - c, M.vetro, (a + b) / 2, y0 + hMuro + hVetro / 2, (c + d) / 2, { cast: false });
+      ceilings.add(v);
+      // montanti d'angolo del nastro
+      ceilings.add(box(0.07, hVetro, 0.07, M.intonacoEsterno, a + 0.035, y0 + hMuro + hVetro / 2, c + 0.035));
+      ceilings.add(box(0.07, hVetro, 0.07, M.intonacoEsterno, b - 0.035, y0 + hMuro + hVetro / 2, d - 0.035));
+    }
+    // copertura del torrino, con lo stesso manto in cotto del tetto
+    const cw = V.x1 - V.x0 + 2 * t + 0.14, cd = V.z1 - V.z0 + 2 * t + 0.14;
+    ceilings.add(box(cw, 0.2, cd, matTetto, (V.x0 + V.x1) / 2, y0 + hMuro + hVetro + 0.1, (V.z0 + V.z1) / 2));
+  }
+  const roof = box(0.001, 0.001, 0.001, matTetto, -50, -50, -50);
   const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, matTetto, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
-  ceilings.add(roof, roof2);
+  ceilings.add(roof2);
 
   const exterior = esterni(ctx);
   return { walls, wallsLow, floors, ceilings, exterior, stanze: st };
