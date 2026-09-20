@@ -31,11 +31,25 @@
     #mirino { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgba(239,233,221,0.8); display: none; pointer-events: none; }
     body.fp #mirino { display: block; }
     body.fp #pannello { opacity: 0.35; pointer-events: none; }
-    #toggle-pannello { position: fixed; top: 16px; left: 16px; display: none; }
+    #apri-pannello {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 3; display: none;
+      background: rgba(239,233,221,0.94); color: #2b241d; border: 1px solid var(--ottone); border-radius: 4px;
+      padding: 8px 12px; font-family: inherit; font-size: 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    @media (max-width: 700px), (max-height: 560px) {
+      #apri-pannello { display: block; }
+      #pannello { display: none; width: min(250px, calc(100vw - 32px)); top: calc(52px + env(safe-area-inset-top, 0px)); max-height: calc(100% - 68px - env(safe-area-inset-top, 0px)); }
+      body.pannello-aperto #pannello { display: block; }
+      #pannello button { padding: 9px 10px; font-size: 14px; }
+    }
+    body.touch #btn-fp, body.touch .hint:not(.touch-hint) { display: none; }
+    .touch-hint { display: none; } body.touch .touch-hint { display: block; }
+    body.touch #btn-orbit { flex: 1; }
   </style>
 </head>
 <body>
   <div id="app"></div>
+  <button id="apri-pannello" type="button">Menu</button>
   <div id="pannello">
     <h1>Casa mia · piano primo</h1>
     <div class="sub">antico in chiave moderna</div>
@@ -51,6 +65,7 @@
     <button id="btn-pareti" class="on">Pareti intere</button>
     <button id="btn-giorno" class="on">Luce del giorno</button>
     <div class="hint">Prima persona: clic sulla scena per catturare il mouse, WASD o frecce per muoversi, Shift per correre, Esc per uscire.</div>
+    <div class="hint touch-hint">Un dito per ruotare, due dita per zoom e spostamento.</div>
   </div>
   <div id="mirino"></div>
   <div id="fps"></div>

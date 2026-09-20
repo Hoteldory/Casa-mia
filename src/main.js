@@ -35,8 +35,10 @@ const ctx = {
 
 // ---------- renderer ----------
 const app = document.getElementById('app');
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+const MOBILE = window.matchMedia('(pointer: coarse)').matches || Math.min(window.innerWidth, window.innerHeight) < 600;
+if (window.matchMedia('(pointer: coarse)').matches) document.body.classList.add('touch');
+const renderer = new THREE.WebGLRenderer({ antialias: !MOBILE, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.25 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -102,7 +104,7 @@ const sole = new THREE.DirectionalLight('#fff1d6', 3.2);
 sole.position.set(-9, 12, 14);
 sole.target.position.set(5.2, 0, 5.5);
 sole.castShadow = true;
-sole.shadow.mapSize.set(2048, 2048);
+sole.shadow.mapSize.set(MOBILE ? 1024 : 2048, MOBILE ? 1024 : 2048);
 sole.shadow.camera.left = -12; sole.shadow.camera.right = 12;
 sole.shadow.camera.top = 12; sole.shadow.camera.bottom = -12;
 sole.shadow.camera.near = 1; sole.shadow.camera.far = 50;
@@ -234,6 +236,10 @@ function vaiA(k) {
   }
 }
 document.getElementById('btn-orbit').onclick = () => esciFP();
+const apri = document.getElementById('apri-pannello');
+apri.onclick = () => { const on = document.body.classList.toggle('pannello-aperto'); apri.textContent = on ? 'Chiudi' : 'Menu'; };
+// su schermi piccoli il pannello si chiude dopo la scelta di una stanza
+divStanze.addEventListener('click', () => { if (getComputedStyle(apri).display !== 'none') apri.click(); });
 document.getElementById('btn-fp').onclick = () => entraFP();
 const bt = document.getElementById('btn-tetto');
 bt.onclick = () => { arch.ceilings.visible = !arch.ceilings.visible; bt.classList.toggle('on', arch.ceilings.visible); };
