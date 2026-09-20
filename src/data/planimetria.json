@@ -5,7 +5,11 @@
     "scala_cm_per_px": 0.5922,
     "origine": "angolo esterno nord-ovest dell'edificio; x cresce verso est, y verso sud (in Three.js: x -> x, y -> z)",
     "unita": "cm",
-    "legenda_assunto": "i campi con \"assunto\": true non sono leggibili in piantina e sono stimati"
+    "legenda_assunto": "i campi con \"assunto\": true non sono leggibili in piantina e sono stimati",
+    "modifiche_post_rilievo": [
+      "rimossa F-cucina-ovest (finestra 60 cm sul muro ovest della cucina)",
+      "F-soggiorno-nord trasformata in portafinestra PF-soggiorno-nord verso il terrazzo nord"
+    ]
   },
   "altezze": {
     "soffitto_cm": 270,
@@ -342,13 +346,16 @@
   ],
   "finestre": [
     {
-      "id": "F-soggiorno-nord",
+      "id": "PF-soggiorno-nord",
       "stanza": "soggiorno",
       "muro": "E-nord",
       "x_da": 206,
       "x_a": 330,
       "larghezza_cm": 124,
-      "tipo": "finestra"
+      "tipo": "portafinestra",
+      "verso": "terrazzo_nord",
+      "nota": "modifica richiesta: era una finestra, ora portafinestra di accesso al terrazzo nord",
+      "modifica_richiesta": true
     },
     {
       "id": "F-bagno-nord",
@@ -367,16 +374,6 @@
       "x_a": 810,
       "larghezza_cm": 121,
       "tipo": "finestra"
-    },
-    {
-      "id": "F-cucina-ovest",
-      "stanza": "soggiorno",
-      "muro": "E-ovest",
-      "y_da": 467,
-      "y_a": 527,
-      "larghezza_cm": 60,
-      "tipo": "finestra",
-      "nota": "finestra stretta sopra il piano cucina"
     },
     {
       "id": "PF-soggiorno-balcone",
