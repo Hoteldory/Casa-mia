@@ -45,11 +45,21 @@ function aperturePerMuro() {
 }
 
 // Costruisce i pezzi di un muro (in cm) intorno alle aperture, altezza massima hMax (m)
-function buildMuro(seg, aperture, hMax, ctx, low = false) {
+function buildMuro(seg, aperture, hMax, ctx, low = false, precedenti = []) {
   const M = getMateriali();
   const r = seg.rect;
   const horiz = r.w >= r.d;
   const start = horiz ? r.x : r.y, len = horiz ? r.w : r.d, thick = horiz ? r.d : r.w;
+  // tratti già occupati da muri costruiti prima (incroci e angoli): si saltano, così nessuna faccia è complanare
+  const tagli = [];
+  for (const o of precedenti) {
+    const q = o.rect;
+    const ox0 = Math.max(r.x, q.x), ox1 = Math.min(r.x + r.w, q.x + q.w);
+    const oy0 = Math.max(r.y, q.y), oy1 = Math.min(r.y + r.d, q.y + q.d);
+    if (ox1 - ox0 <= 0 || oy1 - oy0 <= 0) continue;
+    tagli.push(horiz ? { a: ox0, b: ox1, bottom: 0, top: 1e9, taglio: true } : { a: oy0, b: oy1, bottom: 0, top: 1e9, taglio: true });
+  }
+  aperture = [...aperture, ...tagli].sort((p, q) => p.a - q.a);
   const cross = (horiz ? r.y : r.x) + thick / 2;
   const g = new THREE.Group();
   const nrm = ESTERNO_NORMALE[seg.id];
@@ -301,7 +311,7 @@ function esterni(ctx) {
     const s = box(m.w, t, m.d, M.pietraScura, m.cx, y + t / 2, m.cz);
     g.add(s);
     // pavimento in cotto
-    g.add(plane(m.w, m.d, M.cotto, m.cx, y + t + 0.001, m.cz, 'y+'));
+    g.add(plane(m.w, m.d, M.cotto, m.cx, y + t + 0.003, m.cz, 'y+'));
     return m;
   };
   // balcone ovest
@@ -406,10 +416,12 @@ export function costruisciArchitettura(ctx) {
   const ceilings = new THREE.Group();
 
   const segById = {};
+  const precedenti = [];
   for (const seg of plan.muri.segmenti) {
     segById[seg.id] = seg;
-    walls.add(buildMuro(seg, aper[seg.id] || [], H, ctx));
-    wallsLow.add(buildMuro(seg, aper[seg.id] || [], 0.45, { addCollider() {} }, true));
+    walls.add(buildMuro(seg, aper[seg.id] || [], H, ctx, false, precedenti));
+    wallsLow.add(buildMuro(seg, aper[seg.id] || [], 0.45, { addCollider() {} }, true, precedenti));
+    precedenti.push(seg);
   }
   // riempimento angolo nord-ovest tra muro nord e ovest già coperto dai rettangoli (i rect si sovrappongono).
 
@@ -425,17 +437,16 @@ export function costruisciArchitettura(ctx) {
   const ceilMat = { disimpegno: M.salvia };
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {
-      // pavimento un po' più largo per coprire le soglie
-      floors.add(plane(r.w + 0.3, r.d + 0.3, floorMat[k], r.cx, 0, r.cz, 'y+'));
-      ceilings.add(plane(r.w + 0.3, r.d + 0.3, ceilMat[k] || M.intonacoSoffitto, r.cx, H, r.cz, 'y-'));
+      floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0, r.cz, 'y+'));
+      ceilings.add(plane(r.w, r.d, ceilMat[k] || M.intonacoSoffitto, r.cx, H, r.cz, 'y-'));
     }
   }
   ceilings.add(travi(st));
   // solaio di copertura + cornicione
   const I = plan.muri.ingombro_esterno;
   const W = I.larghezza_cm * C;
-  const roof = box(W + 0.5, 0.28, 9.65 + 0.5, M.intonacoEsterno, W / 2, H + 0.14, 9.65 / 2);
-  const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.28, 1.32 + 0.25, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.14, 9.65 + 0.66 + 0.125);
+  const roof = box(W + 0.5, 0.26, 9.65 + 0.5, M.intonacoEsterno, W / 2, H + 0.15, 9.65 / 2);
+  const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
   ceilings.add(roof, roof2);
   const cottoRoof = plane(W + 0.5, 9.65 + 0.5, M.cotto, W / 2, H + 0.281, 9.65 / 2, 'y+');
   ceilings.add(cottoRoof);

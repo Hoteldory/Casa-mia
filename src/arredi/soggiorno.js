@@ -12,19 +12,19 @@ export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, m
   if (finestra) {
     const [fx0, fx1, fy0, fy1] = finestra;
     const pieces = [[-w / 2, fx0, 0, h], [fx1, w / 2, 0, h], [fx0, fx1, 0, fy0], [fx0, fx1, fy1, h]];
-    for (const [a, b, c, d] of pieces) if (b - a > 0.01 && d - c > 0.01) g.add(plane(b - a, d - c, m, (a + b) / 2, (c + d) / 2, 0.006, 'z+'));
-  } else g.add(plane(w, h, m, 0, h / 2, 0.006, 'z+'));
+    for (const [a, b, c, d] of pieces) if (b - a > 0.01 && d - c > 0.01) g.add(plane(b - a, d - c, m, (a + b) / 2, (c + d) / 2, 0.02, 'z+'));
+  } else g.add(plane(w, h, m, 0, h / 2, 0.02, 'z+'));
   // zoccolo alto e cornice sommitale
-  g.add(box(w, 0.16, 0.03, m, 0, 0.08, 0.02));
-  g.add(box(w, 0.06, 0.04, m, 0, h - 0.03, 0.025));
-  g.add(box(w, 0.025, 0.05, m, 0, 1.0, 0.03)); // fascia a mezza altezza (dado)
+  g.add(box(w, 0.16, 0.03, m, 0, 0.08, 0.035));
+  g.add(box(w, 0.06, 0.04, m, 0, h - 0.03, 0.04));
+  g.add(box(w, 0.025, 0.05, m, 0, 1.0, 0.045)); // fascia a mezza altezza (dado)
   // riquadri con cornice modanata
   const frame = (x0, x1, y0, y1) => {
     const t = 0.035, d = 0.02;
-    g.add(box(x1 - x0, t, d, m, (x0 + x1) / 2, y1 - t / 2, 0.016));
-    g.add(box(x1 - x0, t, d, m, (x0 + x1) / 2, y0 + t / 2, 0.016));
-    g.add(box(t, y1 - y0, d, m, x0 + t / 2, (y0 + y1) / 2, 0.016));
-    g.add(box(t, y1 - y0, d, m, x1 - t / 2, (y0 + y1) / 2, 0.016));
+    g.add(box(x1 - x0, t, d, m, (x0 + x1) / 2, y1 - t / 2, 0.03));
+    g.add(box(x1 - x0, t, d, m, (x0 + x1) / 2, y0 + t / 2, 0.03));
+    g.add(box(t, y1 - y0, d, m, x0 + t / 2, (y0 + y1) / 2, 0.03));
+    g.add(box(t, y1 - y0, d, m, x1 - t / 2, (y0 + y1) / 2, 0.03));
   };
   const gap = 0.12;
   const cw = (w - gap * (colonne + 1)) / colonne;

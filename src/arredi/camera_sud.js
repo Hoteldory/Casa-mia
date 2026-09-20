@@ -25,7 +25,7 @@ export function arredaCameraSud(ctx, stanze) {
   const g = new THREE.Group();
   const R = stanze.camera_sud.rects[0]; // x 6.14-10.26, z 6.65-10.77; porta ovest z 8.43-9.24; portafinestra sud x 7.46-8.88
   // carta da parati botanica sulla parete nord (testiera)
-  ctx.pareti.add(plane(R.w, ctx.H, M.cartaBotanica, R.cx, ctx.H / 2, R.z + 0.006, 'z+'));
+  ctx.pareti.add(plane(R.w, ctx.H, M.cartaBotanica, R.cx, ctx.H / 2, R.z + 0.02, 'z+'));
   // letto con testiera in noce e velluto salvia
   const bedX = 8.2;
   g.add(lettoMatrimoniale(ctx, { x: bedX, z: R.z + 1.0 + 0.06, ry: 0, testieraW: 2.0, testieraH: 1.1, matTestiera: M.vellutoSalvia }));

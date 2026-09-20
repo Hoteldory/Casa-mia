@@ -444,6 +444,10 @@ export function getMateriali() {
     foglia: std({ color: '#3f6b3a', roughness: 0.8, side: THREE.DoubleSide }),
     lampadina: new THREE.MeshStandardMaterial({ color: '#ffe3b0', emissive: '#ffd08a', emissiveIntensity: 0 }),
   };
+  // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica']) {
+    _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
+  }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
   _MAT.intonaco.map.repeat.set(0.5, 0.5);
   _MAT.intonacoSoffitto.map.repeat.set(0.5, 0.5);

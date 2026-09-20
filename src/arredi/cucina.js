@@ -71,11 +71,11 @@ export function baseCucina(ctx, { x0, z0, z1, hobZ, sinkZ }) {
 export function rivestimentoMaiolica(ctx, { x, z0, z1, hobZ }) {
   const M = MAT();
   const g = new THREE.Group();
-  g.add(plane(z1 - z0, 0.6, M.maiolica, x + 0.006, 1.2, (z0 + z1) / 2, 'x+'));
-  g.add(plane(1.1, 0.6, M.maiolica, x + 0.007, 1.8, hobZ, 'x+'));
+  g.add(plane(z1 - z0, 0.6, M.maiolica, x + 0.02, 1.2, (z0 + z1) / 2, 'x+'));
+  g.add(plane(1.1, 0.6, M.maiolica, x + 0.02, 1.8, hobZ, 'x+'));
   // cornice in pietra della nicchia
-  g.add(box(0.03, 0.04, 1.16, M.pietra, x + 0.02, 2.12, hobZ));
-  g.add(box(0.03, 0.04, z1 - z0 + 0.04, M.pietra, x + 0.02, 1.52, (z0 + z1) / 2));
+  g.add(box(0.05, 0.04, 1.16, M.pietra, x + 0.025, 2.12, hobZ));
+  g.add(box(0.05, 0.04, z1 - z0 + 0.04, M.pietra, x + 0.025, 1.52, (z0 + z1) / 2));
   return g;
 }
 
@@ -145,9 +145,9 @@ export function isola(ctx, { x0, z0, z1, d = 0.8, sbalzo = 0.3 }) {
   g.add(box(d - 0.06, 0.1, L - 0.06, M.noceScuro, cx, 0.05, cz));
   g.add(box(d, Hb - 0.1, L, M.noce, cx, 0.1 + (Hb - 0.1) / 2, cz));
   // maiolica sul frontale (est) e sulle testate
-  g.add(plane(L, Hb - 0.1, M.maiolica, x0 + d + 0.004, 0.1 + (Hb - 0.1) / 2, cz, 'x+'));
-  g.add(plane(d, Hb - 0.1, M.maiolica, cx, 0.1 + (Hb - 0.1) / 2, z0 - 0.004, 'z-'));
-  g.add(plane(d, Hb - 0.1, M.maiolica, cx, 0.1 + (Hb - 0.1) / 2, z1 + 0.004, 'z+'));
+  g.add(plane(L, Hb - 0.1, M.maiolica, x0 + d + 0.012, 0.1 + (Hb - 0.1) / 2, cz, 'x+'));
+  g.add(plane(d, Hb - 0.1, M.maiolica, cx, 0.1 + (Hb - 0.1) / 2, z0 - 0.012, 'z-'));
+  g.add(plane(d, Hb - 0.1, M.maiolica, cx, 0.1 + (Hb - 0.1) / 2, z1 + 0.012, 'z+'));
   // ante lato lavoro (ovest)
   const n = Math.round(L / 0.55), aw = L / n;
   for (let i = 0; i < n; i++) {

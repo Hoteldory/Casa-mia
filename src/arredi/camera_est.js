@@ -102,7 +102,7 @@ export function arredaCameraEst(ctx, stanze) {
   const R = stanze.camera_est.rects[0]; // x 6.14-10.26, z 4.22-6.50; porta ovest z 4.26-5.07; finestra est z 4.81-5.94
   const zS = R.z + R.d;
   // parete nord in terracotta bruciata
-  ctx.pareti.add(plane(R.w, ctx.H, M.terracottaPittura, R.cx, ctx.H / 2, R.z + 0.006, 'z+'));
+  ctx.pareti.add(plane(R.w, ctx.H, M.terracottaPittura, R.cx, ctx.H / 2, R.z + 0.02, 'z+'));
   // lavanderia lungo la parete nord (oltre la porta): colonna + banco
   g.add(colonnaLavanderia(ctx, R.x + 1.4, R.z + 0.33));
   g.add(bancoLavanderia(ctx, { x0: R.x + 1.78, x1: R.x + 3.5, z: R.z }));

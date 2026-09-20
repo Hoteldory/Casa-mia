@@ -47,7 +47,7 @@ renderer.toneMappingExposure = 1.0;
 app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.05, 200);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.15, 120);
 
 // ---------- architettura + arredi ----------
 const arch = costruisciArchitettura(ctx);
@@ -124,13 +124,13 @@ let giorno = true;
 function applicaLuce() {
   if (giorno) {
     scene.background = new THREE.Color('#c9d6df');
-    scene.fog = new THREE.Fog('#c9d6df', 40, 90);
+    scene.fog = new THREE.Fog('#c9d6df', 40, 80);
     sole.intensity = 3.2; cielo.intensity = 1.1; ambiente.intensity = 0.35; riempimento.intensity = 0.8;
     renderer.toneMappingExposure = 1.0;
     for (const l of luciArtificiali) { l.light.visible = false; l.bulb.material.emissiveIntensity = 0.2; }
   } else {
     scene.background = new THREE.Color('#0f1620');
-    scene.fog = new THREE.Fog('#0f1620', 30, 80);
+    scene.fog = new THREE.Fog('#0f1620', 30, 70);
     sole.intensity = 0.0; cielo.intensity = 0.12; ambiente.intensity = 0.06; riempimento.intensity = 0.05;
     cielo.color.set('#3a4a66'); cielo.groundColor.set('#1a1611');
     renderer.toneMappingExposure = 1.1;

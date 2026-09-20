@@ -126,13 +126,13 @@ function rivestimento(ctx, r) {
   const M = MAT();
   const g = new THREE.Group();
   const h = 1.2, y = h / 2;
-  const m = new THREE.MeshStandardMaterial({ color: '#f2eee6', roughness: 0.3 });
-  g.add(plane(r.d, h, m, r.x + 0.004, y, r.cz, 'x+'));
-  g.add(plane(r.d, h, m, r.x + r.w - 0.004, y, r.cz, 'x-'));
-  g.add(plane(r.w, h, m, r.cx, y, r.z + 0.004, 'z+'));
-  g.add(plane(r.w - 0.9, h, m, r.x + (r.w - 0.9) / 2, y, r.z + r.d - 0.004, 'z-')); // lascia la porta
+  const m = new THREE.MeshStandardMaterial({ color: '#f2eee6', roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
+  g.add(plane(r.d, h, m, r.x + 0.015, y, r.cz, 'x+'));
+  g.add(plane(r.d, h, m, r.x + r.w - 0.015, y, r.cz, 'x-'));
+  g.add(plane(r.w, h, m, r.cx, y, r.z + 0.015, 'z+'));
+  g.add(plane(r.w - 0.9, h, m, r.x + (r.w - 0.9) / 2, y, r.z + r.d - 0.015, 'z-')); // lascia la porta
   // listello in ottone a coronamento
-  for (const [w, x, z, rot] of [[r.d, r.x + 0.01, r.cz, 0], [r.d, r.x + r.w - 0.01, r.cz, 0], [r.w, r.cx, r.z + 0.01, 1], [r.w - 0.9, r.x + (r.w - 0.9) / 2, r.z + r.d - 0.01, 1]]) {
+  for (const [w, x, z, rot] of [[r.d, r.x + 0.02, r.cz, 0], [r.d, r.x + r.w - 0.02, r.cz, 0], [r.w, r.cx, r.z + 0.02, 1], [r.w - 0.9, r.x + (r.w - 0.9) / 2, r.z + r.d - 0.02, 1]]) {
     g.add(rot ? box(w, 0.02, 0.012, M.ottone, x, h + 0.01, z, { cast: false }) : box(0.012, 0.02, w, M.ottone, x, h + 0.01, z, { cast: false }));
   }
   return g;
