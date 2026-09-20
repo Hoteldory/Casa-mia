@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casa mia — piano primo in 3D</title>
+  <style>
+    :root { --calce: #efe9dd; --salvia: #4d6152; --noce: #5a3b25; --ottone: #b08d57; --tortora: #8c7f70; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: Georgia, 'Times New Roman', serif; background: #1b1917; }
+    #app { position: fixed; inset: 0; }
+    canvas { display: block; }
+    #pannello {
+      position: fixed; top: 16px; left: 16px; width: 250px; max-height: calc(100% - 32px); overflow: auto;
+      background: rgba(239, 233, 221, 0.94); color: #2b241d; border: 1px solid var(--ottone);
+      border-radius: 4px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.35); font-size: 14px;
+    }
+    #pannello h1 { font-size: 17px; margin: 0 0 2px; font-weight: normal; letter-spacing: 0.04em; color: var(--noce); }
+    #pannello .sub { font-size: 11px; color: var(--tortora); margin-bottom: 10px; font-style: italic; }
+    #pannello h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--salvia); margin: 12px 0 6px; font-weight: normal; border-bottom: 1px solid rgba(176,141,87,0.5); padding-bottom: 3px; }
+    #pannello button {
+      display: block; width: 100%; text-align: left; margin: 3px 0; padding: 6px 9px; cursor: pointer; font-family: inherit; font-size: 13px;
+      background: transparent; border: 1px solid rgba(90,59,37,0.35); border-radius: 3px; color: #2b241d;
+    }
+    #pannello button:hover { background: rgba(77,97,82,0.12); }
+    #pannello button.on { background: var(--salvia); color: var(--calce); border-color: var(--salvia); }
+    #pannello .row { display: flex; gap: 6px; }
+    #pannello .row button { flex: 1; text-align: center; }
+    #pannello .hint { font-size: 11px; color: var(--tortora); margin-top: 8px; line-height: 1.4; }
+    #fps { position: fixed; right: 12px; bottom: 10px; color: rgba(239,233,221,0.7); font-size: 11px; font-family: monospace; }
+    #mirino { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgba(239,233,221,0.8); display: none; pointer-events: none; }
+    body.fp #mirino { display: block; }
+    body.fp #pannello { opacity: 0.35; pointer-events: none; }
+    #toggle-pannello { position: fixed; top: 16px; left: 16px; display: none; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="pannello">
+    <h1>Casa mia · piano primo</h1>
+    <div class="sub">antico in chiave moderna</div>
+    <h2>Stanze</h2>
+    <div id="stanze"></div>
+    <h2>Vista</h2>
+    <div class="row">
+      <button id="btn-orbit" class="on">Orbita</button>
+      <button id="btn-fp">Prima persona</button>
+    </div>
+    <h2>Scena</h2>
+    <button id="btn-tetto" class="on">Tetto e soffitti</button>
+    <button id="btn-pareti" class="on">Pareti intere</button>
+    <button id="btn-giorno" class="on">Luce del giorno</button>
+    <div class="hint">Prima persona: clic sulla scena per catturare il mouse, WASD o frecce per muoversi, Shift per correre, Esc per uscire.</div>
+  </div>
+  <div id="mirino"></div>
+  <div id="fps"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
