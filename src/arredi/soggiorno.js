@@ -230,8 +230,6 @@ export function arredaSoggiorno(ctx, stanze) {
   g.add(divano(ctx, 2.16, zS - 0.5, Math.PI));
   g.add(tappeto(3.0, 1.8, M.lino, 2.16, zS - 1.2, M.linoTortora));
   g.add(tavolino(ctx, 2.16, zS - 1.45));
-  g.add(poltrona(ctx, 0.75, zS - 1.6, Math.PI / 2));
-  g.add(poltrona(ctx, 3.6, zS - 1.6, -Math.PI / 2, M.velluto));
   // mobile TV davanti al divano, fa anche da separazione con la zona pranzo
   const tvZ = 6.95;
   g.add(mobileTv(ctx, { x: 2.16, z: tvZ, w: 1.6, d: 0.46, h: 0.46 }));
@@ -247,7 +245,6 @@ export function arredaSoggiorno(ctx, stanze) {
   ctx.pareti.add(quadro(0.5, 0.65, M.cotto, 3.5, 1.75, zS - 0.03, 'z-'));
   // angolo lettura nell'appendice est: libreria contro il muro nord, poltrona, lampada da terra
   g.add(libreria(ctx, { w: 1.35, x: B.cx, z: B.z + 0.2 }));
-  g.add(poltrona(ctx, B.cx + 0.1, B.z + 1.35, Math.PI * 0.9));
   g.add(lampadaTerra(ctx, B.x + 0.3, B.z + 0.9));
   g.add(tappeto(1.2, 1.4, M.linoTortora, B.cx, B.z + 1.5));
   // credenza sulla parete sud dell'appendice, con lampada e quadro
