@@ -1,6 +1,6 @@
 // Camera nord-est (matrimoniale principale). Dettaglio: testiera imbottita in velluto senape a tutta parete.
 import * as THREE from 'three';
-import { box, cyl, plane, place, cuscino, tappeto, quadro, pendente, applique, lampadaTavolo, tende, antaTelaio, manigliaOttone, pianta, MAT } from './comune.js';
+import { box, cyl, sphere, plane, place, cuscino, tappeto, quadro, pendente, applique, lampadaTavolo, tende, antaTelaio, manigliaOttone, pianta, MAT } from './comune.js';
 
 // ---- letto matrimoniale con testiera velluto senape a tutta parete (capitonné) ----
 export function lettoMatrimoniale(ctx, { x, z, ry = 0, testieraW = 2.6, testieraH = 1.35, matTestiera }) {
@@ -15,9 +15,9 @@ export function lettoMatrimoniale(ctx, { x, z, ry = 0, testieraW = 2.6, testiera
   for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) {
     const px = -testieraW / 2 + gap + c * (pw + gap) + pw / 2;
     const py = 0.1 + gap + r * (ph + gap) + ph / 2 + 0.05;
-    const pad = cuscino(pw * 1.02, ph * 1.02, 0.12, mt, px, py, -L / 2 - 0.07);
-    pad.scale.set(pw * 1.02, ph * 1.02, 0.1);
-    g.add(pad);
+    g.add(box(pw, ph, 0.05, mt, px, py, -L / 2 - 0.065));
+    g.add(box(pw - 0.07, ph - 0.07, 0.09, mt, px, py, -L / 2 - 0.05));
+    g.add(sphere(0.012, M.ottone, px, py, -L / 2 - 0.004, 8));
   }
   // giroletto in noce, materasso, lenzuola, coperta salvia, cuscini
   g.add(box(W + 0.1, 0.22, L + 0.1, M.noce, 0, 0.22, 0));
