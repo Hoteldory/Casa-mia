@@ -31,6 +31,7 @@ export function scalaChiocciola(ctx, {
   alzate = 16,
   passo = 22,            // gradi per pedata
   partenza = 260,        // orientamento della prima pedata (gradi: 0 = sud, 90 = est)
+  hMax = 2.98,           // quota del piano di arrivo: balaustra e colonna si fermano qui
 } = {}) {
   const M = MAT();
   const g = new THREE.Group();
@@ -41,9 +42,9 @@ export function scalaChiocciola(ctx, {
   const rad = THREE.MathUtils.degToRad;
 
   // colonna centrale e base
-  g.add(cyl(rCol, rCol, interpiano + 0.12, BIANCO, 0, (interpiano + 0.12) / 2, 0, 20));
+  g.add(cyl(rCol, rCol, hMax, BIANCO, 0, hMax / 2, 0, 20));
   g.add(cyl(0.17, 0.19, 0.045, BIANCO, 0, 0.022, 0, 28));
-  g.add(cyl(0.1, 0.1, 0.02, BIANCO, 0, interpiano + 0.12, 0, 20));
+  g.add(cyl(0.1, 0.1, 0.02, BIANCO, 0, hMax - 0.01, 0, 20));
 
   const cime = [];
   for (let i = 0; i < alzate - 1; i++) {
@@ -62,8 +63,11 @@ export function scalaChiocciola(ctx, {
     for (const f of [0.18, 0.82]) {
       const a = a0 + rad(passo * f);
       const x = Math.sin(a) * rBal, z = Math.cos(a) * rBal;
-      g.add(cyl(0.013, 0.013, hBal, BIANCO, x, y + hBal / 2, z, 8));
-      if (f === 0.82) cime.push(new THREE.Vector3(x, y + hBal, z));
+      // oltre il piano di arrivo la balaustra appartiene al secondo piano: qui si ferma
+      const h = Math.min(hBal, hMax - y);
+      if (h < 0.15) continue;
+      g.add(cyl(0.013, 0.013, h, BIANCO, x, y + h / 2, z, 8));
+      if (f === 0.82 && h > hBal - 0.02) cime.push(new THREE.Vector3(x, y + h, z));
     }
   }
   // corrimano elicoidale che unisce le cime dei montanti

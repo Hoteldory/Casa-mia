@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import plan from './data/planimetria.json';
 import { getMateriali, uvMetri, PALETTE, texVernice } from './data/stile.js';
-import { box, cyl, plane, group } from './arredi/comune.js';
+import { box, cyl, plane, group, lanterna } from './arredi/comune.js';
 
 const C = 0.01; // cm -> m
 export const H = plan.altezze.soffitto_cm * C;
@@ -403,6 +403,10 @@ function esterni(ctx) {
     const wnd = box(nx ? 0.04 : 1.2, 1.4, nz ? 0.04 : 1.2, M.nero, x + nx * 0.01, -1.6, z + nz * 0.01, { cast: false });
     g.add(wnd);
   }
+  // lanterne in ottone: ingresso, balcone a ovest e balcone a sud-est
+  g.add(lanterna(ctx, 5.78, 2.15, 9.66, 'z+', { intensita: 16 }));
+  g.add(lanterna(ctx, -0.01, 2.15, 7.85, 'x-', { intensita: 12 }));
+  g.add(lanterna(ctx, 9.35, 2.15, 10.98, 'z+', { intensita: 12 }));
   // terreno
   const ground = plane(60, 60, M.terreno, 5, -3.4, 5, 'y+');
   g.add(ground);
@@ -477,28 +481,19 @@ export function costruisciArchitettura(ctx) {
   for (const p of pezziConForo(-0.25, -0.25, W + 0.25, 9.9, VANO_SCALA)) {
     ceilings.add(box(p.w, 0.26, p.d, matTetto, p.cx, H + 0.15, p.cz));
   }
-  // torrino del vano scala: chiude il foro sul tetto e porta luce dall'alto alla chiocciola
+  // lucernario a filo sul foro della scala: il tetto resta piatto, nessun volume in rilievo
   {
-    const V = VANO_SCALA, t = 0.16, hMuro = 2.0, hVetro = 0.32;
-    const y0 = H + 0.28;
-    const lati = [
-      [V.x0 - t, V.z0 - t, V.x1 + t, V.z0],
-      [V.x0 - t, V.z1, V.x1 + t, V.z1 + t],
-      [V.x0 - t, V.z0, V.x0, V.z1],
-      [V.x1, V.z0, V.x1 + t, V.z1],
-    ];
-    for (const [a, c, b, d] of lati) {
-      ceilings.add(box(b - a, hMuro, d - c, M.intonacoEsterno, (a + b) / 2, y0 + hMuro / 2, (c + d) / 2));
-      // nastro vetrato continuo sotto la copertura
-      const v = box(b - a, hVetro, d - c, M.vetro, (a + b) / 2, y0 + hMuro + hVetro / 2, (c + d) / 2, { cast: false });
-      ceilings.add(v);
-      // montanti d'angolo del nastro
-      ceilings.add(box(0.07, hVetro, 0.07, M.intonacoEsterno, a + 0.035, y0 + hMuro + hVetro / 2, c + 0.035));
-      ceilings.add(box(0.07, hVetro, 0.07, M.intonacoEsterno, b - 0.035, y0 + hMuro + hVetro / 2, d - 0.035));
-    }
-    // copertura del torrino, con lo stesso manto in cotto del tetto
-    const cw = V.x1 - V.x0 + 2 * t + 0.14, cd = V.z1 - V.z0 + 2 * t + 0.14;
-    ceilings.add(box(cw, 0.2, cd, matTetto, (V.x0 + V.x1) / 2, y0 + hMuro + hVetro + 0.1, (V.z0 + V.z1) / 2));
+    const V = VANO_SCALA, e = 0.05, yTop = H + 0.28;
+    const w = V.x1 - V.x0 + 2 * e, d = V.z1 - V.z0 + 2 * e;
+    const cx = (V.x0 + V.x1) / 2, cz = (V.z0 + V.z1) / 2;
+    ceilings.add(box(w, 0.045, d, M.vetro, cx, yTop - 0.022, cz, { cast: false }));
+    // telaio metallico sottile, incassato nello spessore del solaio
+    for (const [a, c, b, dd] of [
+      [V.x0 - e, V.z0 - e, V.x1 + e, V.z0], [V.x0 - e, V.z1, V.x1 + e, V.z1 + e],
+      [V.x0 - e, V.z0, V.x0, V.z1], [V.x1, V.z0, V.x1 + e, V.z1],
+    ]) ceilings.add(box(b - a, 0.05, dd - c, M.ferro, (a + b) / 2, yTop - 0.025, (c + dd) / 2, { cast: false }));
+    // traversi del lucernario
+    for (const fx of [1 / 3, 2 / 3]) ceilings.add(box(0.05, 0.05, d, M.ferro, V.x0 + (V.x1 - V.x0) * fx, yTop - 0.025, cz, { cast: false }));
   }
   const roof = box(0.001, 0.001, 0.001, matTetto, -50, -50, -50);
   const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, matTetto, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);

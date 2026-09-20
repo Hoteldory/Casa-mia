@@ -8,7 +8,8 @@ import { arredi } from './arredi/index.js';
 
 // ---------- contesto condiviso ----------
 const colliders = []; // {minX,maxX,minZ,maxZ,minY,maxY}
-const luciArtificiali = []; // {light, base, bulb}
+const luciArtificiali = []; // punti luce accesi di sera
+const emissivi = [];        // lampadine e paralumi che si illuminano di sera
 const ctx = {
   H,
   addCollider(mesh) {
@@ -26,9 +27,10 @@ const ctx = {
     colliders.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, minY: b.min.y, maxY: b.max.y });
     return obj;
   },
-  addLight(light, bulb) {
+  addLight(light, bulb, shade) {
     light.castShadow = false;
     luciArtificiali.push({ light, base: light.intensity, bulb });
+    emissivi.push({ bulb, shade });
   },
   pareti: null, // gruppo per elementi appesi ai muri (boiserie, carta, quadri)
 };
@@ -92,7 +94,7 @@ for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.ext
   for (const l of luciArtificiali) {
     l.light.getWorldPosition(pa);
     const vicina = tenute.find((t) => t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
-    if (vicina) { vicina.base = Math.min(vicina.base + l.base * 0.6, 30); l.light.removeFromParent(); }
+    if (vicina) { vicina.base = Math.max(vicina.base, l.base) * 1.12; l.light.removeFromParent(); }
     else tenute.push(l);
   }
   luciArtificiali.length = 0;
@@ -121,22 +123,44 @@ riempimento.position.set(12, 8, -6);
 scene.add(riempimento);
 
 let giorno = true;
+const FATTORE_SERA = 0.85; // di sera le lampade restano sotto la nominale: pozze di luce, non luce piatta
+
 function applicaLuce() {
   if (giorno) {
     scene.background = new THREE.Color('#c9d6df');
     scene.fog = new THREE.Fog('#c9d6df', 40, 80);
-    sole.intensity = 3.2; cielo.intensity = 1.1; ambiente.intensity = 0.35; riempimento.intensity = 0.8;
+    sole.color.set('#fff1d6');
+    sole.position.set(-9, 12, 14);
+    sole.intensity = 3.2;
+    cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); cielo.intensity = 1.1;
+    ambiente.color.set('#ffffff'); ambiente.intensity = 0.35;
+    riempimento.color.set('#f4ecdf'); riempimento.intensity = 0.8;
     renderer.toneMappingExposure = 1.0;
-    for (const l of luciArtificiali) { l.light.visible = false; l.bulb.material.emissiveIntensity = 0.2; }
+    for (const l of luciArtificiali) l.light.visible = false;
+    for (const e of emissivi) {
+      e.bulb.material.emissiveIntensity = 0.12;
+      if (e.shade) e.shade.emissiveIntensity = 0;
+    }
   } else {
-    scene.background = new THREE.Color('#0f1620');
-    scene.fog = new THREE.Fog('#0f1620', 30, 70);
-    sole.intensity = 0.0; cielo.intensity = 0.12; ambiente.intensity = 0.06; riempimento.intensity = 0.05;
-    cielo.color.set('#3a4a66'); cielo.groundColor.set('#1a1611');
-    renderer.toneMappingExposure = 1.1;
-    for (const l of luciArtificiali) { l.light.visible = true; l.light.intensity = l.base; l.bulb.material.emissiveIntensity = 1.6; }
+    // notte: la luna fa da unica direzionale con ombre, tutto il resto viene dalle lampade
+    scene.background = new THREE.Color('#070b12');
+    scene.fog = new THREE.Fog('#070b12', 26, 70);
+    sole.color.set('#a9c2e6');
+    sole.position.set(15, 11, -13);
+    sole.intensity = 0.5;
+    cielo.color.set('#31435e'); cielo.groundColor.set('#100d09'); cielo.intensity = 0.16;
+    ambiente.color.set('#4a3a26'); ambiente.intensity = 0.06;
+    riempimento.color.set('#2d3a52'); riempimento.intensity = 0.08;
+    renderer.toneMappingExposure = 0.95;
+    for (const l of luciArtificiali) {
+      l.light.visible = true;
+      l.light.intensity = l.base * FATTORE_SERA;
+    }
+    for (const e of emissivi) {
+      e.bulb.material.emissiveIntensity = 1.5;
+      if (e.shade) e.shade.emissiveIntensity = 0.3;
+    }
   }
-  if (giorno) { cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); }
 }
 applicaLuce();
 

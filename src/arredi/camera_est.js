@@ -89,6 +89,7 @@ export function arredaCameraEst(ctx, stanze) {
   g.add(pianta(R.x + R.w - 0.35, R.z + 0.45, { h: 0.85, vaso: 0.15 }));
   ctx.pareti.add(quadro(0.5, 0.4, M.cartaBotanica, 7.05, 1.75, zS - 0.02, 'z-'));
   ctx.pareti.add(applique(ctx, 9.95, 1.6, zS - 0.02, 'z-', { intensita: 4 }));
+  ctx.pareti.add(applique(ctx, 6.55, 1.95, R.z + 0.02, 'z+', { intensita: 5 })); // illumina la chiocciola
   g.add(pendente(ctx, 9.3, 5.1, { yTop: ctx.H, calata: 0.4, raggio: 0.18, intensita: 12 }));
   return g;
 }

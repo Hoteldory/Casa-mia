@@ -108,17 +108,18 @@ export function pendente(ctx, x, z, { yTop, calata = 0.6, raggio = 0.18, intensi
   const y = yTop - calata;
   g.add(cyl(0.05, 0.05, 0.02, M.ottone, x, yTop - 0.01, z, 16));
   g.add(cyl(0.004, 0.004, calata, M.ottone, x, yTop - calata / 2, z, 8));
-  const matP = paralume === 'ceramica' ? M.ceramica : paralume === 'salvia' ? M.ceramicaSalvia : M.ottoneScuro;
+  const matP = (paralume === 'ceramica' ? M.ceramica : paralume === 'salvia' ? M.ceramicaSalvia : M.ottoneScuro).clone();
+  matP.side = THREE.DoubleSide;
+  matP.emissive = new THREE.Color('#ffd9a8');
+  matP.emissiveIntensity = 0;
   const shade = cyl(raggio * 0.35, raggio, raggio * 0.9, matP, x, y - raggio * 0.45, z, 24, { open: true });
-  shade.material = shade.material.clone();
-  shade.material.side = THREE.DoubleSide;
   g.add(shade);
   const bulb = sphere(0.03, M.lampadina, x, y - raggio * 0.6, z, 12);
   g.add(bulb);
-  const light = new THREE.PointLight(colore, intensita, 9, 2);
+  const light = new THREE.PointLight(colore, intensita, 7, 2);
   light.position.set(x, y - raggio * 0.7, z);
   g.add(light);
-  ctx.addLight(light, bulb);
+  ctx.addLight(light, bulb, matP);
   return g;
 }
 
@@ -128,12 +129,14 @@ export function applique(ctx, x, y, z, normal = 'z+', { intensita = 6 } = {}) {
   const g = new THREE.Group();
   g.add(box(0.08, 0.14, 0.02, M.ottone, 0, 0, 0.01));
   const arm = cyl(0.006, 0.006, 0.12, M.ottone, 0, 0.03, 0.07, 8); arm.rotation.x = Math.PI / 2; g.add(arm);
-  const shade = cyl(0.05, 0.08, 0.13, M.paralume, 0, 0.09, 0.13, 20, { open: true }); g.add(shade);
+  const matP = M.paralume.clone();
+  matP.emissive = new THREE.Color('#ffd9a8'); matP.emissiveIntensity = 0;
+  const shade = cyl(0.05, 0.08, 0.13, matP, 0, 0.09, 0.13, 20, { open: true }); g.add(shade);
   const bulb = sphere(0.02, M.lampadina, 0, 0.08, 0.13, 8); g.add(bulb);
-  const light = new THREE.PointLight('#ffd9a8', intensita, 5, 2);
+  const light = new THREE.PointLight('#ffd9a8', intensita, 4.5, 2);
   light.position.set(0, 0.06, 0.16);
   g.add(light);
-  ctx.addLight(light, bulb);
+  ctx.addLight(light, bulb, matP);
   g.position.set(x, y, z);
   g.rotation.y = { 'z+': 0, 'z-': Math.PI, 'x+': Math.PI / 2, 'x-': -Math.PI / 2 }[normal];
   return g;
@@ -146,13 +149,15 @@ export function lampadaTavolo(ctx, x, y, z, { colore = 'salvia', intensita = 5, 
   const base = cyl(0.06, 0.08, h * 0.45, colore === 'salvia' ? M.ceramicaSalvia : M.ceramica, 0, h * 0.225, 0, 20);
   g.add(base);
   g.add(cyl(0.006, 0.006, h * 0.3, M.ottone, 0, h * 0.55, 0, 8));
-  const shade = cyl(0.11, 0.15, h * 0.4, M.paralume, 0, h * 0.8, 0, 24, { open: true });
+  const matP = M.paralume.clone();
+  matP.emissive = new THREE.Color('#ffd9a8'); matP.emissiveIntensity = 0;
+  const shade = cyl(0.11, 0.15, h * 0.4, matP, 0, h * 0.8, 0, 24, { open: true });
   g.add(shade);
   const bulb = sphere(0.025, M.lampadina, 0, h * 0.72, 0, 8); g.add(bulb);
-  const light = new THREE.PointLight('#ffd9a8', intensita, 4, 2);
+  const light = new THREE.PointLight('#ffd9a8', intensita, 3.6, 2);
   light.position.set(0, h * 0.75, 0);
   g.add(light);
-  ctx.addLight(light, bulb);
+  ctx.addLight(light, bulb, matP);
   g.position.set(x, y, z);
   return g;
 }
@@ -164,14 +169,16 @@ export function lampadaTerra(ctx, x, z, { h = 1.7, intensita = 8 } = {}) {
   g.add(cyl(0.14, 0.16, 0.025, M.pietraScura, 0, 0.012, 0, 24));
   g.add(cyl(0.012, 0.012, h, M.ottone, 0, h / 2, 0, 10));
   const arm = cyl(0.01, 0.01, 0.5, M.ottone, 0.22, h - 0.05, 0, 8); arm.rotation.z = Math.PI / 2; g.add(arm);
-  const shade = cyl(0.07, 0.14, 0.2, M.ottoneScuro, 0.45, h - 0.18, 0, 20, { open: true });
-  shade.material = shade.material.clone(); shade.material.side = THREE.DoubleSide;
+  const matP = M.ottoneScuro.clone();
+  matP.side = THREE.DoubleSide;
+  matP.emissive = new THREE.Color('#ffd9a8'); matP.emissiveIntensity = 0;
+  const shade = cyl(0.07, 0.14, 0.2, matP, 0.45, h - 0.18, 0, 20, { open: true });
   g.add(shade);
   const bulb = sphere(0.025, M.lampadina, 0.45, h - 0.25, 0, 8); g.add(bulb);
-  const light = new THREE.PointLight('#ffd9a8', intensita, 6, 2);
+  const light = new THREE.PointLight('#ffd9a8', intensita, 5, 2);
   light.position.set(0.45, h - 0.3, 0);
   g.add(light);
-  ctx.addLight(light, bulb);
+  ctx.addLight(light, bulb, matP);
   g.position.set(x, 0, z);
   return g;
 }
@@ -278,6 +285,30 @@ export function tende(w, h, x, y, z, normal = 'z+', mat) {
     t.castShadow = true;
     g.add(t);
   }
+  g.position.set(x, y, z);
+  g.rotation.y = { 'z+': 0, 'z-': Math.PI, 'x+': Math.PI / 2, 'x-': -Math.PI / 2 }[normal];
+  return g;
+}
+
+// Lanterna da esterno in ottone brunito: gabbia di vetro e luce calda
+export function lanterna(ctx, x, y, z, normal = 'z+', { intensita = 14 } = {}) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const vetro = new THREE.MeshPhysicalMaterial({ color: '#ffe9c4', roughness: 0.25, transparent: true, opacity: 0.35, emissive: new THREE.Color('#ffce85'), emissiveIntensity: 0 });
+  g.add(box(0.05, 0.16, 0.02, M.ottoneScuro, 0, 0, 0.01));            // piastra a muro
+  g.add(cyl(0.008, 0.008, 0.14, M.ottoneScuro, 0, 0.05, 0.08, 8).rotateX(Math.PI / 2));
+  g.add(box(0.15, 0.2, 0.15, vetro, 0, 0.02, 0.15, { cast: false })); // gabbia in vetro
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    g.add(box(0.012, 0.21, 0.012, M.ottoneScuro, sx * 0.07, 0.02, 0.15 + sz * 0.07));
+  }
+  g.add(box(0.19, 0.03, 0.19, M.ottoneScuro, 0, 0.135, 0.15));         // cappello
+  g.add(box(0.17, 0.02, 0.17, M.ottoneScuro, 0, -0.09, 0.15));         // fondo
+  const bulb = sphere(0.022, M.lampadina, 0, 0.01, 0.15, 8);
+  g.add(bulb);
+  const light = new THREE.PointLight('#ffce85', intensita, 7, 2);
+  light.position.set(0, 0.01, 0.17);
+  g.add(light);
+  ctx.addLight(light, bulb, vetro);
   g.position.set(x, y, z);
   g.rotation.y = { 'z+': 0, 'z-': Math.PI, 'x+': Math.PI / 2, 'x-': -Math.PI / 2 }[normal];
   return g;
