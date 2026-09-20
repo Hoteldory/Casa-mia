@@ -306,12 +306,10 @@ function esterni(ctx) {
   const M = getMateriali();
   const g = new THREE.Group();
   const E = plan.esterni;
+  const matSoletta = [M.pietraScura, M.pietraScura, M.cotto, M.pietraScura, M.pietraScura, M.pietraScura];
   const slab = (r, y = -0.16, t = 0.16) => {
     const m = r2m(r);
-    const s = box(m.w, t, m.d, M.pietraScura, m.cx, y + t / 2, m.cz);
-    g.add(s);
-    // pavimento in cotto
-    g.add(plane(m.w, m.d, M.cotto, m.cx, y + t + 0.003, m.cz, 'y+'));
+    g.add(box(m.w, t, m.d, matSoletta, m.cx, y + t / 2, m.cz)); // soletta con faccia superiore in cotto
     return m;
   };
   // balcone ovest
@@ -332,27 +330,23 @@ function esterni(ctx) {
   const r1 = r2m(P.scala_esterna_rampa1.rect);
   const topX0 = r2.x + r2.w; // inizio pianerottolo alto
   // pianerottolo alto (quota 0)
-  g.add(box(pm.x + pm.w - topX0, 0.16, pm.d, M.pietraScura, (topX0 + pm.x + pm.w) / 2, -0.08, pm.cz));
-  g.add(plane(pm.x + pm.w - topX0, pm.d, M.cotto, (topX0 + pm.x + pm.w) / 2, 0.001, pm.cz, 'y+'));
+  g.add(box(pm.x + pm.w - topX0, 0.16, pm.d, matSoletta, (topX0 + pm.x + pm.w) / 2, -0.08, pm.cz));
   // rampa 2: scende verso ovest, 10 gradini
   const n2 = P.scala_esterna_rampa2.gradini, rise2 = 1.7 / n2, tread2 = r2.w / n2;
   for (let i = 0; i < n2; i++) {
     const yTop = -rise2 * (i + 1);
     const x = topX0 - tread2 * (i + 0.5);
-    g.add(box(tread2, 0.16, pm.d, M.pietraScura, x, yTop - 0.08, pm.cz));
-    g.add(plane(tread2, pm.d, M.cotto, x, yTop + 0.001, pm.cz, 'y+'));
+    g.add(box(tread2, 0.16, pm.d, matSoletta, x, yTop - 0.08, pm.cz));
   }
   // pianerottolo intermedio (quota -1.7)
   const midW = r2.x - pm.x;
-  g.add(box(midW, 0.16, pm.d, M.pietraScura, pm.x + midW / 2, -1.7 - 0.08, pm.cz));
-  g.add(plane(midW, pm.d, M.cotto, pm.x + midW / 2, -1.7 + 0.001, pm.cz, 'y+'));
+  g.add(box(midW, 0.16, pm.d, matSoletta, pm.x + midW / 2, -1.7 - 0.08, pm.cz));
   // rampa 1: scende verso sud, 12 gradini fino a -3.4
   const n1 = P.scala_esterna_rampa1.gradini, rise1 = 1.7 / n1, tread1 = r1.d / n1;
   for (let i = 0; i < n1; i++) {
     const yTop = -1.7 - rise1 * (i + 1);
     const z = r1.z + tread1 * (i + 0.5);
-    g.add(box(r1.w, 0.16, tread1, M.pietraScura, r1.cx, yTop - 0.08, z));
-    g.add(plane(r1.w, tread1, M.cotto, r1.cx, yTop + 0.001, z, 'y+'));
+    g.add(box(r1.w, 0.16, tread1, matSoletta, r1.cx, yTop - 0.08, z));
   }
   // ringhiere: pianerottolo alto (lato sud), rampa 2 (lato sud, inclinata), pianerottolo intermedio
   g.add(ringhiera(topX0, pm.z + pm.d, b1.x, pm.z + pm.d, ctx));
@@ -375,9 +369,10 @@ function esterni(ctx) {
   g.add(box(0.2, 3.4, r1.d, M.intonacoEsterno, r1.x - 0.1, -1.7, r1.cz));
   // volume del piano terra
   const I = plan.muri.ingombro_esterno;
-  const pt = box(I.larghezza_cm * C, 3.4, 9.65, M.intonacoEsterno, I.larghezza_cm * C / 2, -1.7, 9.65 / 2);
+  // volume del piano terra: la faccia superiore resta 5 cm sotto i pavimenti (mai complanare)
+  const pt = box(I.larghezza_cm * C, 3.4, 9.65, M.intonacoEsterno, I.larghezza_cm * C / 2, -1.75, 9.65 / 2);
   g.add(pt);
-  const pt2 = box((I.larghezza_cm - 584) * C, 3.4, 1.32, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C, -1.7, 9.65 + 0.66);
+  const pt2 = box((I.larghezza_cm - 584) * C, 3.4, 1.32, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C, -1.75, 9.65 + 0.66);
   g.add(pt2);
   // finestre "cieche" al piano terra: semplici rientranze scure
   for (const [x, z, nx, nz] of [[2.1, 0, 0, -1], [4.5, 0, 0, -1], [7.5, 0, 0, -1], [10.51, 2.5, 1, 0], [10.51, 6, 1, 0], [0, 2.5, -1, 0], [0, 6, -1, 0]]) {
@@ -438,18 +433,19 @@ export function costruisciArchitettura(ctx) {
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {
       floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0, r.cz, 'y+'));
-      ceilings.add(plane(r.w, r.d, ceilMat[k] || M.intonacoSoffitto, r.cx, H, r.cz, 'y-'));
+      // soffitto 1 cm sotto la sommità dei muri: mai complanare con solaio o teste dei muri
+      ceilings.add(plane(r.w, r.d, ceilMat[k] || M.intonacoSoffitto, r.cx, H - 0.012, r.cz, 'y-'));
     }
   }
   ceilings.add(travi(st));
   // solaio di copertura + cornicione
   const I = plan.muri.ingombro_esterno;
   const W = I.larghezza_cm * C;
-  const roof = box(W + 0.5, 0.26, 9.65 + 0.5, M.intonacoEsterno, W / 2, H + 0.15, 9.65 / 2);
-  const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
+  // solaio: faccia superiore in cotto tramite materiale per faccia (niente piano sovrapposto)
+  const matTetto = [M.intonacoEsterno, M.intonacoEsterno, M.cotto, M.intonacoEsterno, M.intonacoEsterno, M.intonacoEsterno];
+  const roof = box(W + 0.5, 0.26, 9.65 + 0.5, matTetto, W / 2, H + 0.15, 9.65 / 2);
+  const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, matTetto, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
   ceilings.add(roof, roof2);
-  const cottoRoof = plane(W + 0.5, 9.65 + 0.5, M.cotto, W / 2, H + 0.281, 9.65 / 2, 'y+');
-  ceilings.add(cottoRoof);
 
   const exterior = esterni(ctx);
   return { walls, wallsLow, floors, ceilings, exterior, stanze: st };

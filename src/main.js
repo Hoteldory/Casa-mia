@@ -66,7 +66,7 @@ function ottimizza(root) {
   root.traverse((o) => {
     if (!o.isMesh) return;
     if (!o.visible) { daRimuovere.push(o); return; }
-    if (Array.isArray(o.material)) return; // muri esterni multi-materiale: restano come sono
+    if (Array.isArray(o.material)) return; // multi-materiale (muri esterni, solette): restano come sono
     const key = `${o.material.uuid}|${o.castShadow ? 1 : 0}${o.receiveShadow ? 1 : 0}`;
     if (!buckets.has(key)) buckets.set(key, { material: o.material, cast: o.castShadow, receive: o.receiveShadow, geoms: [] });
     const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
