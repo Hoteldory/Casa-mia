@@ -71,16 +71,15 @@ export function baseCucina(ctx, { x0, z0, z1, hobZ, sinkZ }) {
 export function rivestimentoMaiolica(ctx, { x, z0, z1, hobZ, salto = null }) {
   const M = MAT();
   const g = new THREE.Group();
-  g.add(plane(z1 - z0, 0.5, M.maiolica, x + 0.02, 1.15, (z0 + z1) / 2, 'x+')); // paraspruzzi fino al davanzale
-  g.add(plane(1.1, 0.68, M.maiolica, x + 0.02, 1.76, hobZ, 'x+')); // nicchia dietro il piano cottura
-  // cornice in pietra della nicchia
-  g.add(box(0.05, 0.04, 1.16, M.pietra, x + 0.025, 2.12, hobZ));
-  // listello di coronamento: si interrompe dove il davanzale della finestra prende il suo posto
-  const tratti = salto ? [[z0 - 0.02, salto[0]], [salto[1], z1 + 0.02]] : [[z0 - 0.02, z1 + 0.02]];
+  // il paraspruzzi si interrompe dove la finestra scende a filo del piano di lavoro
+  const tratti = salto ? [[z0, salto[0]], [salto[1], z1]] : [[z0, z1]];
   for (const [a, b] of tratti) {
     if (b - a < 0.05) continue;
-    g.add(box(0.05, 0.04, b - a, M.pietra, x + 0.025, 1.42, (a + b) / 2));
+    g.add(plane(b - a, 0.6, M.maiolica, x + 0.02, 1.2, (a + b) / 2, 'x+'));
+    g.add(box(0.05, 0.04, b - a + 0.04, M.pietra, x + 0.025, 1.52, (a + b) / 2)); // listello di coronamento
   }
+  g.add(plane(1.1, 0.6, M.maiolica, x + 0.02, 1.8, hobZ, 'x+')); // nicchia dietro il piano cottura
+  g.add(box(0.05, 0.04, 1.16, M.pietra, x + 0.025, 2.12, hobZ));
   return g;
 }
 
@@ -242,7 +241,7 @@ export function arredaCucina(ctx, stanze) {
   const xW = R.x, xE = R.x + R.w;
   const runZ0 = R.z + 0.08, runZ1 = 4.4, hobZ = 0.95, sinkZ = 3.55;
   // la finestra sul lavello (F-cucina-lavello) interrompe il listello del paraspruzzi
-  g.add(rivestimentoMaiolica(ctx, { x: xW, z0: runZ0, z1: runZ1, hobZ, salto: [2.85, 4.25] }));
+  g.add(rivestimentoMaiolica(ctx, { x: xW, z0: runZ0, z1: runZ1, hobZ, salto: [2.85, 4.45] }));
   g.add(baseCucina(ctx, { x0: xW, z0: runZ0, z1: runZ1, hobZ, sinkZ }));
   g.add(cappaMuratura(ctx, { x: xW, z: hobZ }));
   g.add(mensole(ctx, { x: xW, z0: 1.7, z1: 2.85 })); // si fermano prima della finestra sul lavello

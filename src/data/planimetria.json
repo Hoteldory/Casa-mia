@@ -10,7 +10,7 @@
       "rimossa F-cucina-ovest (finestra 60 cm sul muro ovest della cucina)",
       "F-soggiorno-nord trasformata in portafinestra PF-soggiorno-nord verso il terrazzo nord",
       "F-camera-nord trasformata in portafinestra PF-camera-nord (124 cm, come quella della cucina)",
-      "aggiunta F-cucina-lavello sul muro ovest (124 cm, davanzale 140, altezza 80) in asse con il lavello"
+      "aggiunta F-cucina-lavello sul muro ovest (124 cm, dal piano di lavoro a 90 cm fino a 220 cm) in asse con il lavello"
     ]
   },
   "altezze": {
@@ -427,10 +427,11 @@
       "y_a": 417,
       "larghezza_cm": 124,
       "tipo": "finestra",
-      "davanzale_cm": 140,
-      "altezza_cm": 80,
-      "nota": "modifica richiesta: finestra sopra il piano cucina, in asse con il lavello; larghezza come PF-soggiorno-nord, davanzale sopra il paraspruzzi e filo superiore allineato alle portefinestre",
-      "modifica_richiesta": true
+      "davanzale_cm": 90,
+      "altezza_cm": 130,
+      "nota": "modifica richiesta: finestra sopra il lavello, a filo del piano di lavoro. Larghezza come PF-soggiorno-nord, davanzale interno costituito dal top in pietra della cucina.",
+      "modifica_richiesta": true,
+      "davanzale": "esterno"
     }
   ],
   "esterni": {

@@ -214,9 +214,13 @@ function buildFinestra(f, seg, ctx) {
   }
   // davanzale in pietra (interno ed esterno) se finestra
   if (f.kind === 'finestra') {
-    g.add(box(w + 0.16, 0.035, thick + 0.16, M.pietra, 0, y0 - 0.017, 0));
-    const sill = box(w + 0.16, 0.035, thick + 0.16, M.pietra, 0, y0 - 0.017, 0);
-    ctx.addCollider(sill);
+    if (f.davanzale === 'esterno') {
+      // davanzale solo verso l'esterno: all'interno la soglia è il piano di lavoro della cucina
+      const dep = thick + 0.08;
+      g.add(box(w + 0.16, 0.035, dep, M.pietra, 0, y0 - 0.017, dep / 2 - thick / 2));
+    } else {
+      g.add(box(w + 0.16, 0.035, thick + 0.16, M.pietra, 0, y0 - 0.017, 0));
+    }
   } else {
     g.add(box(w + 0.1, 0.02, thick + 0.1, M.pietra, 0, 0.01, 0));
   }
