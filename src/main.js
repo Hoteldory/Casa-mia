@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { costruisciArchitettura, H } from './architettura.js';
 import { arredi } from './arredi/index.js';
 
@@ -55,6 +56,47 @@ arch.wallsLow.visible = false;
 const gruppiArredi = arredi(ctx, arch.stanze);
 for (const g of gruppiArredi) scene.add(g);
 
+// ---------- ottimizzazione: fonde le mesh statiche per materiale (meno draw call) ----------
+function ottimizza(root) {
+  root.updateMatrixWorld(true);
+  const buckets = new Map();
+  const daRimuovere = [];
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    if (!o.visible) { daRimuovere.push(o); return; }
+    if (Array.isArray(o.material)) return; // muri esterni multi-materiale: restano come sono
+    const key = `${o.material.uuid}|${o.castShadow ? 1 : 0}${o.receiveShadow ? 1 : 0}`;
+    if (!buckets.has(key)) buckets.set(key, { material: o.material, cast: o.castShadow, receive: o.receiveShadow, geoms: [] });
+    const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
+    for (const name of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
+    buckets.get(key).geoms.push(g);
+    daRimuovere.push(o);
+  });
+  for (const o of daRimuovere) o.parent.remove(o);
+  for (const b of buckets.values()) {
+    const merged = BufferGeometryUtils.mergeGeometries(b.geoms, false);
+    for (const g of b.geoms) g.dispose();
+    const m = new THREE.Mesh(merged, b.material);
+    m.castShadow = b.cast; m.receiveShadow = b.receive;
+    root.add(m);
+  }
+}
+for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi]) ottimizza(g);
+
+// luci artificiali vicine tra loro (< 1.5 m) vengono fuse in una sola: meno luci nello shader
+{
+  const tenute = [];
+  const pa = new THREE.Vector3(), pb = new THREE.Vector3();
+  for (const l of luciArtificiali) {
+    l.light.getWorldPosition(pa);
+    const vicina = tenute.find((t) => t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
+    if (vicina) { vicina.base = Math.min(vicina.base + l.base * 0.6, 30); l.light.removeFromParent(); }
+    else tenute.push(l);
+  }
+  luciArtificiali.length = 0;
+  luciArtificiali.push(...tenute);
+}
+
 // ---------- luci ----------
 const sole = new THREE.DirectionalLight('#fff1d6', 3.2);
 sole.position.set(-9, 12, 14);
@@ -83,14 +125,14 @@ function applicaLuce() {
     scene.fog = new THREE.Fog('#c9d6df', 40, 90);
     sole.intensity = 3.2; cielo.intensity = 1.1; ambiente.intensity = 0.35; riempimento.intensity = 0.8;
     renderer.toneMappingExposure = 1.0;
-    for (const l of luciArtificiali) { l.light.intensity = l.base * 0.15; l.bulb.material.emissiveIntensity = 0.2; }
+    for (const l of luciArtificiali) { l.light.visible = false; l.bulb.material.emissiveIntensity = 0.2; }
   } else {
     scene.background = new THREE.Color('#0f1620');
     scene.fog = new THREE.Fog('#0f1620', 30, 80);
     sole.intensity = 0.0; cielo.intensity = 0.12; ambiente.intensity = 0.06; riempimento.intensity = 0.05;
     cielo.color.set('#3a4a66'); cielo.groundColor.set('#1a1611');
     renderer.toneMappingExposure = 1.1;
-    for (const l of luciArtificiali) { l.light.intensity = l.base; l.bulb.material.emissiveIntensity = 1.6; }
+    for (const l of luciArtificiali) { l.light.visible = true; l.light.intensity = l.base; l.bulb.material.emissiveIntensity = 1.6; }
   }
   if (giorno) { cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); }
 }
@@ -212,11 +254,13 @@ window.addEventListener('resize', () => {
 });
 
 // ---------- loop ----------
-const clock = new THREE.Clock();
+let tPrev = performance.now();
 const fpsEl = document.getElementById('fps');
 let frames = 0, acc = 0;
 function loop() {
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const tNow = performance.now();
+  const dt = Math.min((tNow - tPrev) / 1000, 0.05);
+  tPrev = tNow;
   if (modoFP) aggiornaFP(dt); else orbit.update();
   renderer.render(scene, camera);
   frames++; acc += dt;

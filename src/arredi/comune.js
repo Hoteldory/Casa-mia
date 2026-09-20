@@ -5,6 +5,14 @@ import { getMateriali, uvMetri } from '../data/stile.js';
 
 export const MAT = () => getMateriali();
 
+// Materiali opachi per colore, condivisi (evita un materiale per ogni libro/oggetto)
+const _matCache = new Map();
+export function matColore(color, roughness = 0.85) {
+  const k = color + '|' + roughness;
+  if (!_matCache.has(k)) _matCache.set(k, new THREE.MeshStandardMaterial({ color, roughness }));
+  return _matCache.get(k);
+}
+
 export function box(w, h, d, mat, x = 0, y = 0, z = 0, opts = {}) {
   const g = uvMetri(new THREE.BoxGeometry(w, h, d), w, h, d);
   const m = new THREE.Mesh(g, mat);
@@ -222,8 +230,7 @@ export function libri(w, x, y, z, seed = 1) {
   while (cx < w / 2 - 0.02) {
     const bw = 0.02 + ((i * 7) % 5) * 0.006;
     const bh = 0.18 + ((i * 13) % 6) * 0.02;
-    const m = new THREE.MeshStandardMaterial({ color: cols[i % cols.length], roughness: 0.85 });
-    const b = box(bw, bh, 0.14 + ((i * 3) % 3) * 0.02, m, cx + bw / 2, bh / 2, 0);
+    const b = box(bw, bh, 0.14 + ((i * 3) % 3) * 0.02, matColore(cols[i % cols.length]), cx + bw / 2, bh / 2, 0);
     g.add(b);
     cx += bw + 0.003;
     i++;
