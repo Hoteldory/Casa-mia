@@ -386,6 +386,29 @@ export function texVernice(color, seed = 31) {
   }, { seed });
 }
 
+// Rete in ottone (ante di credenze e mobili hi-fi): fondo scuro, trama a rombi
+export function texRete(seed = 41) {
+  return canvasTexture(256, (ctx, s, r) => {
+    ctx.fillStyle = '#16130f';
+    ctx.fillRect(0, 0, s, s);
+    const step = s / 8;
+    ctx.lineWidth = 2.6;
+    for (let i = -8; i < 17; i++) {
+      ctx.strokeStyle = PALETTE.ottoneScuro;
+      ctx.beginPath(); ctx.moveTo(i * step, 0); ctx.lineTo(i * step + s, s); ctx.stroke();
+      ctx.strokeStyle = PALETTE.ottone;
+      ctx.beginPath(); ctx.moveTo(i * step, s); ctx.lineTo(i * step + s, 0); ctx.stroke();
+    }
+    // luce sui nodi della trama
+    ctx.fillStyle = '#d8b476';
+    for (let a = 0; a < 8; a++) for (let b = 0; b < 8; b++) {
+      ctx.globalAlpha = 0.5 + r() * 0.4;
+      ctx.beginPath(); ctx.arc(a * step, b * step, 1.7, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }, { seed });
+}
+
 // Ghiaia/terra per il terreno
 export function texTerreno(seed = 37) {
   return canvasTexture(512, (ctx, s, r) => {
@@ -438,6 +461,7 @@ export function getMateriali() {
     cartaBotanica: std({ map: texCartaBotanica(), roughness: 0.9 }),
     cuoio: std({ color: '#6b3f24', roughness: 0.55 }),
     nero: std({ color: PALETTE.nero, roughness: 0.7 }),
+    reteOttone: std({ map: texRete(), roughness: 0.45, metalness: 0.35 }),
     terreno: std({ map: texTerreno(), roughness: 1 }),
     carta: std({ color: '#f1ead9', roughness: 0.9 }),
     paralume: new THREE.MeshStandardMaterial({ color: '#f3e8d0', roughness: 0.9, side: THREE.DoubleSide, emissive: '#000000' }),
@@ -445,7 +469,7 @@ export function getMateriali() {
     lampadina: new THREE.MeshStandardMaterial({ color: '#ffe3b0', emissive: '#ffd08a', emissiveIntensity: 0 }),
   };
   // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
-  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica']) {
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone']) {
     _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
   }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
@@ -460,6 +484,7 @@ export function getMateriali() {
   _MAT.pietraScura.map.repeat.set(0.8, 0.8);
   _MAT.terreno.map.repeat.set(0.5, 0.5);
   _MAT.cartaBotanica.map.repeat.set(1 / 1.4, 1 / 1.4);
+  _MAT.reteOttone.map.repeat.set(1 / 0.16, 1 / 0.16);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora']) _MAT[k].map.repeat.set(3, 3);
   return _MAT;

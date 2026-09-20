@@ -185,7 +185,7 @@ export function sgabello(ctx, x, z, h = 0.68) {
 }
 
 // ---- tavolo in noce massello, 8 posti, gambe tornite importanti ----
-export function tavolo(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.76 }) {
+export function tavolo(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.76, ry = 0 }) {
   const M = MAT();
   const g = new THREE.Group();
   g.add(box(W, 0.06, L, M.noceVerticale, 0, H - 0.03, 0));
@@ -204,7 +204,7 @@ export function tavolo(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.76 }) {
   // centrotavola: brocca in ceramica e ciotola
   g.add(cyl(0.07, 0.05, 0.22, M.ceramicaSalvia, 0, H + 0.11, -0.2, 16));
   g.add(cyl(0.14, 0.1, 0.05, M.ceramica, 0, H + 0.025, 0.3, 20));
-  place(g, cx, cz);
+  place(g, cx, cz, ry);
   ctx.solid(g);
   return g;
 }
@@ -244,19 +244,20 @@ export function arredaCucina(ctx, stanze) {
   const isoX0 = 1.75, isoZ0 = 1.8, isoZ1 = 3.9;
   g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1 }));
   for (let i = 0; i < 3; i++) g.add(sgabello(ctx, isoX0 + 0.8 + 0.3 + 0.12, isoZ0 + 0.4 + i * 0.65));
-  const tz = 6.0, tx = 2.45;
-  g.add(tavolo(ctx, { cx: tx, cz: tz }));
+  // tavolo in orizzontale (lato lungo est-ovest): libera la parete davanti al divano per il mobile TV
+  const tz = 5.4, tx = 2.2;
+  g.add(tavolo(ctx, { cx: tx, cz: tz, ry: Math.PI / 2 }));
   for (let i = 0; i < 3; i++) {
-    g.add(sedia(ctx, tx - 0.75, tz - 0.7 + i * 0.7, Math.PI / 2));
-    g.add(sedia(ctx, tx + 0.75, tz - 0.7 + i * 0.7, -Math.PI / 2));
+    g.add(sedia(ctx, tx - 0.7 + i * 0.7, tz - 0.75, 0));
+    g.add(sedia(ctx, tx - 0.7 + i * 0.7, tz + 0.75, Math.PI));
   }
-  g.add(sedia(ctx, tx, tz - 1.4, 0));
-  g.add(sedia(ctx, tx, tz + 1.4, Math.PI));
+  g.add(sedia(ctx, tx - 1.4, tz, Math.PI / 2));
+  g.add(sedia(ctx, tx + 1.4, tz, -Math.PI / 2));
   // lampade: due campane in ceramica sull'isola, due sul tavolo
   const H = ctx.H;
   g.add(pendente(ctx, isoX0 + 0.45, isoZ0 + 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
   g.add(pendente(ctx, isoX0 + 0.45, isoZ1 - 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  g.add(pendente(ctx, tx, tz - 0.5, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
-  g.add(pendente(ctx, tx, tz + 0.5, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  g.add(pendente(ctx, tx - 0.5, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  g.add(pendente(ctx, tx + 0.5, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
   return g;
 }

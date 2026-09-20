@@ -1,7 +1,7 @@
 // Soggiorno (zona sud del soggiorno-pranzo-cucina e appendice est).
 // Dettaglio di carattere: parete sud in verde salvia profondo con boiserie a riquadri.
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, group, place, cuscino, tappeto, quadro, pianta, libri, lampadaTerra, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
+import { box, cyl, sphere, plane, group, place, pomolo, cuscino, tappeto, quadro, pianta, libri, lampadaTerra, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
 
 // ---- boiserie a riquadri su una parete (piano XY locale, normale +Z verso la stanza) ----
 export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, mat }) {
@@ -153,6 +153,66 @@ export function consolle(ctx, { w = 0.9, x, z, ry = 0 }) {
   return g;
 }
 
+// ---- mobile TV: bassa credenza in noce con ante a rete d'ottone, vano a giorno
+// centrale, top in pietra e gambe in ferro battuto ----
+export function mobileTv(ctx, { x, z, w = 1.6, d = 0.46, h = 0.46, ry = 0 }) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const hG = 0.16, hC = h - hG, yC = hG + hC / 2, sp = 0.022;
+  // gambe in ferro leggermente svasate, con traversine
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    const leg = box(0.022, hG + 0.05, 0.022, M.ferro, sx * (w / 2 - 0.08), (hG + 0.05) / 2, sz * (d / 2 - 0.08));
+    leg.rotation.z = -sx * 0.07; leg.rotation.x = sz * 0.07;
+    g.add(leg);
+  }
+  for (const sz of [-1, 1]) g.add(box(w - 0.18, 0.012, 0.012, M.ferro, 0, 0.055, sz * (d / 2 - 0.08)));
+  // cassa: cielo, fondo, fianchi, schienale e due setti che delimitano il vano a giorno
+  const vano = 0.5;
+  g.add(box(w, sp, d, M.noce, 0, hG + hC - sp / 2, 0));
+  g.add(box(w, sp, d, M.noce, 0, hG + sp / 2, 0));
+  for (const sx of [-1, 1]) g.add(box(sp, hC, d, M.noce, sx * (w / 2 - sp / 2), yC, 0));
+  for (const sx of [-1, 1]) g.add(box(0.02, hC, d - 0.02, M.noce, sx * vano / 2, yC, 0.01));
+  g.add(box(w, hC, 0.014, M.noceScuro, 0, yC, -d / 2 + 0.007));
+  // top in pietra con leggero aggetto
+  g.add(box(w + 0.05, 0.035, d + 0.04, M.pietra, 0, h + 0.0175, 0));
+  // ante laterali: cornice in noce e pannello a rete d'ottone
+  const aw = (w - vano) / 2 - 0.02, dh = hC - 0.04, ft = 0.055, fd = 0.022;
+  for (const s of [-1, 1]) {
+    const cx = s * (vano / 2 + (w - vano) / 4);
+    g.add(box(aw, ft, fd, M.noce, cx, yC + dh / 2 - ft / 2, d / 2 + fd / 2));
+    g.add(box(aw, ft, fd, M.noce, cx, yC - dh / 2 + ft / 2, d / 2 + fd / 2));
+    g.add(box(ft, dh - 2 * ft, fd, M.noce, cx - aw / 2 + ft / 2, yC, d / 2 + fd / 2));
+    g.add(box(ft, dh - 2 * ft, fd, M.noce, cx + aw / 2 - ft / 2, yC, d / 2 + fd / 2));
+    g.add(plane(aw - 2 * ft, dh - 2 * ft, M.reteOttone, cx, yC, d / 2 + 0.008, 'z+'));
+    g.add(pomolo(cx + s * (aw / 2 - 0.05), yC, d / 2 + fd));
+  }
+  // vano a giorno: ripiano e oggetti (libri coricati, scatola in ceramica)
+  g.add(box(vano - 0.02, 0.018, d - 0.06, M.noce, 0, yC, 0.01));
+  for (let i = 0; i < 3; i++) g.add(box(0.24, 0.028, 0.17, i % 2 ? M.linoTortora : M.cuoio, -0.11, yC + 0.024 + i * 0.03, 0.02));
+  g.add(box(0.15, 0.1, 0.12, M.ceramicaSalvia, 0.13, yC + 0.06, 0.02));
+  g.add(box(0.15, 0.012, 0.12, M.ottone, 0.13, yC + 0.116, 0.02));
+  for (let i = 0; i < 4; i++) g.add(box(0.012, 0.1, 0.14, i % 2 ? M.noceScuro : M.cuoio, -0.18 + i * 0.016, hG + 0.072, 0.02));
+  place(g, x, z, ry);
+  ctx.solid(g);
+  return g;
+}
+
+// ---- televisore OLED 55 pollici (schermo spento, scocca sottile) ----
+export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
+  const scocca = new THREE.MeshStandardMaterial({ color: '#2b2e30', roughness: 0.5, metalness: 0.4 });
+  const schermo = new THREE.MeshStandardMaterial({ color: '#0a0c0d', roughness: 0.14, metalness: 0.55 });
+  const g = new THREE.Group();
+  g.add(box(0.36, 0.014, 0.19, scocca, 0, 0.007, 0));       // piastra di appoggio
+  g.add(box(0.09, 0.08, 0.035, scocca, 0, 0.054, 0));        // collo
+  const y0 = 0.09;
+  g.add(box(w, h, 0.011, scocca, 0, y0 + h / 2, -0.004));    // pannello
+  g.add(box(w - 0.016, h - 0.016, 0.004, schermo, 0, y0 + h / 2, 0.004));
+  g.add(box(w - 0.14, h * 0.33, 0.028, scocca, 0, y0 + h * 0.18, -0.023)); // elettronica
+  g.position.set(x, y, z);
+  g.rotation.y = ry;
+  return g;
+}
+
 export function arredaSoggiorno(ctx, stanze) {
   const M = MAT();
   const g = new THREE.Group();
@@ -168,10 +228,14 @@ export function arredaSoggiorno(ctx, stanze) {
   bo2.position.set(B.cx, 0, zS); bo2.rotation.y = Math.PI; ctx.pareti.add(bo2);
   // divano sotto la finestra sud, tappeto, tavolino, poltrone
   g.add(divano(ctx, 2.16, zS - 0.5, Math.PI));
-  g.add(tappeto(3.0, 2.0, M.lino, 2.16, zS - 1.35, M.linoTortora));
+  g.add(tappeto(3.0, 1.8, M.lino, 2.16, zS - 1.2, M.linoTortora));
   g.add(tavolino(ctx, 2.16, zS - 1.45));
   g.add(poltrona(ctx, 0.75, zS - 1.6, Math.PI / 2));
   g.add(poltrona(ctx, 3.6, zS - 1.6, -Math.PI / 2, M.velluto));
+  // mobile TV davanti al divano, fa anche da separazione con la zona pranzo
+  const tvZ = 6.95;
+  g.add(mobileTv(ctx, { x: 2.16, z: tvZ, w: 1.6, d: 0.46, h: 0.46 }));
+  g.add(tvOled(ctx, { x: 2.16, y: 0.495, z: tvZ - 0.03 }));
   // consolle sulla parete ovest tra portafinestra e angolo, con lampada e pianta
   g.add(consolle(ctx, { w: 0.9, x: R.x + 0.17, z: 8.4, ry: Math.PI / 2 }));
   g.add(lampadaTavolo(ctx, R.x + 0.17, 0.82, 8.1, { colore: 'salvia', intensita: 5 }));
