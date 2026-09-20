@@ -1,0 +1,516 @@
+{
+  "_meta": {
+    "sorgente": "piantina.png (2508x2574 px), PIANO PRIMO",
+    "metodo": "muri rilevati per run di pixel neri; scala ricavata ai minimi quadrati dalle superfici quotate (4 stanze + soggiorno 44 mq)",
+    "scala_cm_per_px": 0.5922,
+    "origine": "angolo esterno nord-ovest dell'edificio; x cresce verso est, y verso sud (in Three.js: x -> x, y -> z)",
+    "unita": "cm",
+    "legenda_assunto": "i campi con \"assunto\": true non sono leggibili in piantina e sono stimati"
+  },
+  "altezze": {
+    "soffitto_cm": 270,
+    "soffitto_assunto": true,
+    "porta_interna_h_cm": 210,
+    "portafinestra_h_cm": 220,
+    "portoncino_h_cm": 210,
+    "finestra_davanzale_cm": 90,
+    "finestra_h_cm": 140,
+    "altezze_assunte": true
+  },
+  "muri": {
+    "esterno_spessore_cm": 25,
+    "esterno_nota": "misurato 43 px = 25.5 cm (muro sud della camera sud 35 px = 21 cm, uniformato a 25)",
+    "interno_spessore_cm": 15,
+    "interno_nota": "misurato 26 px = 15.4 cm",
+    "ingombro_esterno": {
+      "larghezza_cm": 1051,
+      "profondita_cm": 1097,
+      "nota": "profondita 1097 solo sul corpo est (x>=584); il corpo ovest (soggiorno) si ferma a y=965 (filo esterno)"
+    },
+    "segmenti": [
+      {
+        "id": "E-nord",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1051,
+          "d": 28
+        },
+        "tipo": "esterno"
+      },
+      {
+        "id": "E-ovest",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 25,
+          "d": 1097
+        },
+        "tipo": "esterno"
+      },
+      {
+        "id": "E-est",
+        "rect": {
+          "x": 1026,
+          "y": 0,
+          "w": 25,
+          "d": 1097
+        },
+        "tipo": "esterno"
+      },
+      {
+        "id": "E-sud-soggiorno",
+        "rect": {
+          "x": 0,
+          "y": 940,
+          "w": 614,
+          "d": 25
+        },
+        "tipo": "esterno",
+        "nota": "muro sud del soggiorno verso il pianerottolo esterno"
+      },
+      {
+        "id": "E-sud-camera-sud",
+        "rect": {
+          "x": 584,
+          "y": 1077,
+          "w": 467,
+          "d": 20
+        },
+        "tipo": "esterno"
+      },
+      {
+        "id": "E-vano-scala-est",
+        "rect": {
+          "x": 584,
+          "y": 940,
+          "w": 30,
+          "d": 157
+        },
+        "tipo": "esterno",
+        "nota": "muro tra pianerottolo esterno e camera sud (52 px = 31 cm)"
+      },
+      {
+        "id": "I-bagno-ovest",
+        "rect": {
+          "x": 416,
+          "y": 28,
+          "w": 15,
+          "d": 271
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "I-bagno-sud",
+        "rect": {
+          "x": 416,
+          "y": 285,
+          "w": 97,
+          "d": 15
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "I-dis-ovest",
+        "rect": {
+          "x": 452,
+          "y": 285,
+          "w": 15,
+          "d": 151
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "I-dis-sud",
+        "rect": {
+          "x": 452,
+          "y": 524,
+          "w": 162,
+          "d": 15
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "I-spina-camere",
+        "rect": {
+          "x": 599,
+          "y": 0,
+          "w": 15,
+          "d": 940
+        },
+        "tipo": "interno",
+        "nota": "muro N-S tra bagno/dis/soggiorno e le camere; contiene 3 porte"
+      },
+      {
+        "id": "I-cam-nord-est",
+        "rect": {
+          "x": 599,
+          "y": 407,
+          "w": 452,
+          "d": 15
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "I-cam-est-sud",
+        "rect": {
+          "x": 599,
+          "y": 650,
+          "w": 452,
+          "d": 15
+        },
+        "tipo": "interno"
+      }
+    ]
+  },
+  "stanze": {
+    "soggiorno": {
+      "nome": "Soggiorno pranzo-cucina",
+      "quota_piantina": "circa 44 mq",
+      "forma": "L (poligono = unione di 3 rettangoli)",
+      "rettangoli": [
+        {
+          "x": 25,
+          "y": 28,
+          "w": 391,
+          "d": 912
+        },
+        {
+          "x": 416,
+          "y": 300,
+          "w": 36,
+          "d": 641
+        },
+        {
+          "x": 452,
+          "y": 538,
+          "w": 147,
+          "d": 402
+        }
+      ],
+      "corpo_principale_cm": {
+        "larghezza": 391,
+        "profondita": 912
+      },
+      "superficie_calcolata_mq": 43.92,
+      "zona_cucina": "parete ovest, tratto nord (blocco cucina disegnato x 410-517 px -> lungo 380 cm dalla parete nord)",
+      "note": "zona pranzo a nord (tavolo 6 posti disegnato), zona living a sud (divano contro il muro sud)"
+    },
+    "bagno": {
+      "nome": "Bagno",
+      "rect": {
+        "x": 431,
+        "y": 28,
+        "w": 168,
+        "d": 256
+      },
+      "larghezza_cm": 168,
+      "profondita_cm": 256,
+      "superficie_calcolata_mq": 4.3,
+      "superficie_quotata_mq": 4.56,
+      "note": "finestra a nord 71 cm; wc+bidet sul lato nord, lavabo a ovest (dal disegno)"
+    },
+    "disimpegno": {
+      "nome": "Disimpegno (Dis.)",
+      "rect": {
+        "x": 467,
+        "y": 300,
+        "w": 132,
+        "d": 224
+      },
+      "larghezza_cm": 132,
+      "profondita_cm": 224,
+      "superficie_calcolata_mq": 2.96,
+      "superficie_quotata_mq": null,
+      "note": "non quotato in piantina"
+    },
+    "camera_nord": {
+      "nome": "Camera 15,43 (nord-est, matrimoniale)",
+      "rect": {
+        "x": 614,
+        "y": 28,
+        "w": 412,
+        "d": 378
+      },
+      "larghezza_cm": 412,
+      "profondita_cm": 378,
+      "superficie_calcolata_mq": 15.57,
+      "superficie_quotata_mq": 15.43,
+      "note": "letto matrimoniale e armadio a nord disegnati"
+    },
+    "camera_est": {
+      "nome": "Camera 9,74 (est, singola/studio)",
+      "rect": {
+        "x": 614,
+        "y": 422,
+        "w": 412,
+        "d": 229
+      },
+      "larghezza_cm": 412,
+      "profondita_cm": 229,
+      "superficie_calcolata_mq": 9.43,
+      "superficie_quotata_mq": 9.74
+    },
+    "camera_sud": {
+      "nome": "Camera 16,52 (sud-est, matrimoniale)",
+      "rect": {
+        "x": 614,
+        "y": 665,
+        "w": 412,
+        "d": 412
+      },
+      "larghezza_cm": 412,
+      "profondita_cm": 412,
+      "superficie_calcolata_mq": 16.97,
+      "superficie_quotata_mq": 16.52,
+      "note": "letto matrimoniale, armadio sulla parete est disegnati; portafinestra sul balcone"
+    }
+  },
+  "porte": [
+    {
+      "id": "P-ingresso",
+      "tipo": "portoncino",
+      "muro": "E-sud-soggiorno",
+      "da": "pianerottolo_esterno",
+      "a": "soggiorno",
+      "orientamento": "orizzontale",
+      "x_da": 447,
+      "x_a": 558,
+      "luce_cm": 111,
+      "nota": "nessun battente disegnato; assunto apertura verso l'interno"
+    },
+    {
+      "id": "P-bagno",
+      "tipo": "interna",
+      "muro": "I-bagno-sud",
+      "da": "disimpegno",
+      "a": "bagno",
+      "orientamento": "orizzontale",
+      "x_da": 513,
+      "x_a": 599,
+      "luce_cm": 86,
+      "battente": "apre verso il bagno, cerniera a est"
+    },
+    {
+      "id": "P-dis",
+      "tipo": "interna",
+      "muro": "I-dis-ovest",
+      "da": "soggiorno",
+      "a": "disimpegno",
+      "orientamento": "verticale",
+      "y_da": 436,
+      "y_a": 524,
+      "luce_cm": 88,
+      "battente": "apre verso il soggiorno, cerniera a nord"
+    },
+    {
+      "id": "P-camera-nord",
+      "tipo": "interna",
+      "muro": "I-spina-camere",
+      "da": "disimpegno",
+      "a": "camera_nord",
+      "orientamento": "verticale",
+      "y_da": 303,
+      "y_a": 386,
+      "luce_cm": 83,
+      "battente": "apre verso la camera, cerniera a sud"
+    },
+    {
+      "id": "P-camera-est",
+      "tipo": "interna",
+      "muro": "I-spina-camere",
+      "da": "disimpegno",
+      "a": "camera_est",
+      "orientamento": "verticale",
+      "y_da": 426,
+      "y_a": 507,
+      "luce_cm": 81,
+      "battente": "apre verso la camera, cerniera a nord"
+    },
+    {
+      "id": "P-camera-sud",
+      "tipo": "interna",
+      "muro": "I-spina-camere",
+      "da": "soggiorno",
+      "a": "camera_sud",
+      "orientamento": "verticale",
+      "y_da": 843,
+      "y_a": 924,
+      "luce_cm": 81,
+      "battente": "apre verso la camera, cerniera a nord"
+    }
+  ],
+  "finestre": [
+    {
+      "id": "F-soggiorno-nord",
+      "stanza": "soggiorno",
+      "muro": "E-nord",
+      "x_da": 206,
+      "x_a": 330,
+      "larghezza_cm": 124,
+      "tipo": "finestra"
+    },
+    {
+      "id": "F-bagno-nord",
+      "stanza": "bagno",
+      "muro": "E-nord",
+      "x_da": 465,
+      "x_a": 536,
+      "larghezza_cm": 71,
+      "tipo": "finestra"
+    },
+    {
+      "id": "F-camera-nord",
+      "stanza": "camera_nord",
+      "muro": "E-nord",
+      "x_da": 689,
+      "x_a": 810,
+      "larghezza_cm": 121,
+      "tipo": "finestra"
+    },
+    {
+      "id": "F-cucina-ovest",
+      "stanza": "soggiorno",
+      "muro": "E-ovest",
+      "y_da": 467,
+      "y_a": 527,
+      "larghezza_cm": 60,
+      "tipo": "finestra",
+      "nota": "finestra stretta sopra il piano cucina"
+    },
+    {
+      "id": "PF-soggiorno-balcone",
+      "stanza": "soggiorno",
+      "muro": "E-ovest",
+      "y_da": 630,
+      "y_a": 751,
+      "larghezza_cm": 121,
+      "tipo": "portafinestra",
+      "verso": "balcone_ovest"
+    },
+    {
+      "id": "F-camera-est",
+      "stanza": "camera_est",
+      "muro": "E-est",
+      "y_da": 481,
+      "y_a": 595,
+      "larghezza_cm": 114,
+      "tipo": "finestra"
+    },
+    {
+      "id": "PF-camera-sud-balcone",
+      "stanza": "camera_sud",
+      "muro": "E-sud-camera-sud",
+      "x_da": 746,
+      "x_a": 888,
+      "larghezza_cm": 142,
+      "tipo": "portafinestra",
+      "verso": "balcone_sud_est"
+    },
+    {
+      "id": "F-soggiorno-sud",
+      "stanza": "soggiorno",
+      "muro": "E-sud-soggiorno",
+      "x_da": 145,
+      "x_a": 287,
+      "larghezza_cm": 142,
+      "tipo": "finestra",
+      "nota": "affaccia sul pianerottolo/scala esterna"
+    }
+  ],
+  "esterni": {
+    "balcone_ovest": {
+      "quota_piantina_mq": 4.47,
+      "rect": {
+        "x": -129,
+        "y": 568,
+        "w": 128,
+        "d": 382
+      },
+      "superficie_calcolata_mq": 4.89,
+      "accesso": "PF-soggiorno-balcone"
+    },
+    "balcone_sud_est": {
+      "quota_piantina_mq": 14,
+      "forma": "L",
+      "rettangoli": [
+        {
+          "x": 415,
+          "y": 1096,
+          "w": 760,
+          "d": 117
+        },
+        {
+          "x": 1051,
+          "y": 705,
+          "w": 124,
+          "d": 391
+        }
+      ],
+      "superficie_calcolata_mq": 13.74,
+      "accesso": "PF-camera-sud-balcone (e dal pianerottolo esterno)"
+    },
+    "sporgenza_nord_est": {
+      "rect": {
+        "x": 1052,
+        "y": 26,
+        "w": 123,
+        "d": 366
+      },
+      "superficie_calcolata_mq": 4.5,
+      "assunto": true,
+      "nota": "rettangolo non quotato a est della camera nord, senza porta: assunto tettoia/copertura non praticabile"
+    },
+    "pianerottolo_esterno": {
+      "rect": {
+        "x": 25,
+        "y": 965,
+        "w": 559,
+        "d": 132
+      },
+      "assunto": true,
+      "nota": "striscia sotto il soggiorno chiusa a ovest/est dai muri esterni e aperta a sud (linea tratteggiata): letta come pianerottolo esterno d'ingresso",
+      "scala_esterna_rampa1": {
+        "rect": {
+          "x": -8,
+          "y": 1096,
+          "w": 128,
+          "d": 267
+        },
+        "gradini": 12,
+        "direzione": "sale da sud verso nord"
+      },
+      "scala_esterna_rampa2": {
+        "rect": {
+          "x": 146,
+          "y": 971,
+          "w": 267,
+          "d": 103
+        },
+        "gradini": 10,
+        "pedata_cm": 27,
+        "direzione": "sale da ovest verso est fino al portoncino"
+      }
+    }
+  },
+  "arredi_disegnati_in_piantina": {
+    "soggiorno": [
+      "blocco cucina lineare sulla parete ovest (piano cottura a nord)",
+      "tavolo 6 posti in zona pranzo",
+      "divano 3 posti contro il muro sud"
+    ],
+    "bagno": [
+      "wc e bidet a nord",
+      "lavabo"
+    ],
+    "camera_nord": [
+      "letto matrimoniale",
+      "armadio a nord"
+    ],
+    "camera_sud": [
+      "letto matrimoniale",
+      "armadio a est"
+    ],
+    "camera_est": []
+  }
+}
