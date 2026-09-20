@@ -166,7 +166,7 @@ renderer.domElement.addEventListener('click', () => { if (modoFP && !fp.isLocked
 const viste = {
   soggiorno: { fp: [2.0, 7.6, 2.0, 3.0], orbit: [2.2, 5.2, 5.5, 5.6, 6.5] },
   cucina: { fp: [3.2, 2.4, 0.9, 1.4], orbit: [1.9, 2.2, 4.5, 3.4, 3.8] },
-  bagno: { fp: [5.7, 3.0, 5.2, 1.2], orbit: [5.4, 1.6, 6.6, 3.6, 3.0] },
+  bagno: { fp: [5.7, 2.6, 4.4, 1.0], orbit: [5.15, 1.5, 6.2, 4.6, 4.9] },
   disimpegno: { fp: [5.3, 4.9, 6.0, 3.4], orbit: [5.3, 4.1, 6.4, 4.4, 5.9] },
   camera_nord: { fp: [7.0, 3.5, 9.2, 2.0], orbit: [8.2, 2.3, 10.3, 5.0, 4.9] },
   camera_est: { fp: [7.2, 5.4, 9.3, 5.3], orbit: [8.2, 5.4, 10.4, 7.3, 7.0] },
