@@ -224,4 +224,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__casa = { scene, camera, renderer, colliders, vaiA, arch };
+window.__casa = { scene, camera, renderer, colliders, vaiA, arch, blocca, pos, luci: luciArtificiali };
