@@ -99,7 +99,7 @@ export function arredaCameraNord(ctx, stanze) {
   // applique sopra i comodini, tende, quadro, pianta, lampadario
   ctx.pareti.add(applique(ctx, bedX - 1.2, 1.7, zS - 0.02, 'z-', { intensita: 4 }));
   ctx.pareti.add(applique(ctx, bedX + 1.2, 1.7, zS - 0.02, 'z-', { intensita: 4 }));
-  ctx.pareti.add(tende(1.21, 1.6, 7.5, 1.6, R.z + 0.03, 'z+'));
+  ctx.pareti.add(tende(1.24, 2.2, 7.5, 1.15, R.z + 0.03, 'z+')); // portafinestra a tutta altezza
   ctx.pareti.add(quadro(0.6, 0.45, M.pietra, R.x + R.w - 0.03, 1.6, R.z + 1.6, 'x-'));
   g.add(pianta(R.x + R.w - 0.35, R.z + 1.5, { h: 0.9, vaso: 0.15 }));
   g.add(pendente(ctx, R.cx + 0.4, R.cz, { yTop: ctx.H, calata: 0.5, raggio: 0.22, intensita: 14, paralume: 'ottone' }));

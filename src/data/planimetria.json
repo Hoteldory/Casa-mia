@@ -8,7 +8,8 @@
     "legenda_assunto": "i campi con \"assunto\": true non sono leggibili in piantina e sono stimati",
     "modifiche_post_rilievo": [
       "rimossa F-cucina-ovest (finestra 60 cm sul muro ovest della cucina)",
-      "F-soggiorno-nord trasformata in portafinestra PF-soggiorno-nord verso il terrazzo nord"
+      "F-soggiorno-nord trasformata in portafinestra PF-soggiorno-nord verso il terrazzo nord",
+      "F-camera-nord trasformata in portafinestra PF-camera-nord (124 cm, come quella della cucina)"
     ]
   },
   "altezze": {
@@ -367,13 +368,16 @@
       "tipo": "finestra"
     },
     {
-      "id": "F-camera-nord",
+      "id": "PF-camera-nord",
       "stanza": "camera_nord",
       "muro": "E-nord",
-      "x_da": 689,
-      "x_a": 810,
-      "larghezza_cm": 121,
-      "tipo": "finestra"
+      "x_da": 688,
+      "x_a": 812,
+      "larghezza_cm": 124,
+      "tipo": "portafinestra",
+      "verso": "terrazzo_nord",
+      "nota": "modifica richiesta: era una finestra 121 cm, ora portafinestra delle stesse dimensioni di PF-soggiorno-nord",
+      "modifica_richiesta": true
     },
     {
       "id": "PF-soggiorno-balcone",
