@@ -213,10 +213,10 @@ const viste = {
   bagno: { fp: [5.7, 2.6, 4.4, 1.0], orbit: [5.15, 1.5, 6.2, 4.6, 4.9] },
   disimpegno: { fp: [5.3, 4.9, 6.0, 3.4], orbit: [5.3, 4.1, 6.4, 4.4, 5.9] },
   camera_nord: { fp: [7.0, 3.5, 9.2, 2.0], orbit: [8.2, 2.3, 10.3, 5.0, 4.9] },
-  camera_est: { fp: [6.9, 5.3, 9.0, 5.2], orbit: [8.4, 5.2, 11.2, 6.6, 7.4] },
+  camera_est: { fp: [9.6, 5.9, 7.4, 4.8], orbit: [8.4, 5.2, 11.4, 6.4, 7.6] },
   camera_sud: { fp: [7.0, 8.5, 9.3, 7.2], orbit: [8.2, 8.2, 10.5, 9.5, 11.2] },
 };
-const nomi = { soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e studio)', camera_sud: 'Camera sud (matrimoniale)' };
+const nomi = { soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e lavanderia)', camera_sud: 'Camera sud (matrimoniale)' };
 const divStanze = document.getElementById('stanze');
 for (const k of Object.keys(viste)) {
   const b = document.createElement('button');

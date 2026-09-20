@@ -16,7 +16,7 @@ const ESTERNO_NORMALE = {
 const r2m = (r) => ({ x: r.x * C, z: r.y * C, w: r.w * C, d: r.d * C, cx: (r.x + r.w / 2) * C, cz: (r.y + r.d / 2) * C });
 
 // Foro del vano scala nella camera est: attraversa soffitto e solaio di copertura
-export const VANO_SCALA = { x0: 7.55, x1: 9.25, z0: 4.30, z1: 5.92 };
+export const VANO_SCALA = { x0: 6.75, x1: 8.45, z0: 4.22, z1: 5.85 };
 
 // Spezza un rettangolo attorno a un foro rettangolare (fino a 4 pezzi)
 function pezziConForo(rx0, rz0, rx1, rz1, h) {
