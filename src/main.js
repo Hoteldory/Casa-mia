@@ -5,6 +5,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { costruisciArchitettura, H } from './architettura.js';
 import { arredi } from './arredi/index.js';
+import { creaPiantina } from './piantina.js';
 
 // ---------- contesto condiviso ----------
 const colliders = []; // {minX,maxX,minZ,maxZ,minY,maxY}
@@ -278,6 +279,27 @@ bp.onclick = () => {
 const bg = document.getElementById('btn-giorno');
 bg.onclick = () => { giorno = !giorno; applicaLuce(); bg.classList.toggle('on', giorno); bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera'; };
 
+// ---------- piantina quotata: pannello 2D separato, il modello resta intatto ----------
+let piantinaEl = null;
+let piantinaAperta = false;
+const btnPiantina = document.getElementById('btn-piantina');
+function mostraPiantina(on) {
+  if (on && !piantinaEl) {
+    piantinaEl = creaPiantina();
+    document.body.appendChild(piantinaEl);
+    piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
+    piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();
+  }
+  piantinaAperta = on;
+  document.body.classList.toggle('piantina', on);
+  btnPiantina.classList.toggle('on', on);
+  btnPiantina.textContent = on ? 'Torna al modello 3D' : 'Piantina quotata';
+  if (on && modoFP) esciFP();
+  if (!on) { tPrev = performance.now(); loop(); }
+}
+btnPiantina.onclick = () => mostraPiantina(!piantinaAperta);
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && piantinaAperta) mostraPiantina(false); });
+
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -289,6 +311,7 @@ let tPrev = performance.now();
 const fpsEl = document.getElementById('fps');
 let frames = 0, acc = 0;
 function loop() {
+  if (piantinaAperta) return; // niente rendering mentre si guarda la piantina
   const tNow = performance.now();
   const dt = Math.min((tNow - tPrev) / 1000, 0.05);
   tPrev = tNow;

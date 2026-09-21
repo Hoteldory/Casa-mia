@@ -31,13 +31,101 @@
     #mirino { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgba(239,233,221,0.8); display: none; pointer-events: none; }
     body.fp #mirino { display: block; }
     body.fp #pannello { opacity: 0.35; pointer-events: none; }
+    /* ---- piantina quotata ---- */
+    #piantina { position: fixed; inset: 0; z-index: 10; background: #fff; overflow: auto; display: none; color: #111; }
+    body.piantina #piantina { display: block; }
+    .pg-barra {
+      position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+      background: #fff; border-bottom: 1px solid #111; padding: 10px 18px calc(10px + env(safe-area-inset-top, 0px));
+      font-family: Georgia, serif;
+    }
+    .pg-barra strong { font-size: 16px; letter-spacing: 0.06em; }
+    .pg-nota { font-size: 12px; color: #555; flex: 1 1 260px; font-style: italic; }
+    .pg-barra button {
+      font-family: inherit; font-size: 13px; padding: 6px 12px; cursor: pointer;
+      background: #fff; color: #111; border: 1px solid #111; border-radius: 3px;
+    }
+    .pg-barra button:hover { background: #111; color: #fff; }
+    .pg-foglio { padding: 18px; max-width: 1500px; margin: 0 auto; }
+    .pg-foglio svg { width: 100%; height: auto; display: block; }
+    .pg-foglio h3 { font-family: Georgia, serif; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; margin: 28px 0 8px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+    .pg-tab { overflow-x: auto; }
+    .pg-foglio table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 13px; font-family: ui-monospace, monospace; }
+    .pg-foglio th, .pg-foglio td { border: 1px solid #bbb; padding: 4px 7px; text-align: left; }
+    .pg-foglio th { background: #f2f2f2; font-weight: normal; letter-spacing: 0.04em; }
+    /* stili del disegno */
+    .muroE, .muroI { fill: #141414; }
+    .stanza { fill: #fff; }
+    .esterno { fill: #fafafa; stroke: #141414; stroke-width: 2; stroke-dasharray: 18 10; vector-effect: non-scaling-stroke; }
+    .vano { fill: #fff; stroke: #141414; stroke-width: 3; vector-effect: non-scaling-stroke; }
+    .vuoto { fill: #fff; }
+    .vuotoL, .serr { stroke: #141414; stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
+    .battente { stroke: #141414; stroke-width: 5; vector-effect: non-scaling-stroke; }
+    .arco { fill: none; stroke: #141414; stroke-width: 2; stroke-dasharray: 12 8; vector-effect: non-scaling-stroke; }
+    .quota { stroke: #141414; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+    .quotaTxt { font-family: ui-monospace, monospace; font-size: 26px; fill: #141414; }
+    .nome { font-family: Georgia, serif; font-size: 30px; fill: #141414; letter-spacing: 2px; }
+    .nomeS { font-family: Georgia, serif; font-size: 25px; fill: #444; letter-spacing: 2px; }
+    .mis { font-family: ui-monospace, monospace; font-size: 24px; fill: #333; }
+    .bollo { fill: #fff; stroke: #141414; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .bolloTxt { font-family: ui-monospace, monospace; font-size: 19px; fill: #141414; }
+    .titolo { font-family: Georgia, serif; font-size: 62px; fill: #141414; letter-spacing: 8px; }
+    @media print {
+      #app, #pannello, #apri-pannello, #fps, #mirino { display: none !important; }
+      #piantina { display: block !important; position: static; overflow: visible; }
+      .pg-barra { display: none; }
+    }
     #apri-pannello {
       position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 3; display: none;
       background: rgba(239,233,221,0.94); color: #2b241d; border: 1px solid var(--ottone); border-radius: 4px;
       padding: 8px 12px; font-family: inherit; font-size: 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     @media (max-width: 700px), (max-height: 560px) {
-      #apri-pannello { display: block; }
+      /* ---- piantina quotata ---- */
+    #piantina { position: fixed; inset: 0; z-index: 10; background: #fff; overflow: auto; display: none; color: #111; }
+    body.piantina #piantina { display: block; }
+    .pg-barra {
+      position: sticky; top: 0; z-index: 2; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+      background: #fff; border-bottom: 1px solid #111; padding: 10px 18px calc(10px + env(safe-area-inset-top, 0px));
+      font-family: Georgia, serif;
+    }
+    .pg-barra strong { font-size: 16px; letter-spacing: 0.06em; }
+    .pg-nota { font-size: 12px; color: #555; flex: 1 1 260px; font-style: italic; }
+    .pg-barra button {
+      font-family: inherit; font-size: 13px; padding: 6px 12px; cursor: pointer;
+      background: #fff; color: #111; border: 1px solid #111; border-radius: 3px;
+    }
+    .pg-barra button:hover { background: #111; color: #fff; }
+    .pg-foglio { padding: 18px; max-width: 1500px; margin: 0 auto; }
+    .pg-foglio svg { width: 100%; height: auto; display: block; }
+    .pg-foglio h3 { font-family: Georgia, serif; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; margin: 28px 0 8px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+    .pg-tab { overflow-x: auto; }
+    .pg-foglio table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 13px; font-family: ui-monospace, monospace; }
+    .pg-foglio th, .pg-foglio td { border: 1px solid #bbb; padding: 4px 7px; text-align: left; }
+    .pg-foglio th { background: #f2f2f2; font-weight: normal; letter-spacing: 0.04em; }
+    /* stili del disegno */
+    .muroE, .muroI { fill: #141414; }
+    .stanza { fill: #fff; }
+    .esterno { fill: #fafafa; stroke: #141414; stroke-width: 2; stroke-dasharray: 18 10; vector-effect: non-scaling-stroke; }
+    .vano { fill: #fff; stroke: #141414; stroke-width: 3; vector-effect: non-scaling-stroke; }
+    .vuoto { fill: #fff; }
+    .vuotoL, .serr { stroke: #141414; stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
+    .battente { stroke: #141414; stroke-width: 5; vector-effect: non-scaling-stroke; }
+    .arco { fill: none; stroke: #141414; stroke-width: 2; stroke-dasharray: 12 8; vector-effect: non-scaling-stroke; }
+    .quota { stroke: #141414; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+    .quotaTxt { font-family: ui-monospace, monospace; font-size: 26px; fill: #141414; }
+    .nome { font-family: Georgia, serif; font-size: 30px; fill: #141414; letter-spacing: 2px; }
+    .nomeS { font-family: Georgia, serif; font-size: 25px; fill: #444; letter-spacing: 2px; }
+    .mis { font-family: ui-monospace, monospace; font-size: 24px; fill: #333; }
+    .bollo { fill: #fff; stroke: #141414; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .bolloTxt { font-family: ui-monospace, monospace; font-size: 19px; fill: #141414; }
+    .titolo { font-family: Georgia, serif; font-size: 62px; fill: #141414; letter-spacing: 8px; }
+    @media print {
+      #app, #pannello, #apri-pannello, #fps, #mirino { display: none !important; }
+      #piantina { display: block !important; position: static; overflow: visible; }
+      .pg-barra { display: none; }
+    }
+    #apri-pannello { display: block; }
       #pannello { display: none; width: min(250px, calc(100vw - 32px)); top: calc(52px + env(safe-area-inset-top, 0px)); max-height: calc(100% - 68px - env(safe-area-inset-top, 0px)); }
       body.pannello-aperto #pannello { display: block; }
       #pannello button { padding: 9px 10px; font-size: 14px; }
@@ -64,6 +152,8 @@
     <button id="btn-tetto" class="on">Tetto e soffitti</button>
     <button id="btn-pareti" class="on">Pareti intere</button>
     <button id="btn-giorno" class="on">Luce del giorno</button>
+    <h2>Verifica</h2>
+    <button id="btn-piantina">Piantina quotata</button>
     <div class="hint">Prima persona: clic sulla scena per catturare il mouse, WASD o frecce per muoversi, Shift per correre, Esc per uscire.</div>
     <div class="hint touch-hint">Un dito per ruotare, due dita per zoom e spostamento.</div>
   </div>
