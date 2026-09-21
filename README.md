@@ -29,6 +29,7 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 
 ```
 piantina.png                 riferimento
+piantina-terrazzo.jpg        piantina aggiornata, con il terrazzo nord
 src/data/planimetria.json    misure in cm (rilevate dalla piantina, scala 0,5922 cm/px)
 src/data/stile.js            palette, texture procedurali, materiali condivisi
 src/architettura.js          muri con aperture, pavimenti, soffitti, porte, finestre con scuri,
@@ -53,6 +54,7 @@ contro "circa 44"). Altezza soffitto **270 cm (assunta)**, muri esterni 25 cm, i
 | Camera nord-est | 412 × 378 | 15,57 | 15,43 |
 | Camera est | 412 × 229 | 9,43 | 9,74 |
 | Camera sud-est | 412 × 412 | 16,97 | 16,52 |
+| Terrazzo nord (con risega) | 634×684 + 594×384 | 66,18 | 67,12 |
 
 ## Il dettaglio di carattere di ogni stanza
 
