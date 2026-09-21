@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import plan from './data/planimetria.json';
 import { getMateriali, uvMetri, PALETTE, texVernice } from './data/stile.js';
 import { box, cyl, plane, group, lanterna } from './arredi/comune.js';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const C = 0.01; // cm -> m
 export const H = plan.altezze.soffitto_cm * C;
@@ -362,15 +363,18 @@ function esterni(ctx) {
     const x = topX0 - tread2 * (i + 0.5);
     g.add(box(tread2, 0.16, pm.d, matSoletta, x, yTop - 0.08, pm.cz));
   }
-  // pianerottolo intermedio (quota -1.7)
-  const midW = r2.x - pm.x;
-  g.add(box(midW, 0.16, pm.d, matSoletta, pm.x + midW / 2, -1.7 - 0.08, pm.cz));
+  // muro di sinistra della scala (definito qui perche' il pianerottolo ci si appoggia)
+  const mx0 = -0.25, mx1 = 0.03;                      // sovrapposto di 3 cm al filo della casa
+  // pianerottolo intermedio (quota -1.7): arriva fino al filo interno del muro
+  const midX0 = mx1, midW = r2.x - midX0;
+  g.add(box(midW, 0.16, pm.d, matSoletta, midX0 + midW / 2, -1.7 - 0.08, pm.cz));
   // rampa 1: scende verso sud, 12 gradini fino a -3.4
   const n1 = P.scala_esterna_rampa1.gradini, rise1 = 1.7 / n1, tread1 = r1.d / n1;
   for (let i = 0; i < n1; i++) {
     const yTop = -1.7 - rise1 * (i + 1);
     const z = r1.z + tread1 * (i + 0.5);
-    g.add(box(r1.w, 0.16, tread1, matSoletta, r1.cx, yTop - 0.08, z));
+    const gx0 = Math.min(r1.x, mx1), gw = r1.x + r1.w - gx0;
+    g.add(box(gw, 0.16, tread1, matSoletta, gx0 + gw / 2, yTop - 0.08, z));
   }
   // ringhiere: pianerottolo alto (lato sud), rampa 2 (lato sud, inclinata), pianerottolo intermedio
   g.add(ringhiera(topX0, pm.z + pm.d, b1.x, pm.z + pm.d, ctx));
@@ -378,17 +382,26 @@ function esterni(ctx) {
   ctx.addColliderBox(topX0 - 0.1, topX0, pm.z, pm.z + pm.d, 0, 1.2);
 
   // ---- salendo: muro pieno a sinistra, ringhiera a destra ----
-  // muro di sinistra, addossato al fabbricato e con la sommita' che segue i gradini
-  const mx0 = -0.25, mx1 = 0.03;                      // sovrapposto di 3 cm al filo della casa
+  // muro unico: tratto orizzontale sul pianerottolo, poi rampante liscio (nessun gradone)
   const cima = (yPiano) => yPiano + 1.05;
-  const muroScala = (za, zb, yTop) => {
-    if (zb - za < 0.01) return;
-    g.add(box(mx1 - mx0, yTop + 3.4, zb - za, M.intonacoEsterno, (mx0 + mx1) / 2, (yTop - 3.4) / 2, (za + zb) / 2));
-    ctx.addColliderBox(mx0, mx1, za, zb, -3.4, yTop);
-  };
-  muroScala(pm.z - 0.05, r1.z, cima(-1.7));            // lungo il pianerottolo intermedio
-  for (let i = 0; i < n1; i++) {                       // a gradoni lungo la rampa bassa
-    muroScala(r1.z + tread1 * i, r1.z + tread1 * (i + 1), cima(-1.7 - rise1 * (i + 1)));
+  {
+    const zA = pm.z - 0.05, zB = r1.z, zC = r1.z + r1.d;
+    const yBase = -3.6;
+    const sh = new THREE.Shape();
+    sh.moveTo(zA, yBase);
+    sh.lineTo(zA, cima(-1.7));
+    sh.lineTo(zB, cima(-1.7));
+    sh.lineTo(zC, cima(-3.4));
+    sh.lineTo(zC, yBase);
+    sh.closePath();
+    const sp = mx1 - mx0;
+    const gm = mergeVertices(new THREE.ExtrudeGeometry(sh, { depth: sp, bevelEnabled: false, curveSegments: 1 }));
+    gm.rotateY(-Math.PI / 2);                          // x della forma -> Z mondo, estrusione -> -X
+    const muro = new THREE.Mesh(gm, M.intonacoEsterno);
+    muro.position.x = mx1;
+    muro.castShadow = true; muro.receiveShadow = true;
+    g.add(muro);
+    ctx.addColliderBox(mx0, mx1, zA, zC, -3.4, cima(-1.7));
   }
   // ringhiera che segue una rampa, costruita lungo X e poi inclinata e orientata
   const ringhieraRampa = (xa, za, ya, xb, zb, yb, n) => {
@@ -419,10 +432,11 @@ function esterni(ctx) {
   ringhieraRampa(r1.x + r1.w, r1.z + r1.d, -3.4, r1.x + r1.w, r1.z, -1.7, n1);
   // volume del piano terra
   const I = plan.muri.ingombro_esterno;
-  // volume del piano terra: la faccia superiore resta 5 cm sotto i pavimenti (mai complanare)
-  const pt = box(I.larghezza_cm * C, 3.4, 9.65, M.intonacoEsterno, I.larghezza_cm * C / 2, -1.75, 9.65 / 2);
+  // volume del piano terra: la faccia superiore arriva esattamente a quota 0,
+  // continua con i muri del piano (i pavimenti stanno 5 mm piu' in alto, mai complanari)
+  const pt = box(I.larghezza_cm * C, 3.45, 9.65, M.intonacoEsterno, I.larghezza_cm * C / 2, -1.725, 9.65 / 2);
   g.add(pt);
-  const pt2 = box((I.larghezza_cm - 584) * C, 3.4, 1.32, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C, -1.75, 9.65 + 0.66);
+  const pt2 = box((I.larghezza_cm - 584) * C, 3.45, 1.32, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C, -1.725, 9.65 + 0.66);
   g.add(pt2);
   // finestre "cieche" al piano terra: semplici rientranze scure
   for (const [x, z, nx, nz] of [[10.51, 2.5, 1, 0], [10.51, 6, 1, 0], [0, 2.5, -1, 0], [0, 6, -1, 0]]) {
@@ -526,7 +540,7 @@ export function costruisciArchitettura(ctx) {
   const ceilMat = { disimpegno: M.salvia };
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {
-      floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0, r.cz, 'y+'));
+      floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0.005, r.cz, 'y+'));
       // soffitto 1 cm sotto la sommità dei muri: mai complanare con solaio o teste dei muri
       const matSoff = ceilMat[k] || M.intonacoSoffitto;
       if (k === 'camera_est') {
