@@ -374,11 +374,49 @@ function esterni(ctx) {
   }
   // ringhiere: pianerottolo alto (lato sud), rampa 2 (lato sud, inclinata), pianerottolo intermedio
   g.add(ringhiera(topX0, pm.z + pm.d, b1.x, pm.z + pm.d, ctx));
-  g.add(ringhiera(pm.x, pm.z, pm.x, pm.z + pm.d, ctx, { y: -1.7 }));
   // blocca la discesa in prima persona (si resta al piano)
   ctx.addColliderBox(topX0 - 0.1, topX0, pm.z, pm.z + pm.d, 0, 1.2);
-  // muro perimetrale della scala rampa1 (parapetto in muratura) e lato ovest
-  g.add(box(0.2, 3.4, r1.d, M.intonacoEsterno, r1.x - 0.1, -1.7, r1.cz));
+
+  // ---- salendo: muro pieno a sinistra, ringhiera a destra ----
+  // muro di sinistra, addossato al fabbricato e con la sommita' che segue i gradini
+  const mx0 = -0.25, mx1 = 0.03;                      // sovrapposto di 3 cm al filo della casa
+  const cima = (yPiano) => yPiano + 1.05;
+  const muroScala = (za, zb, yTop) => {
+    if (zb - za < 0.01) return;
+    g.add(box(mx1 - mx0, yTop + 3.4, zb - za, M.intonacoEsterno, (mx0 + mx1) / 2, (yTop - 3.4) / 2, (za + zb) / 2));
+    ctx.addColliderBox(mx0, mx1, za, zb, -3.4, yTop);
+  };
+  muroScala(pm.z - 0.05, r1.z, cima(-1.7));            // lungo il pianerottolo intermedio
+  for (let i = 0; i < n1; i++) {                       // a gradoni lungo la rampa bassa
+    muroScala(r1.z + tread1 * i, r1.z + tread1 * (i + 1), cima(-1.7 - rise1 * (i + 1)));
+  }
+  // ringhiera che segue una rampa, costruita lungo X e poi inclinata e orientata
+  const ringhieraRampa = (xa, za, ya, xb, zb, yb, n) => {
+    const dx = xb - xa, dz = zb - za, dy = yb - ya;
+    const L = Math.hypot(dx, dz), Ls = Math.hypot(L, dy);
+    const dentro = new THREE.Group();
+    dentro.add(box(Ls, 0.035, 0.05, M.ferro, 0, 1.0, 0));
+    dentro.add(box(Ls, 0.02, 0.02, M.ferro, 0, 0.1, 0));
+    for (let i = 0; i <= n; i++) {
+      const t = -Ls / 2 + (i / n) * Ls;
+      dentro.add(box(0.014, 0.9, 0.014, M.ferro, t, 0.55, 0));
+      if (i % 3 === 1) dentro.add(box(0.05, 0.05, 0.02, M.ferro, t, 0.6, 0).rotateX(Math.PI / 4));
+    }
+    dentro.rotation.z = Math.atan2(dy, L);
+    const fuori = new THREE.Group();
+    fuori.add(dentro);
+    fuori.position.set((xa + xb) / 2, (ya + yb) / 2, (za + zb) / 2);
+    fuori.rotation.y = Math.atan2(-dz, dx);
+    g.add(fuori);
+    ctx.addColliderBox(Math.min(xa, xb) - 0.05, Math.max(xa, xb) + 0.05,
+      Math.min(za, zb) - 0.05, Math.max(za, zb) + 0.05, Math.min(ya, yb), Math.max(ya, yb) + 1.05);
+  };
+  // rampa alta: salendo verso est, la destra e' il lato sud
+  ringhieraRampa(r2.x, pm.z + pm.d, -1.7, topX0, pm.z + pm.d, 0, n2);
+  // raccordo piano sul pianerottolo intermedio
+  g.add(ringhiera(r1.x + r1.w, pm.z + pm.d, r2.x, pm.z + pm.d, ctx, { y: -1.7 }));
+  // rampa bassa: salendo verso nord, la destra e' il lato est
+  ringhieraRampa(r1.x + r1.w, r1.z + r1.d, -3.4, r1.x + r1.w, r1.z, -1.7, n1);
   // volume del piano terra
   const I = plan.muri.ingombro_esterno;
   // volume del piano terra: la faccia superiore resta 5 cm sotto i pavimenti (mai complanare)
