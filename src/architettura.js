@@ -399,17 +399,60 @@ function esterni(ctx) {
   const pt2 = box((I.larghezza_cm - 584) * C, 3.4, 1.32, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C, -1.75, 9.65 + 0.66);
   g.add(pt2);
   // finestre "cieche" al piano terra: semplici rientranze scure
-  for (const [x, z, nx, nz] of [[2.1, 0, 0, -1], [4.5, 0, 0, -1], [7.5, 0, 0, -1], [10.51, 2.5, 1, 0], [10.51, 6, 1, 0], [0, 2.5, -1, 0], [0, 6, -1, 0]]) {
+  for (const [x, z, nx, nz] of [[10.51, 2.5, 1, 0], [10.51, 6, 1, 0], [0, 2.5, -1, 0], [0, 6, -1, 0]]) {
     const wnd = box(nx ? 0.04 : 1.2, 1.4, nz ? 0.04 : 1.2, M.nero, x + nx * 0.01, -1.6, z + nz * 0.01, { cast: false });
     g.add(wnd);
   }
+  g.add(terrazzoNord(ctx));
   // lanterne in ottone: ingresso, balcone a ovest e balcone a sud-est
   g.add(lanterna(ctx, 5.78, 2.15, 9.66, 'z+', { intensita: 16 }));
   g.add(lanterna(ctx, -0.01, 2.15, 7.85, 'x-', { intensita: 12 }));
   g.add(lanterna(ctx, 9.35, 2.15, 10.98, 'z+', { intensita: 12 }));
   // terreno
-  const ground = plane(60, 60, M.terreno, 5, -3.4, 5, 'y+');
+  const ground = plane(70, 70, M.terreno, 5, -3.4, 0, 'y+');
   g.add(ground);
+  return g;
+}
+
+// ---------- terrazzo a nord ----------
+// Solaio, pavimento in cotto e recinzione a muro pieno (piantina aggiornata, 67,12 mq).
+function terrazzoNord(ctx) {
+  const M = getMateriali();
+  const g = new THREE.Group();
+  const T = plan.esterni.terrazzo_nord;
+  const I = T.interno_cm;
+  const xO = I.x_ovest * C, zS = I.z_sud * C, zN = I.z_nord * C, zR = I.z_risega * C;
+  const xEs = I.x_est_tratto_sud * C, xEn = I.x_est_tratto_nord * C;
+  const sp = T.recinzione.spessore_cm * C, hm = T.recinzione.altezza_cm * C;
+  // solaio del terrazzo e volume del piano terra che lo regge
+  const x0 = xO - sp, x1 = xEs + sp, z0 = zN - sp, z1 = zS;
+  g.add(box(x1 - x0, 0.26, z1 - z0, M.intonacoEsterno, (x0 + x1) / 2, -0.13, (z0 + z1) / 2));
+  g.add(box(x1 - x0, 3.19, z1 - z0, M.intonacoEsterno, (x0 + x1) / 2, -1.855, (z0 + z1) / 2));
+  // pavimento in cotto, nei due tratti di larghezza diversa
+  g.add(plane(xEs - xO, zS - zR, M.cotto, (xO + xEs) / 2, 0.002, (zR + zS) / 2, 'y+'));
+  g.add(plane(xEn - xO, zR - zN, M.cotto, (xO + xEn) / 2, 0.002, (zN + zR) / 2, 'y+'));
+  // recinzione: anello di muri pieni, tratti adiacenti e mai sovrapposti
+  const muro = (a, c, b, d, cop) => {
+    g.add(box(b - a, hm, d - c, M.intonacoEsterno, (a + b) / 2, hm / 2, (c + d) / 2));
+    const [ca, cc, cb, cd] = cop; // copertina in pietra, aggetto solo verso l'esterno
+    g.add(box(cb - ca, 0.05, cd - cc, M.pietra, (ca + cb) / 2, hm + 0.025, (cc + cd) / 2));
+    ctx.addColliderBox(a, b, c, d, 0, hm);
+  };
+  const ag = 0.045;
+  muro(xO - sp, zN - sp, xO, zS, [xO - sp - ag, zN - sp, xO, zS]);         // ovest
+  muro(xO, zN - sp, xEn + sp, zN, [xO, zN - sp - ag, xEn + sp, zN]);       // nord
+  muro(xEn, zN, xEn + sp, zR - sp, [xEn, zN, xEn + sp + ag, zR - sp]);     // est, tratto nord
+  muro(xEn, zR - sp, xEs + sp, zR, [xEn, zR - sp, xEs + sp + ag, zR]);     // risega di 40 cm
+  muro(xEs, zR, xEs + sp, zS, [xEs, zR, xEs + sp + ag, zS]);               // est, tratto sud
+  // aperture del piano terra sotto il terrazzo, per non lasciare un volume cieco
+  for (const [wx, wz, nx, nz] of [[3.0, zN - sp, 0, -1], [5.2, zN - sp, 0, -1], [7.4, zN - sp, 0, -1],
+                                  [xO - sp, -8.2, -1, 0], [xO - sp, -5.4, -1, 0], [xO - sp, -2.6, -1, 0],
+                                  [xEs + sp, -8.2, 1, 0], [xEs + sp, -4.0, 1, 0]]) {
+    g.add(box(nx ? 0.04 : 1.2, 1.4, nz ? 0.04 : 1.2, M.nero, wx + nx * 0.01, -1.75, wz + nz * 0.01, { cast: false }));
+  }
+  // lanterne sul muro nord, in asse con le due portefinestre
+  g.add(lanterna(ctx, 2.68, 2.0, zN + 0.02, 'z+', { intensita: 13 }));
+  g.add(lanterna(ctx, 7.5, 2.0, zN + 0.02, 'z+', { intensita: 13 }));
   return g;
 }
 

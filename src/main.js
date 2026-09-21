@@ -232,6 +232,7 @@ renderer.domElement.addEventListener('click', () => { if (modoFP && !fp.isLocked
 
 // ---------- pannello ----------
 const viste = {
+  terrazzo: { fp: [2.7, -1.7, 5.4, -6.5], orbit: [4.9, -5.3, 4.9, 13.5, 3.5] },
   soggiorno: { fp: [2.0, 7.6, 2.0, 3.0], orbit: [2.2, 5.2, 5.5, 5.6, 6.5] },
   cucina: { fp: [3.2, 2.4, 0.9, 1.4], orbit: [1.9, 2.2, 4.5, 3.4, 3.8] },
   bagno: { fp: [5.7, 2.6, 4.4, 1.0], orbit: [5.15, 1.5, 6.2, 4.6, 4.9] },
@@ -240,7 +241,7 @@ const viste = {
   camera_est: { fp: [9.6, 5.9, 7.4, 4.8], orbit: [8.4, 5.2, 11.4, 6.4, 7.6] },
   camera_sud: { fp: [7.0, 8.5, 9.3, 7.2], orbit: [8.2, 8.2, 10.5, 9.5, 11.2] },
 };
-const nomi = { soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e lavanderia)', camera_sud: 'Camera sud (matrimoniale)' };
+const nomi = { terrazzo: 'Terrazzo (67 mq)', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e lavanderia)', camera_sud: 'Camera sud (matrimoniale)' };
 const divStanze = document.getElementById('stanze');
 for (const k of Object.keys(viste)) {
   const b = document.createElement('button');

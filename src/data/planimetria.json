@@ -11,8 +11,10 @@
       "F-soggiorno-nord trasformata in portafinestra PF-soggiorno-nord verso il terrazzo nord",
       "F-camera-nord trasformata in portafinestra PF-camera-nord (124 cm, come quella della cucina)",
       "aggiunta F-cucina-lavello sul muro ovest (124 cm, dal piano di lavoro a 90 cm fino a 220 cm) in asse con il lavello",
-      "camera est: scala a chiocciola esistente (diametro 150 cm) addossata al muro nord vicino alla porta, con foro nel solaio; lavatrice in colonna con vano predisposto per l'asciugatrice"
-    ]
+      "camera est: scala a chiocciola esistente (diametro 150 cm) addossata al muro nord vicino alla porta, con foro nel solaio; lavatrice in colonna con vano predisposto per l'asciugatrice",
+      "aggiunto il terrazzo nord da 67,12 mq della piantina aggiornata, con recinzione a muro pieno"
+    ],
+    "sorgente_terrazzo": "piantina-terrazzo.jpg (PIANO PRIMO aggiornato)"
   },
   "altezze": {
     "soffitto_cm": 270,
@@ -524,6 +526,39 @@
         "pedata_cm": 27,
         "direzione": "sale da ovest verso est fino al portoncino"
       }
+    },
+    "terrazzo_nord": {
+      "quota_piantina_mq": 67.12,
+      "forma": "rettangolo con risega di 40 cm sul lato est, a 684 cm dal fabbricato",
+      "interno_cm": {
+        "x_ovest": 180,
+        "z_sud": 0,
+        "z_nord": -1068,
+        "z_risega": -684,
+        "x_est_tratto_sud": 814,
+        "x_est_tratto_nord": 774
+      },
+      "quote_piantina": {
+        "larghezza_tratto_nord": 594,
+        "larghezza_tratto_sud": 634,
+        "profondita_totale": 1068,
+        "tratto_nord": 384,
+        "tratto_sud": 684,
+        "risega": 40
+      },
+      "superficie_calcolata_mq": 66.18,
+      "recinzione": {
+        "tipo": "muro pieno intonacato con copertina in pietra",
+        "spessore_cm": 30,
+        "altezza_cm": 110,
+        "assunto": true,
+        "nota": "spessore e altezza non quotati in piantina: assunti su misure correnti di parapetto"
+      },
+      "accesso": [
+        "PF-soggiorno-nord",
+        "PF-camera-nord"
+      ],
+      "nota": "il terrazzo e' a quota del piano primo, a nord del fabbricato, e copre le tre aperture del fronte nord"
     }
   },
   "arredi_disegnati_in_piantina": {
