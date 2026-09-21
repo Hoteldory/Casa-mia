@@ -76,7 +76,7 @@ export function arredaCameraEst(ctx, stanze) {
   // parete nord in terracotta bruciata: fondo per la scala bianca
   ctx.pareti.add(plane(R.w, ctx.H, M.terracottaPittura, R.cx, ctx.H / 2, R.z + 0.02, 'z+'));
   // scala a chiocciola bianca addossata al muro nord, vicino alla porta
-  g.add(scalaChiocciola(ctx, { cx: 7.6, cz: 5.01, r: 0.75, partenza: 250 }));
+  g.add(scalaChiocciola(ctx, { cx: 7.6, cz: 5.01, r: 0.75, partenza: 349 })); // primo gradino verso sud
   // colonna lavanderia sulla parete nord, subito a est della scala
   g.add(colonnaLavatrice(ctx, { x: 8.92, z: R.z + 0.34 }));
   // angolo studio sotto la finestra a est
