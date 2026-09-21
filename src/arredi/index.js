@@ -6,6 +6,7 @@ import { arredaDisimpegno } from './disimpegno.js';
 import { arredaCameraNord } from './camera_nord.js';
 import { arredaCameraSud } from './camera_sud.js';
 import { arredaCameraEst } from './camera_est.js';
+import { arredaTerrazzo } from './terrazzo.js';
 export function arredi(ctx, stanze) {
   return [
     arredaCucina(ctx, stanze),
@@ -15,5 +16,6 @@ export function arredi(ctx, stanze) {
     arredaCameraNord(ctx, stanze),
     arredaCameraSud(ctx, stanze),
     arredaCameraEst(ctx, stanze),
+    arredaTerrazzo(ctx),
   ];
 }

@@ -450,9 +450,6 @@ function terrazzoNord(ctx) {
                                   [xEs + sp, -8.2, 1, 0], [xEs + sp, -4.0, 1, 0]]) {
     g.add(box(nx ? 0.04 : 1.2, 1.4, nz ? 0.04 : 1.2, M.nero, wx + nx * 0.01, -1.75, wz + nz * 0.01, { cast: false }));
   }
-  // lanterne sul muro nord, in asse con le due portefinestre
-  g.add(lanterna(ctx, 2.68, 2.0, zN + 0.02, 'z+', { intensita: 13 }));
-  g.add(lanterna(ctx, 7.5, 2.0, zN + 0.02, 'z+', { intensita: 13 }));
   return g;
 }
 

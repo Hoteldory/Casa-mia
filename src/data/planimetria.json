@@ -550,15 +550,16 @@
       "recinzione": {
         "tipo": "muro pieno intonacato con copertina in pietra",
         "spessore_cm": 30,
-        "altezza_cm": 110,
+        "altezza_cm": 90,
         "assunto": true,
-        "nota": "spessore e altezza non quotati in piantina: assunti su misure correnti di parapetto"
+        "nota": "spessore e altezza non quotati in piantina: assunti (muro basso, 90 cm)"
       },
       "accesso": [
         "PF-soggiorno-nord",
         "PF-camera-nord"
       ],
-      "nota": "il terrazzo e' a quota del piano primo, a nord del fabbricato, e copre le tre aperture del fronte nord"
+      "nota": "il terrazzo e' a quota del piano primo, a nord del fabbricato, e copre le tre aperture del fronte nord",
+      "nota_area": "con le quote scritte l'area calpestabile e' 66,18 mq; i 67,12 quotati si ottengono misurando il lato sud 15 cm oltre il filo del fabbricato, cioe' fino all'asse del muro"
     }
   },
   "arredi_disegnati_in_piantina": {
