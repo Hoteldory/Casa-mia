@@ -223,9 +223,6 @@ export function arredaSoggiorno(ctx, stanze) {
   const bo = boiserie(ctx, { w: bw, h: ctx.H, colonne: 4, finestra: [1.45 - R.cx, 2.87 - R.cx, 0.9, 2.3] });
   bo.position.set(R.cx, 0, zS); bo.rotation.y = Math.PI;
   ctx.pareti.add(bo);
-  // boiserie anche sulla parete sud dell'appendice est e lato ovest del living
-  const bo2 = boiserie(ctx, { w: B.w, h: ctx.H, colonne: 2 });
-  bo2.position.set(B.cx, 0, zS); bo2.rotation.y = Math.PI; ctx.pareti.add(bo2);
   // divano sotto la finestra sud, tappeto, tavolino, poltrone
   g.add(divano(ctx, 2.16, zS - 0.5, Math.PI));
   g.add(tappeto(3.0, 1.8, M.lino, 2.16, zS - 1.2, M.linoTortora));
@@ -247,11 +244,6 @@ export function arredaSoggiorno(ctx, stanze) {
   g.add(libreria(ctx, { w: 1.35, x: B.cx, z: B.z + 0.2 }));
   g.add(lampadaTerra(ctx, B.x + 0.3, B.z + 0.9));
   g.add(tappeto(1.2, 1.4, M.linoTortora, B.cx, B.z + 1.5));
-  // credenza sulla parete sud dell'appendice, con lampada e quadro
-  g.add(credenza(ctx, { w: 1.2, x: B.cx - 0.05, z: zS - 0.25, ry: Math.PI }));
-  g.add(lampadaTavolo(ctx, B.cx - 0.45, 0.85, zS - 0.25, { colore: 'bianco', intensita: 4, h: 0.45 }));
-  g.add(cyl(0.09, 0.07, 0.3, M.ceramicaSalvia, B.cx + 0.3, 1.0, zS - 0.25, 16));
-  ctx.pareti.add(quadro(0.7, 0.5, M.pietra, B.cx - 0.05, 1.7, zS - 0.03, 'z-'));
   // tenda alla portafinestra ovest e alla finestra sud
   ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+'));
   ctx.pareti.add(tende(1.42, 1.5, 2.16, 1.62, zS - 0.03, 'z-'));

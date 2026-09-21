@@ -374,18 +374,6 @@ function esterni(ctx) {
   }
   // ringhiere: pianerottolo alto (lato sud), rampa 2 (lato sud, inclinata), pianerottolo intermedio
   g.add(ringhiera(topX0, pm.z + pm.d, b1.x, pm.z + pm.d, ctx));
-  const slope = new THREE.Group();
-  const L2 = Math.hypot(r2.w, 1.7);
-  const rail = box(L2, 0.035, 0.05, M.ferro, 0, 1.0, 0);
-  slope.add(rail);
-  for (let i = 0; i <= n2; i++) {
-    const t = -L2 / 2 + (i / n2) * L2;
-    slope.add(box(0.014, 0.95, 0.014, M.ferro, t, 0.5, 0));
-  }
-  slope.position.set(topX0 - r2.w / 2, -0.85, pm.z + pm.d);
-  slope.rotation.z = Math.atan2(1.7, r2.w);
-  g.add(slope);
-  g.add(ringhiera(pm.x, pm.z + pm.d, r1.x + r1.w, pm.z + pm.d, ctx, { y: -1.7 }));
   g.add(ringhiera(pm.x, pm.z, pm.x, pm.z + pm.d, ctx, { y: -1.7 }));
   // blocca la discesa in prima persona (si resta al piano)
   ctx.addColliderBox(topX0 - 0.1, topX0, pm.z, pm.z + pm.d, 0, 1.2);
