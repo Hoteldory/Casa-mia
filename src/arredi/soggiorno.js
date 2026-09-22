@@ -198,9 +198,10 @@ export function mobileTv(ctx, { x, z, w = 1.6, d = 0.46, h = 0.46, ry = 0 }) {
 }
 
 // ---- televisore OLED 55 pollici (schermo spento, scocca sottile) ----
+const SCOCCA = new THREE.MeshStandardMaterial({ color: '#2b2e30', roughness: 0.5, metalness: 0.4 });
+const SCHERMO = new THREE.MeshStandardMaterial({ color: '#0a0c0d', roughness: 0.14, metalness: 0.55 });
 export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
-  const scocca = new THREE.MeshStandardMaterial({ color: '#2b2e30', roughness: 0.5, metalness: 0.4 });
-  const schermo = new THREE.MeshStandardMaterial({ color: '#0a0c0d', roughness: 0.14, metalness: 0.55 });
+  const scocca = SCOCCA, schermo = SCHERMO;
   const g = new THREE.Group();
   g.add(box(0.36, 0.014, 0.19, scocca, 0, 0.007, 0));       // piastra di appoggio
   g.add(box(0.09, 0.08, 0.035, scocca, 0, 0.054, 0));        // collo
@@ -210,6 +211,81 @@ export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
   g.add(box(w - 0.14, h * 0.33, 0.028, scocca, 0, y0 + h * 0.18, -0.023)); // elettronica
   g.position.set(x, y, z);
   g.rotation.y = ry;
+  return g;
+}
+
+// ---- televisore 55 pollici a staffa: pannello centrato sull'origine, vista verso +Z locale ----
+export function tvMuro(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
+  const g = new THREE.Group();
+  g.add(box(w, h, 0.011, SCOCCA, 0, 0, 0.0055));
+  g.add(box(w - 0.016, h - 0.016, 0.004, SCHERMO, 0, 0, 0.013));
+  g.add(box(w - 0.14, h * 0.33, 0.028, SCOCCA, 0, -h * 0.14, -0.014)); // elettronica e staffa
+  g.position.set(x, y, z);
+  g.rotation.y = ry;
+  return g;
+}
+
+// ---- quinta in cartongesso bifacciale (V2): setto autoportante alto 1,70 m con una nicchia
+// per lato, fondo in salvia e TV incassata; mensola in noce su reggimensola in ottone,
+// zoccolo in noce e copertina in pietra. Divide pranzo e soggiorno senza chiudere lo spazio. ----
+export function quintaTv(ctx, { x, z, w = 2.0, sp = 0.2, h = 1.7, ry = 0 }) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const nw = 1.42, nh = 0.86, ny = 1.08, prof = 0.06; // nicchia: larghezza, altezza, quota del centro, profondita'
+  const ny0 = ny - nh / 2, ny1 = ny + nh / 2;
+  // corpo intonacato: quattro montanti a tutto spessore attorno alle nicchie
+  const pieno = (x0, x1, y0, y1) => g.add(box(x1 - x0, y1 - y0, sp, M.intonaco, (x0 + x1) / 2, (y0 + y1) / 2, 0));
+  pieno(-w / 2, -nw / 2, 0, h);
+  pieno(nw / 2, w / 2, 0, h);
+  pieno(-nw / 2, nw / 2, 0, ny0);
+  pieno(-nw / 2, nw / 2, ny1, h);
+  // setto centrale: e' il fondo delle due nicchie, tinteggiato in salvia
+  g.add(box(nw, nh, sp - 2 * prof, M.salvia, 0, ny, 0));
+  // zoccolo in noce e copertina in pietra (compenetrati, mai complanari con il corpo)
+  g.add(box(w + 0.02, 0.1, sp + 0.02, M.noceScuro, 0, 0.05, 0));
+  g.add(box(w + 0.07, 0.055, sp + 0.07, M.pietra, 0, h + 0.0175, 0));
+  // una TV incassata per lato: a sud verso il divano, a nord verso il tavolo e la cucina
+  g.add(tvMuro(ctx, { x: 0, y: ny, z: sp / 2 - 0.045 }));
+  g.add(tvMuro(ctx, { x: 0, y: ny, z: -(sp / 2 - 0.045), ry: Math.PI }));
+  // mensola in noce sotto ogni nicchia, con reggimensola in ottone
+  for (const s of [-1, 1]) {
+    const zf = s * (sp / 2 + 0.12);
+    g.add(box(nw - 0.06, 0.04, 0.24, M.noce, 0, 0.55, zf));
+    for (const dx of [-(nw / 2 - 0.22), nw / 2 - 0.22]) {
+      g.add(box(0.018, 0.018, 0.2, M.ottone, dx, 0.523, s * (sp / 2 + 0.1)));
+      g.add(box(0.018, 0.16, 0.018, M.ottone, dx, 0.445, s * (sp / 2 + 0.012)));
+    }
+  }
+  // oggetti sulle mensole, tenuti bassi per non salire davanti allo schermo:
+  // lato soggiorno libri coricati e ciotola, lato pranzo vasetti e vassoio
+  for (let i = 0; i < 3; i++) g.add(box(0.26, 0.03, 0.19, i % 2 ? M.linoTortora : M.cuoio, -0.36, 0.585 + i * 0.03, sp / 2 + 0.12));
+  g.add(cyl(0.11, 0.08, 0.06, M.ceramicaSalvia, 0.42, 0.6, sp / 2 + 0.12, 18));
+  for (let i = 0; i < 3; i++) g.add(cyl(0.05, 0.045, 0.08 + i * 0.025, M.ceramica, -0.46 + i * 0.16, 0.61 + i * 0.0125, -(sp / 2 + 0.12), 14));
+  g.add(box(0.24, 0.02, 0.18, M.rovere, 0.36, 0.58, -(sp / 2 + 0.12)));
+  // sulla copertina: una pianta ricadente e due vasi in ceramica
+  const pl = pianta(-w / 2 + 0.3, 0, { h: 0.5, vaso: 0.1 });
+  pl.position.y = h + 0.045;
+  g.add(pl);
+  g.add(cyl(0.07, 0.05, 0.2, M.ceramicaSalvia, w / 2 - 0.32, h + 0.145, 0, 16));
+  g.add(cyl(0.05, 0.04, 0.13, M.ceramica, w / 2 - 0.17, h + 0.11, 0.035, 14));
+  place(g, x, z, ry);
+  ctx.solid(g);
+  return g;
+}
+
+// ---- zona TV, variante V1: mobiletto in noce e rete d'ottone con la TV appoggiata ----
+export function tvV1(ctx) {
+  const g = new THREE.Group();
+  const tvZ = 6.95;
+  g.add(mobileTv(ctx, { x: 2.16, z: tvZ, w: 1.6, d: 0.46, h: 0.46 }));
+  g.add(tvOled(ctx, { x: 2.16, y: 0.495, z: tvZ - 0.03 }));
+  return g;
+}
+
+// ---- zona TV, variante V2: quinta in cartongesso con una TV per lato ----
+export function tvV2(ctx) {
+  const g = new THREE.Group();
+  g.add(quintaTv(ctx, { x: 2.16, z: 7.0, w: 2.0, sp: 0.2, h: 1.7 }));
   return g;
 }
 
@@ -227,10 +303,6 @@ export function arredaSoggiorno(ctx, stanze) {
   g.add(divano(ctx, 2.16, zS - 0.5, Math.PI));
   g.add(tappeto(3.0, 1.8, M.lino, 2.16, zS - 1.2, M.linoTortora));
   g.add(tavolino(ctx, 2.16, zS - 1.45));
-  // mobile TV davanti al divano, fa anche da separazione con la zona pranzo
-  const tvZ = 6.95;
-  g.add(mobileTv(ctx, { x: 2.16, z: tvZ, w: 1.6, d: 0.46, h: 0.46 }));
-  g.add(tvOled(ctx, { x: 2.16, y: 0.495, z: tvZ - 0.03 }));
   // consolle sulla parete ovest tra portafinestra e angolo, con lampada e pianta
   g.add(consolle(ctx, { w: 0.9, x: R.x + 0.17, z: 8.4, ry: Math.PI / 2 }));
   g.add(lampadaTavolo(ctx, R.x + 0.17, 0.82, 8.1, { colore: 'salvia', intensita: 5 }));

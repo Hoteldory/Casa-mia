@@ -22,8 +22,28 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 - **Orbita** (default): trascina per ruotare, rotella per zoom, tasto destro per traslare.
 - **Prima persona**: clic sulla scena per catturare il mouse; `W A S D` o frecce per muoversi,
   `Shift` per correre, `Esc` per uscire. Altezza occhio 165 cm, collisioni con muri, ringhiere e arredi.
-- **Pannello laterale**: salto rapido a ogni stanza, toggle tetto/soffitti, toggle pareti intere
-  (pareti a 45 cm per la vista dall'alto), toggle luce del giorno / luce della sera.
+- **Pannello laterale**: scelta della versione (V1/V2), salto rapido a ogni stanza,
+  toggle tetto/soffitti, toggle pareti intere (pareti a 45 cm per la vista dall'alto),
+  toggle luce del giorno / luce della sera, piantina quotata.
+
+## Le due versioni
+
+Il modello e' uno solo: cambia l'arredo della zona giorno, con il selettore in cima al pannello.
+
+| | V1 · originale | V2 · quinta TV |
+|---|---|---|
+| Isola | 2,10 m, tre sgabelli | 1,30 m, due sgabelli |
+| Tavolo | 2,20 x 1,00 m, sei posti comodi | 2,40 x 1,10 m, otto posti, piu' centrale |
+| TV | mobiletto in noce e rete d'ottone, una TV verso il divano | quinta in cartongesso alta 1,70 m con una nicchia per lato: una TV verso il divano e una verso il tavolo e la cucina |
+| Passaggio isola-tavolo | 75 cm | 130 cm |
+
+La quinta della V2 e' un setto autoportante da 20 cm: corpo intonacato, nicchie con fondo in
+salvia e TV incassata a filo, mensola in noce su reggimensola in ottone, zoccolo in noce e
+copertina in pietra. Resta alta 1,70 m per non chiudere la vista fra cucina e soggiorno.
+
+Le due versioni convivono in scena in due gruppi distinti: si accende solo quella scelta, e
+ingombri per le collisioni e punti luce sono marchiati con la versione, cosi' la V2 non lascia
+muri invisibili quando si guarda la V1 (e viceversa).
 
 ## Struttura
 
@@ -36,7 +56,7 @@ src/architettura.js          muri con aperture, pavimenti, soffitti, porte, fine
                              battiscopa, travi, balconi, pianerottolo e scala esterna
 src/arredi/comune.js         helper geometrici e oggetti ricorrenti (lampade, tende, quadri…)
 src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Group
-src/arredi/index.js          registro delle stanze
+src/arredi/index.js          registro delle stanze e delle due versioni (V1 / V2)
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
 ```
 

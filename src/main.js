@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { costruisciArchitettura, H } from './architettura.js';
-import { arredi } from './arredi/index.js';
+import { arredi, VERSIONI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
 
 // ---------- contesto condiviso ----------
@@ -13,24 +13,25 @@ const luciArtificiali = []; // punti luce accesi di sera
 const emissivi = [];        // lampadine e paralumi che si illuminano di sera
 const ctx = {
   H,
+  variante: null, // 'v1' | 'v2' mentre si costruisce un arredo specifico di una versione
   addCollider(mesh) {
     mesh.updateMatrixWorld(true);
     const b = new THREE.Box3().setFromObject(mesh);
-    colliders.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, minY: b.min.y, maxY: b.max.y });
+    colliders.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, minY: b.min.y, maxY: b.max.y, v: this.variante });
   },
   addColliderBox(minX, maxX, minZ, maxZ, minY = 0, maxY = 2) {
-    colliders.push({ minX, maxX, minZ, maxZ, minY, maxY });
+    colliders.push({ minX, maxX, minZ, maxZ, minY, maxY, v: this.variante });
   },
   // ingombro solido di un arredo (in coordinate mondo, da chiamare dopo il posizionamento)
   solid(obj) {
     obj.updateMatrixWorld(true);
     const b = new THREE.Box3().setFromObject(obj);
-    colliders.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, minY: b.min.y, maxY: b.max.y });
+    colliders.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, minY: b.min.y, maxY: b.max.y, v: this.variante });
     return obj;
   },
   addLight(light, bulb, shade) {
     light.castShadow = false;
-    luciArtificiali.push({ light, base: light.intensity, bulb });
+    luciArtificiali.push({ light, base: light.intensity, bulb, v: this.variante });
     emissivi.push({ bulb, shade });
   },
   pareti: null, // gruppo per elementi appesi ai muri (boiserie, carta, quadri)
@@ -58,8 +59,9 @@ ctx.pareti = new THREE.Group();
 arch.walls.add(ctx.pareti);
 scene.add(arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior);
 arch.wallsLow.visible = false;
-const gruppiArredi = arredi(ctx, arch.stanze);
+const { comuni: gruppiArredi, varianti } = arredi(ctx, arch.stanze);
 for (const g of gruppiArredi) scene.add(g);
+for (const g of Object.values(varianti)) scene.add(g);
 
 // ---------- ottimizzazione: fonde le mesh statiche per materiale (meno draw call) ----------
 function ottimizza(root) {
@@ -86,7 +88,7 @@ function ottimizza(root) {
     root.add(m);
   }
 }
-for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi]) ottimizza(g);
+for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi, ...Object.values(varianti)]) ottimizza(g);
 
 // luci artificiali vicine tra loro (< 1.5 m) vengono fuse in una sola: meno luci nello shader
 {
@@ -94,7 +96,7 @@ for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.ext
   const pa = new THREE.Vector3(), pb = new THREE.Vector3();
   for (const l of luciArtificiali) {
     l.light.getWorldPosition(pa);
-    const vicina = tenute.find((t) => t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
+    const vicina = tenute.find((t) => t.v === l.v && t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
     if (vicina) { vicina.base = Math.max(vicina.base, l.base) * 1.12; l.light.removeFromParent(); }
     else tenute.push(l);
   }
@@ -185,6 +187,7 @@ const pos = new THREE.Vector3(2.2, EYE, 5.6);
 
 function blocca(x, z) {
   for (const c of colliders) {
+    if (c.v && c.v !== versione) continue;
     if (c.minY >= EYE - 0.1 || c.maxY <= 0.3) continue;
     if (x + RADIUS > c.minX && x - RADIUS < c.maxX && z + RADIUS > c.minZ && z - RADIUS < c.maxZ) return true;
   }
@@ -261,6 +264,24 @@ function vaiA(k) {
     camera.position.set(v.orbit[2], v.orbit[3], v.orbit[4]);
   }
 }
+// ---------- versione dell'arredo (V1 / V2) ----------
+let versione = 'v1';
+const bottoniVersione = { v1: document.getElementById('btn-v1'), v2: document.getElementById('btn-v2') };
+const notaVersione = document.getElementById('nota-versione');
+function applicaVersione(v) {
+  versione = v;
+  for (const k of Object.keys(varianti)) {
+    varianti[k].visible = k === v;
+    bottoniVersione[k].classList.toggle('on', k === v);
+  }
+  notaVersione.textContent = VERSIONI[v].nota;
+}
+for (const k of Object.keys(bottoniVersione)) {
+  bottoniVersione[k].textContent = VERSIONI[k].nome;
+  bottoniVersione[k].onclick = () => applicaVersione(k);
+}
+applicaVersione('v1');
+
 document.getElementById('btn-orbit').onclick = () => esciFP();
 const apri = document.getElementById('apri-pannello');
 apri.onclick = () => { const on = document.body.classList.toggle('pannello-aperto'); apri.textContent = on ? 'Chiudi' : 'Menu'; };
@@ -322,4 +343,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__casa = { scene, camera, renderer, colliders, vaiA, arch, blocca, pos, orbit, luci: luciArtificiali };
+window.__casa = { scene, camera, renderer, colliders, vaiA, arch, blocca, pos, orbit, varianti, applicaVersione, luci: luciArtificiali };

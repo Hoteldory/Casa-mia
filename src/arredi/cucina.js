@@ -162,11 +162,12 @@ export function isola(ctx, { x0, z0, z1, d = 0.8, sbalzo = 0.3 }) {
   }
   // top in pietra spessore 6 cm, con sbalzo verso gli sgabelli
   g.add(box(d + sbalzo + 0.04, 0.06, L + 0.06, M.pietra, x0 + (d + sbalzo + 0.04) / 2 - 0.02, Hb + 0.03, cz));
-  // oggetti: ciotola con frutta, tagliere, bottiglia
-  g.add(cyl(0.16, 0.1, 0.07, M.ceramicaSalvia, cx + 0.05, Hb + 0.095, cz - 0.4, 20));
-  for (let i = 0; i < 6; i++) g.add(sphere(0.04, i % 2 ? M.cotto : M.senape || M.cotto, cx + 0.05 + Math.cos(i) * 0.06, Hb + 0.14, cz - 0.4 + Math.sin(i * 1.7) * 0.06, 10));
-  g.add(box(0.25, 0.025, 0.4, M.rovere, cx, Hb + 0.07, cz + 0.4));
-  g.add(cyl(0.035, 0.035, 0.26, M.verdeVetro || M.vetro, cx - 0.2, Hb + 0.19, cz + 0.7, 12));
+  // oggetti: ciotola con frutta, tagliere, bottiglia (rientrano anche nell'isola corta)
+  const q1 = Math.min(0.4, L / 2 - 0.25), q2 = Math.min(0.7, L / 2 - 0.2);
+  g.add(cyl(0.16, 0.1, 0.07, M.ceramicaSalvia, cx + 0.05, Hb + 0.095, cz - q1, 20));
+  for (let i = 0; i < 6; i++) g.add(sphere(0.04, i % 2 ? M.cotto : M.senape || M.cotto, cx + 0.05 + Math.cos(i) * 0.06, Hb + 0.14, cz - q1 + Math.sin(i * 1.7) * 0.06, 10));
+  g.add(box(0.25, 0.025, 0.4, M.rovere, cx, Hb + 0.07, cz + q1));
+  g.add(cyl(0.035, 0.035, 0.26, M.verdeVetro || M.vetro, cx - 0.2, Hb + 0.19, cz + q2, 12));
   ctx.solid(box(d + sbalzo, Hb, L, M.nero, x0 + (d + sbalzo) / 2, Hb / 2, cz, { cast: false })).visible = false;
   return g;
 }
@@ -246,6 +247,13 @@ export function arredaCucina(ctx, stanze) {
   g.add(cappaMuratura(ctx, { x: xW, z: hobZ }));
   g.add(mensole(ctx, { x: xW, z0: 1.7, z1: 2.85 })); // si fermano prima della finestra sul lavello
   g.add(colonne(ctx, { x1: xE, z0: R.z + 0.05, z1: R.z + 1.35 }));
+  return g;
+}
+
+// ---- isola + zona pranzo, variante V1: isola da 2,10 m con tre sgabelli, tavolo da 2,20 m ----
+export function zonaPranzoV1(ctx) {
+  const g = new THREE.Group();
+  const H = ctx.H;
   const isoX0 = 1.75, isoZ0 = 1.8, isoZ1 = 3.9;
   g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1 }));
   for (let i = 0; i < 3; i++) g.add(sgabello(ctx, isoX0 + 0.8 + 0.3 + 0.12, isoZ0 + 0.4 + i * 0.65));
@@ -259,10 +267,33 @@ export function arredaCucina(ctx, stanze) {
   g.add(sedia(ctx, tx - 1.4, tz, Math.PI / 2));
   g.add(sedia(ctx, tx + 1.4, tz, -Math.PI / 2));
   // lampade: due campane in ceramica sull'isola, due sul tavolo
-  const H = ctx.H;
   g.add(pendente(ctx, isoX0 + 0.45, isoZ0 + 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
   g.add(pendente(ctx, isoX0 + 0.45, isoZ1 - 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
   g.add(pendente(ctx, tx - 0.5, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
   g.add(pendente(ctx, tx + 0.5, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  return g;
+}
+
+// ---- isola + zona pranzo, variante V2: isola ridotta a 1,30 m (piano di lavoro e appoggio,
+// due sgabelli) e tavolo da 2,40 m per otto, al centro della stanza con passaggi piu' larghi ----
+export function zonaPranzoV2(ctx) {
+  const g = new THREE.Group();
+  const H = ctx.H;
+  const isoX0 = 1.8, isoD = 0.75, isoSb = 0.28, isoZ0 = 1.75, isoZ1 = 3.05;
+  g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1, d: isoD, sbalzo: isoSb }));
+  const sgX = isoX0 + isoD + isoSb + 0.12;
+  for (let i = 0; i < 2; i++) g.add(sgabello(ctx, sgX, isoZ0 + 0.33 + i * 0.64));
+  // il tavolo guadagna 20 cm di lato lungo e 10 di profondita': otto posti veri
+  const tz = 5.15, tx = 2.2, L = 2.4, W = 1.1;
+  g.add(tavolo(ctx, { cx: tx, cz: tz, L, W, ry: Math.PI / 2 }));
+  for (let i = 0; i < 3; i++) {
+    g.add(sedia(ctx, tx - 0.75 + i * 0.75, tz - 0.8, 0));
+    g.add(sedia(ctx, tx - 0.75 + i * 0.75, tz + 0.8, Math.PI));
+  }
+  g.add(sedia(ctx, tx - L / 2 - 0.28, tz, Math.PI / 2));
+  g.add(sedia(ctx, tx + L / 2 + 0.28, tz, -Math.PI / 2));
+  g.add(pendente(ctx, isoX0 + 0.42, isoZ0 + 0.35, { yTop: H, calata: 0.95, raggio: 0.17 }));
+  g.add(pendente(ctx, isoX0 + 0.42, isoZ1 - 0.35, { yTop: H, calata: 0.95, raggio: 0.17 }));
+  for (const dx of [-0.62, 0.62]) g.add(pendente(ctx, tx + dx, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
   return g;
 }
