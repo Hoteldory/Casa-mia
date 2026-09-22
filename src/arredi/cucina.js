@@ -190,10 +190,12 @@ export function sgabello(ctx, x, z, h = 0.68) {
 }
 
 // ---- tavolo in noce massello, 8 posti, gambe tornite importanti ----
-export function tavolo(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.76, ry = 0 }) {
+export function tavolo(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.76, ry = 0, giunti = 0 }) {
   const M = MAT();
   const g = new THREE.Group();
   g.add(box(W, 0.06, L, M.noceVerticale, 0, H - 0.03, 0));
+  // linee di giunzione delle prolunghe (solo a tavolo aperto)
+  if (giunti) for (const s of [-1, 1]) g.add(box(W, 0.003, 0.008, M.noceScuro, 0, H - 0.0005, s * giunti));
   g.add(box(W - 0.3, 0.08, L - 0.3, M.noce, 0, H - 0.1, 0)); // fascia
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
     const x = sx * (W / 2 - 0.12), z = sz * (L / 2 - 0.14);
@@ -250,50 +252,56 @@ export function arredaCucina(ctx, stanze) {
   return g;
 }
 
-// ---- isola + zona pranzo, variante V1: isola da 2,10 m con tre sgabelli, tavolo da 2,20 m ----
-export function zonaPranzoV1(ctx) {
+// ---- il tavolo allungabile, per versione: chiuso quattro posti, aperto otto ----
+export const TAVOLI = {
+  v1: { cx: 2.2, cz: 5.4, W: 1.0, chiuso: 1.4, aperto: 2.2, passo: 0.7, sporgenza: 0.3, lampade: 0.5 },
+  v2: { cx: 2.2, cz: 5.15, W: 1.1, chiuso: 1.6, aperto: 2.4, passo: 0.75, sporgenza: 0.28, lampade: 0.62 },
+};
+
+export function tavoloPranzo(ctx, v, aperto) {
+  const T = TAVOLI[v];
   const g = new THREE.Group();
-  const H = ctx.H;
-  const isoX0 = 1.75, isoZ0 = 1.8, isoZ1 = 3.9;
-  g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1 }));
-  for (let i = 0; i < 3; i++) g.add(sgabello(ctx, isoX0 + 0.8 + 0.3 + 0.12, isoZ0 + 0.4 + i * 0.65));
-  // tavolo in orizzontale (lato lungo est-ovest): libera la parete davanti al divano per il mobile TV
-  const tz = 5.4, tx = 2.2;
-  g.add(tavolo(ctx, { cx: tx, cz: tz, ry: Math.PI / 2 }));
-  for (let i = 0; i < 3; i++) {
-    g.add(sedia(ctx, tx - 0.7 + i * 0.7, tz - 0.75, 0));
-    g.add(sedia(ctx, tx - 0.7 + i * 0.7, tz + 0.75, Math.PI));
+  const L = aperto ? T.aperto : T.chiuso;
+  const tx = T.cx, tz = T.cz, dz = T.W / 2 + 0.25;
+  // lato lungo est-ovest: le prolunghe crescono verso i due lati corti
+  g.add(tavolo(ctx, { cx: tx, cz: tz, L, W: T.W, ry: Math.PI / 2, giunti: aperto ? T.chiuso / 2 : 0 }));
+  const xs = aperto ? [tx - T.passo, tx, tx + T.passo] : [tx - 0.38, tx + 0.38];
+  for (const x of xs) {
+    g.add(sedia(ctx, x, tz - dz, 0));
+    g.add(sedia(ctx, x, tz + dz, Math.PI));
   }
-  g.add(sedia(ctx, tx - 1.4, tz, Math.PI / 2));
-  g.add(sedia(ctx, tx + 1.4, tz, -Math.PI / 2));
-  // lampade: due campane in ceramica sull'isola, due sul tavolo
-  g.add(pendente(ctx, isoX0 + 0.45, isoZ0 + 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  g.add(pendente(ctx, isoX0 + 0.45, isoZ1 - 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  g.add(pendente(ctx, tx - 0.5, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
-  g.add(pendente(ctx, tx + 0.5, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  if (aperto) {
+    g.add(sedia(ctx, tx - L / 2 - T.sporgenza, tz, Math.PI / 2));
+    g.add(sedia(ctx, tx + L / 2 + T.sporgenza, tz, -Math.PI / 2));
+  }
   return g;
 }
 
-// ---- isola + zona pranzo, variante V2: isola ridotta a 1,30 m (piano di lavoro e appoggio,
-// due sgabelli) e tavolo da 2,40 m per otto, al centro della stanza con passaggi piu' larghi ----
-export function zonaPranzoV2(ctx) {
+// ---- isola e lampade, variante V1: isola da 2,10 m con tre sgabelli ----
+export function zonaCucinaV1(ctx) {
   const g = new THREE.Group();
-  const H = ctx.H;
+  const H = ctx.H, T = TAVOLI.v1;
+  const isoX0 = 1.75, isoZ0 = 1.8, isoZ1 = 3.9;
+  g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1 }));
+  for (let i = 0; i < 3; i++) g.add(sgabello(ctx, isoX0 + 0.8 + 0.3 + 0.12, isoZ0 + 0.4 + i * 0.65));
+  // lampade: due campane in ceramica sull'isola, due sul tavolo
+  g.add(pendente(ctx, isoX0 + 0.45, isoZ0 + 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
+  g.add(pendente(ctx, isoX0 + 0.45, isoZ1 - 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
+  for (const dx of [-T.lampade, T.lampade]) g.add(pendente(ctx, T.cx + dx, T.cz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  return g;
+}
+
+// ---- isola e lampade, variante V2: isola ridotta a 1,30 m (piano di lavoro e appoggio,
+// due sgabelli), arretrata per lasciare spazio al tavolo ----
+export function zonaCucinaV2(ctx) {
+  const g = new THREE.Group();
+  const H = ctx.H, T = TAVOLI.v2;
   const isoX0 = 1.8, isoD = 0.75, isoSb = 0.28, isoZ0 = 1.75, isoZ1 = 3.05;
   g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1, d: isoD, sbalzo: isoSb }));
   const sgX = isoX0 + isoD + isoSb + 0.12;
   for (let i = 0; i < 2; i++) g.add(sgabello(ctx, sgX, isoZ0 + 0.33 + i * 0.64));
-  // il tavolo guadagna 20 cm di lato lungo e 10 di profondita': otto posti veri
-  const tz = 5.15, tx = 2.2, L = 2.4, W = 1.1;
-  g.add(tavolo(ctx, { cx: tx, cz: tz, L, W, ry: Math.PI / 2 }));
-  for (let i = 0; i < 3; i++) {
-    g.add(sedia(ctx, tx - 0.75 + i * 0.75, tz - 0.8, 0));
-    g.add(sedia(ctx, tx - 0.75 + i * 0.75, tz + 0.8, Math.PI));
-  }
-  g.add(sedia(ctx, tx - L / 2 - 0.28, tz, Math.PI / 2));
-  g.add(sedia(ctx, tx + L / 2 + 0.28, tz, -Math.PI / 2));
   g.add(pendente(ctx, isoX0 + 0.42, isoZ0 + 0.35, { yTop: H, calata: 0.95, raggio: 0.17 }));
   g.add(pendente(ctx, isoX0 + 0.42, isoZ1 - 0.35, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  for (const dx of [-0.62, 0.62]) g.add(pendente(ctx, tx + dx, tz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  for (const dx of [-T.lampade, T.lampade]) g.add(pendente(ctx, T.cx + dx, T.cz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
   return g;
 }

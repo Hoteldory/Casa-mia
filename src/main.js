@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { costruisciArchitettura, H } from './architettura.js';
-import { arredi, VERSIONI } from './arredi/index.js';
+import { arredi, VERSIONI, TAVOLO_STATI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
 
 // ---------- contesto condiviso ----------
@@ -187,7 +187,7 @@ const pos = new THREE.Vector3(2.2, EYE, 5.6);
 
 function blocca(x, z) {
   for (const c of colliders) {
-    if (c.v && c.v !== versione) continue;
+    if (c.v && !attivi.has(c.v)) continue;
     if (c.minY >= EYE - 0.1 || c.maxY <= 0.3) continue;
     if (x + RADIUS > c.minX && x - RADIUS < c.maxX && z + RADIUS > c.minZ && z - RADIUS < c.maxZ) return true;
   }
@@ -264,23 +264,34 @@ function vaiA(k) {
     camera.position.set(v.orbit[2], v.orbit[3], v.orbit[4]);
   }
 }
-// ---------- versione dell'arredo (V1 / V2) ----------
-let versione = 'v1';
+// ---------- allestimento: versione (V1 / V2) e tavolo (chiuso / aperto) ----------
+let versione = 'v1', statoTavolo = 'aperto';
+const attivi = new Set(); // i tag dei gruppi accesi in questo momento
 const bottoniVersione = { v1: document.getElementById('btn-v1'), v2: document.getElementById('btn-v2') };
+const bottoniTavolo = { chiuso: document.getElementById('btn-t-chiuso'), aperto: document.getElementById('btn-t-aperto') };
 const notaVersione = document.getElementById('nota-versione');
-function applicaVersione(v) {
-  versione = v;
-  for (const k of Object.keys(varianti)) {
-    varianti[k].visible = k === v;
-    bottoniVersione[k].classList.toggle('on', k === v);
-  }
-  notaVersione.textContent = VERSIONI[v].nota;
+const notaTavolo = document.getElementById('nota-tavolo');
+function applicaAllestimento() {
+  attivi.clear();
+  attivi.add(versione);
+  attivi.add(`${versione}-${statoTavolo}`);
+  for (const [tag, g] of Object.entries(varianti)) g.visible = attivi.has(tag);
+  for (const k of Object.keys(bottoniVersione)) bottoniVersione[k].classList.toggle('on', k === versione);
+  for (const k of Object.keys(bottoniTavolo)) bottoniTavolo[k].classList.toggle('on', k === statoTavolo);
+  notaVersione.textContent = VERSIONI[versione].nota;
+  notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota(versione);
 }
+function applicaVersione(v) { versione = v; applicaAllestimento(); }
+function applicaTavolo(t) { statoTavolo = t; applicaAllestimento(); }
 for (const k of Object.keys(bottoniVersione)) {
   bottoniVersione[k].textContent = VERSIONI[k].nome;
   bottoniVersione[k].onclick = () => applicaVersione(k);
 }
-applicaVersione('v1');
+for (const k of Object.keys(bottoniTavolo)) {
+  bottoniTavolo[k].textContent = TAVOLO_STATI[k].nome;
+  bottoniTavolo[k].onclick = () => applicaTavolo(k);
+}
+applicaAllestimento();
 
 document.getElementById('btn-orbit').onclick = () => esciFP();
 const apri = document.getElementById('apri-pannello');
@@ -343,4 +354,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__casa = { scene, camera, renderer, colliders, vaiA, arch, blocca, pos, orbit, varianti, applicaVersione, luci: luciArtificiali };
+window.__casa = { scene, camera, renderer, colliders, vaiA, arch, blocca, pos, orbit, varianti, applicaVersione, applicaTavolo, luci: luciArtificiali };
