@@ -17,7 +17,7 @@ import { appendiabiti, panchetta } from './disimpegno.js';
 
 // Costruisce dentro un gruppo ruotato: gli ingombri dei pezzi costruiti in coordinate locali
 // (box nascosti non agganciati alla scena) vanno trasformati con la cornice.
-function inCornice(ctx, cornice, build) {
+export function inCornice(ctx, cornice, build) {
   const prima = ctx.cornice;
   ctx.cornice = cornice;
   build(cornice);
@@ -148,7 +148,7 @@ export function docciaAngolo(ctx, { x0, x1, z0, z1 }) {
 }
 
 // ---- rivestimento di un tratto di parete (piano a 1,5 cm dal muro) con listello in ottone ----
-function fascia(g, mat, { asse, a, b, at, y0 = 0, y1 = 1.2, verso, listello = true }) {
+export function fascia(g, mat, { asse, a, b, at, y0 = 0, y1 = 1.2, verso, listello = true }) {
   const M = MAT();
   const L = b - a, h = y1 - y0, pos = (a + b) / 2, y = (y0 + y1) / 2;
   if (L < 0.02 || h < 0.02) return;
@@ -318,7 +318,8 @@ function bagno(ctx) {
 
 function ripostiglio(ctx) {
   const g = new THREE.Group();
-  g.add(scaffale(ctx, { w: 1.5, h: 2.3, d: 0.4, x: 5.3, z: 0.25 + 0.21 }));
+  // la parete nord ha il passaggio verso la lavanderia dei suoceri: scaffale sulla parete ovest
+  g.add(scaffale(ctx, { w: 1.2, h: 2.3, d: 0.4, x: 4.34 + 0.21, z: 1.95, ry: Math.PI / 2 }));
   g.add(scaffale(ctx, { w: 1.4, h: 2.3, d: 0.4, x: 6.1 - 0.21, z: 1.75, ry: -Math.PI / 2 }));
   g.add(pendente(ctx, 5.1, 1.6, { yTop: ctx.H, calata: 0.4, raggio: 0.12, intensita: 8 }));
   return g;

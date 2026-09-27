@@ -1,4 +1,4 @@
-# Casa mia in 3D — piano primo e piano terra
+# Casa mia in 3D — piano primo, piano terra e casa dei suoceri
 
 Modello 3D navigabile nel browser dell'appartamento al piano primo descritto in `piantina.png`,
 completo di arredamento. Tutto è procedurale: nessun asset 3D esterno, texture generate via canvas.
@@ -41,8 +41,8 @@ portoncino e stanze vere.
 - Assunti: altezza interna 300 cm (interpiano 340 meno solaio 40), davanzali a 90, porte interne
   80 x 210, porte scorrevoli a scomparsa per ripostiglio e disimpegno, doccia 80 x 80 nel
   rettangolo disegnato nell'angolo del bagno, armadio a muro nel rettangolo 60 x 109.
-- In vista del piano terra il piano primo sparisce (restano scala, pianerottolo, balconi e
-  terrazzo), "Tetto e soffitti" mette o toglie il solaio, la prima persona cammina a quota -3,40,
+- In vista del piano terra il piano primo sparisce (restano scala, pianerottolo e balconi; il
+  terrazzo, che e' il tetto dei suoceri, solo con il tetto acceso), "Tetto e soffitti" mette o toglie il solaio, la prima persona cammina a quota -3,40,
   la piantina quotata disegna il piano terra.
 
 | Ambiente | Dettaglio di carattere |
@@ -54,6 +54,43 @@ portoncino e stanze vere.
 | Camera 10,48 | armadio a tre moduli laccato blu polvere |
 | Bagno | rivestimento a 120 cm in piastrelle verdi, a tutta altezza nella doccia |
 
+Due passaggi nel muro nord portano nell'edificio dei suoceri: dal ripostiglio alla loro
+lavanderia e dalla camera 16,00 al secondo bagno (5,31), che e' della cognata.
+
+## Piano terra (casa dei suoceri)
+
+Subito a nord della casa della cognata, sotto il terrazzo del piano primo: stesso piano,
+stessa quota. Misure in `src/data/piano-suoceri.json` (riferimento proprio con origine
+nell'angolo nord-ovest, messo nella casa a x 70, z -1178), ricavate dalle quote scritte in
+`piantina-suoceri.jpg`: le catene tornano da sole (349 + 180 + 339 + 200 a ovest e
+374 + 344 + 150 + 200 a est fanno entrambe 1098 con tramezzi da 10; 390 + 364 e 489 + 265
+fanno 764 = 854 - 2 x 45).
+
+**Il tetto dei suoceri e' il nostro terrazzo, e coincide.** Il terrazzo ha muretto da 40 cm
+e, oltre il muretto, falde in coppi da 70 cm su ovest, nord ed est:
+594 + 2 x (40 + 70) = 814 (tratto nord), 634 + 2 x 110 = 854 (tratto sud),
+1068 + 40 + 70 = 1178 in profondita', e il gradino sul lato est cade a 384 dal fronte nord
+come la risega del terrazzo. Il solaio del terrazzo poggia sulla testa dei muri dei suoceri
+(310 cm), le falde arrivano a filo dei loro muri esterni con grondaie e pluviali in rame.
+In vista del piano terra il terrazzo c'e' solo con "Tetto e soffitti" acceso.
+
+- Soggiorno con cucina-pranzo 25,98, bagno 5,04, disimpegno, camera 13,22, camera 12,47 con
+  cabina armadio 5,47, lavanderia e C.T. 9,74 con porta di servizio sul giardino; il bagno
+  5,31 in basso a destra e' della cognata (ci si entra solo dalla sua camera 16,00).
+- Assunti: altezza interna 300, davanzali a 90, porte interne 80 x 210, scorrevoli a scomparsa
+  per disimpegno, cabina e passaggio camera-lavanderia (vano senza anta in piantina).
+- La piantina quotata del piano terra ha due fogli: cognata e suoceri.
+
+| Ambiente | Dettaglio di carattere |
+|---|---|
+| Soggiorno | parete nord in terracotta dietro al divano, sotto la finestra |
+| Cucina ad L | ante crema, paraspruzzi in piastrelle smaltate ocra, cappa in muratura |
+| Bagno 5,04 | cementine a terra, rivestimento a 120 cm in piastrelle crema |
+| Camera 13,22 | parete del letto in blu polvere |
+| Camera 12,47 | testiera in velluto salvia, poltrona in velluto senape |
+| Lavanderia | lavatoio in pietra, colonna lavatrice, caldaia murale |
+| Bagno 5,31 | piastrelle verde bottiglia come il bagno della cognata |
+
 ## Tetto e giardino
 
 **Tetto a capanna** sopra il piano primo: colmo est-ovest a meta' profondita', pendenza 32%,
@@ -62,12 +99,14 @@ facciate est e ovest, grondaie e pluviali in rame, comignolo sopra il camino del
 La falda sud copre anche il pianerottolo d'ingresso, che diventa una loggia con trave in legno.
 Il foro della scala a chiocciola porta al sottotetto. "Tetto e soffitti" lo mostra o lo toglie.
 
-**Giardino** (lotto 17,50 x 38,50 m, recintato):
+**Giardino** (lotto 17,50 x 41,00 m, recintato):
 - davanti (sud): muretto intonacato con cancellata in ferro, cancelletto con pilastri e lanterne,
   vialetto in lastre verso i due ingressi e la scala, patio con tavolino davanti alla portafinestra
   del piano terra, aiuole fiorite lungo il muretto, lavanda, un olivo e un albero da ombra;
 - lati: sentieri in ghiaia, cipressi a ovest, arancio, melo e aiuola lungo la casa a est;
-- dietro (nord), piu' profondo: prato fra il terrazzo e l'orto, limone, fico, panchina, e l'orto
+- attorno alla casa dei suoceri: lastre davanti all'ingresso e alla porta della lavanderia,
+  patio con tavolino davanti alla portafinestra della camera a est;
+- dietro (nord), piu' profondo: prato fra la casa dei suoceri e l'orto, limone, fico, panchina, e l'orto
   in ghiaia con sei cassoni rialzati 1,20 x 3,40 (pomodori, insalata, zucchine, cavoli,
   fagiolini, erbe e fragole) e la casetta degli attrezzi con la botte per l'acqua piovana;
 - staccionata in castagno a doghe sui lati e dietro.
@@ -101,8 +140,11 @@ src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Gr
 src/arredi/index.js          registro delle stanze e del tavolo chiuso/aperto
 piantina-terra.jpg           piantina del piano terra
 src/data/piano-terra.json    misure del piano terra in cm
-src/pianoTerra.js            involucro del piano terra, solaio, lanterna d'ingresso
+src/pianoTerra.js            involucro del piano terra (cognata e suoceri), solaio, lanterne
 src/arredi/piano_terra.js    arredi del piano terra (camino, panca, letti singoli, doccia...)
+piantina-suoceri.jpg         piantina della casa dei suoceri
+src/data/piano-suoceri.json  misure della casa dei suoceri in cm
+src/arredi/suoceri.js        arredi della casa dei suoceri
 src/arredi/giardino.js       giardino, recinzioni e orto
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
 ```
@@ -142,4 +184,6 @@ Le mesh statiche vengono fuse per materiale dopo la costruzione; quelle con un m
 faccia (muri esterni, solette, falde del tetto) vengono prima divise per gruppo di facce, cosi'
 si fondono anche loro: la vista esterna completa (due piani, tetto e giardino) passa da circa
 2000 a circa 950 draw call, ombre incluse, e circa 370k triangoli. Le ombre sono proiettate solo dal sole; le luci artificiali sono luci
-puntiformi senza ombre, attive nella modalità sera. Pixel ratio limitato a 1,5.
+puntiformi senza ombre, attive nella modalità sera; di sera si accendono solo quelle del piano
+in vista, e al piano terra (due appartamenti) quelle entro 2,4 m si fondono in una sola, cosi'
+restano circa venti. Pixel ratio limitato a 1,5.

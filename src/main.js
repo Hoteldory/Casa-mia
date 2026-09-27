@@ -6,8 +6,9 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { costruisciArchitettura, H } from './architettura.js';
 import { arredi, TAVOLO_STATI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
-import { costruisciPianoTerra, PIANO_TERRA, QUOTA_TERRA } from './pianoTerra.js';
+import { costruisciPianoTerra, PIANO_TERRA, PIANO_SUOCERI, QUOTA_TERRA, ORIGINE_SUOCERI } from './pianoTerra.js';
 import { arredaPianoTerra } from './arredi/piano_terra.js';
+import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
 
 // ---------- contesto condiviso ----------
@@ -88,7 +89,7 @@ const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerH
 const arch = costruisciArchitettura(ctx);
 ctx.pareti = new THREE.Group();
 arch.walls.add(ctx.pareti);
-scene.add(arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior);
+scene.add(arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo);
 arch.wallsLow.visible = false;
 const { comuni: gruppiArredi, varianti } = arredi(ctx, arch.stanze);
 for (const g of gruppiArredi) scene.add(g);
@@ -106,6 +107,13 @@ terra.add(archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.solet
 archT.wallsLow.visible = false;
 archT.soletta.visible = false;
 const arrediT = arredaPianoTerra(ctxT);
+// appartamento dei suoceri: arredi nel riferimento del loro edificio
+{
+  const radice = new THREE.Group(), pareti = new THREE.Group();
+  for (const g of [radice, pareti]) g.position.set(ORIGINE_SUOCERI[0], 0, ORIGINE_SUOCERI[1]);
+  ctxT.pareti.add(pareti);
+  arrediT.push(arredaSuoceri(ctxT, radice, pareti));
+}
 for (const g of arrediT) terra.add(g);
 ctxT.risolvi();
 
@@ -161,7 +169,7 @@ function ottimizza(root) {
     root.add(m);
   }
 }
-for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi, ...Object.values(varianti),
+for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
   archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino]) ottimizza(g);
 
 // luci artificiali vicine tra loro (< 1.5 m) vengono fuse in una sola: meno luci nello shader
@@ -172,7 +180,9 @@ for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.ext
   for (const l of luciArtificiali) l.piano = l.light.getWorldPosition(pa).y < -0.3 ? 'terra' : 'primo';
   for (const l of luciArtificiali) {
     l.light.getWorldPosition(pa);
-    const vicina = tenute.find((t) => t.v === l.v && t.piano === l.piano && t.esterno === l.esterno && t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
+    // al piano terra (due appartamenti) si fonde piu' largo: le luci accese insieme restano poche
+    const soglia = l.piano === 'terra' ? 2.4 : 1.5;
+    const vicina = tenute.find((t) => t.v === l.v && t.piano === l.piano && t.esterno === l.esterno && t.light.getWorldPosition(pb).distanceTo(pa) < soglia);
     if (vicina) { vicina.base = Math.max(vicina.base, l.base) * 1.12; l.light.removeFromParent(); }
     else tenute.push(l);
   }
@@ -388,7 +398,9 @@ function applicaVisibilita() {
   arch.wallsLow.visible = !t && !paretiIntere;
   arch.floors.visible = !t;
   arch.ceilings.visible = !t && tettoOn;
-  for (const g of gruppiArredi) g.visible = !t || !!g.userData.esterno;
+  // il terrazzo e' il tetto dei suoceri: in vista del piano terra c'e' solo con il tetto acceso
+  arch.terrazzo.visible = !t || tettoOn;
+  for (const g of gruppiArredi) g.visible = !t || (!!g.userData.esterno && tettoOn);
   applicaAllestimento();
   archT.walls.visible = !t || paretiIntere;
   archT.wallsLow.visible = t && !paretiIntere;
@@ -429,7 +441,7 @@ let piantinaAperta = false;
 const btnPiantina = document.getElementById('btn-piantina');
 function mostraPiantina(on) {
   if (on && !piantinaEl) {
-    piantinaEl = creaPiantina(piano === 'terra' ? PIANO_TERRA : undefined);
+    piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined);
     document.body.appendChild(piantinaEl);
     piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
     piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();

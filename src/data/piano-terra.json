@@ -9,8 +9,10 @@
     "legenda_assunto": "assunto = valore non leggibile o non riportato in piantina, scelto per coerenza",
     "allineamento_piano_primo": "Il perimetro coincide con quello del piano primo: la piantina riporta 1053 x 1105, il piano primo 1051 x 1097. Le facce esterne sono allineate a quelle del piano primo (facciata continua); i 2 cm in larghezza e gli 8 in profondita' sono assorbiti dagli spessori dei muri esterni. Le misure interne delle stanze sono quelle della piantina.",
     "modifiche_post_rilievo": [
-      "Finestra aggiunta sulla parete est del soggiorno, sopra il divano (richiesta: non presente in piantina)"
-    ]
+      "Finestra aggiunta sulla parete est del soggiorno, sopra il divano (richiesta: non presente in piantina)",
+      "Due passaggi nel muro nord: dal ripostiglio alla lavanderia dei suoceri e dalla camera 16,00 al bagno da 5,31, che e' della cognata"
+    ],
+    "titolo": "PIANO TERRA · COGNATA"
   },
   "altezze": {
     "quota_pavimento_m": -3.4,
@@ -506,6 +508,28 @@
       "luce_assunta": true,
       "battente": "apre verso il bagno, cerniera a nord",
       "aperta_rad": 0.35
+    },
+    {
+      "id": "T-V-lavanderia",
+      "tipo": "vano",
+      "muro": "T-E-nord",
+      "da": "ripostiglio",
+      "a": "ripostiglio",
+      "x_da": 463,
+      "x_a": 543,
+      "luce_cm": 80,
+      "nota": "passaggio verso la lavanderia dei suoceri (la porta e' dal loro lato)"
+    },
+    {
+      "id": "T-V-bagno-nord",
+      "tipo": "vano",
+      "muro": "T-E-nord",
+      "da": "camera_3",
+      "a": "camera_3",
+      "x_da": 635,
+      "x_a": 715,
+      "luce_cm": 80,
+      "nota": "passaggio verso il secondo bagno (5,31) nell'edificio dei suoceri"
     }
   ],
   "finestre": [

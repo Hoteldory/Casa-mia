@@ -1,5 +1,5 @@
 // Giardino intorno alla casa, al piano del terreno: davanti (sud, lato ingressi), sui due lati
-// e dietro (nord), dove e' piu' profondo e ospita l'orto oltre il volume del terrazzo.
+// e dietro (nord), dove e' piu' profondo e ospita l'orto oltre la casa dei suoceri.
 // Recinzione: a sud muretto intonacato con cancellata in ferro e cancelletto sul vialetto;
 // sui lati e dietro staccionata in castagno a doghe. Misure in metri, terreno a quota 0
 // (main.js sposta il gruppo alla quota del piano terra).
@@ -8,8 +8,9 @@ import { box, cyl, sphere, plane, place, lanterna, MAT, matColore } from './comu
 import { cespuglio, rnd, VERDI, sediaTerrazzo } from './terrazzo.js';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-// lotto: la casa occupa x 0-10,51, z 0-10,97; il terrazzo col suo volume x 1,50-8,44, z -10,98-0
-export const LOTTO = { x0: -3.5, x1: 14.0, z0: -21.0, z1: 17.5 };
+// lotto: la casa occupa x 0-10,51, z 0-10,97; la casa dei suoceri, sotto il terrazzo,
+// x 0,70-9,24 da z -7,94 a 0 e x 0,70-8,84 da z -11,78 a -7,94
+export const LOTTO = { x0: -3.5, x1: 14.0, z0: -23.5, z1: 17.5 };
 const CANCELLO = { x0: 4.5, x1: 5.7 }; // in asse con il vialetto per i due ingressi
 
 // ---- albero: tronco e chioma a masse, con frutti se richiesti ----
@@ -222,7 +223,10 @@ export function giardino(ctx) {
   const L = LOTTO;
   // ---- prato attorno alla casa (il piano terra ha pavimento a quota 0,005: il prato non entra) ----
   for (const [x0, z0, x1, z1] of [
-    [L.x0, L.z0, L.x1, 0],            // dietro, anche sotto il volume del terrazzo
+    [L.x0, L.z0, L.x1, -11.78],       // dietro, oltre la casa dei suoceri
+    [L.x0, -11.78, 0.70, 0],          // accanto alla casa dei suoceri, a ovest
+    [8.84, -11.78, L.x1, -7.94],      // e a est, sul tratto stretto
+    [9.24, -7.94, L.x1, 0],           // e sul tratto largo
     [L.x0, 0, 0, L.z1],               // lato ovest
     [10.51, 0, L.x1, L.z1],           // lato est
     [0, 10.97, 10.51, L.z1],          // davanti
@@ -234,9 +238,12 @@ export function giardino(ctx) {
   pav(-2.4, 13.9, CANCELLO.x0, 15.0, M.lastre);      // ramo verso la scala e il lato ovest
   pav(6.3, 10.97, 10.2, 13.0, M.lastre);             // patio davanti alla portafinestra del soggiorno
   pav(10.2, 11.5, 12.9, 12.5, M.ghiaia);             // raccordo verso il lato est
-  pav(-2.4, -12.3, -1.4, 13.9, M.ghiaia);            // sentiero lato ovest
-  pav(11.9, -12.3, 12.9, 11.5, M.ghiaia);            // sentiero lato est
-  pav(-2.8, -20.4, 13.3, -12.3, M.ghiaia);           // orto
+  pav(-2.4, -14.8, -1.4, 13.9, M.ghiaia);            // sentiero lato ovest
+  pav(11.9, -14.8, 12.9, 11.5, M.ghiaia);            // sentiero lato est
+  pav(-2.8, -22.9, 13.3, -14.8, M.ghiaia);           // orto
+  pav(-1.4, -9.95, 0.70, -8.85, M.lastre);           // ingresso dei suoceri
+  pav(-1.4, -1.95, 0.70, -0.7, M.lastre);            // porta di servizio della lavanderia
+  pav(9.24, -6.5, 11.9, -4.5, M.lastre);             // patio della camera dei suoceri
   // ---- recinzione ----
   cancellata(g, ctx, { x0: L.x0, x1: CANCELLO.x0 - 0.4, z: L.z1 });
   cancellata(g, ctx, { x0: CANCELLO.x1 + 0.4, x1: L.x1, z: L.z1 });
@@ -260,15 +267,19 @@ export function giardino(ctx) {
   g.add(albero(ctx, { x: 13.2, z: 4.0, h: 3.2, r: 1.0, seed: 7, frutti: '#e0a02c' }));   // arancio
   g.add(albero(ctx, { x: 13.2, z: -4.5, h: 3.4, r: 1.1, seed: 8, frutti: '#c8342a' }));  // melo
   aiuola(g, ctx, { x0: 10.7, x1: 11.4, z0: 0.4, z1: 10.5, seed: 9 });
-  // ---- dietro: prato fra terrazzo e orto, poi l'orto ----
-  g.add(albero(ctx, { x: -0.6, z: -8.0, h: 3.3, r: 1.1, seed: 10, frutti: '#e8d23a' }));  // limone
-  g.add(albero(ctx, { x: 10.6, z: -8.2, h: 3.6, r: 1.2, seed: 11, frutti: '#7a2a4a' }));  // fico
-  panchina(g, ctx, 5.0, -11.6, Math.PI);
+  // ---- patio dei suoceri a est: tavolino e due sedie ----
+  g.add(cyl(0.32, 0.32, 0.03, M.ferro, 10.6, 0.74, -5.5, 20));
+  g.add(cyl(0.03, 0.05, 0.72, M.ferro, 10.6, 0.37, -5.5, 8));
+  ctx.addColliderBox(10.28, 10.92, -5.82, -5.18, 0, 0.75);
+  g.add(sediaTerrazzo(ctx, 10.6, -6.1, 0));
+  g.add(sediaTerrazzo(ctx, 10.6, -4.9, Math.PI));
+  // ---- dietro: prato fra la casa dei suoceri e l'orto, poi l'orto ----
+  g.add(albero(ctx, { x: -0.8, z: -5.0, h: 3.3, r: 1.0, seed: 10, frutti: '#e8d23a' }));  // limone
+  g.add(albero(ctx, { x: 10.8, z: -9.2, h: 3.6, r: 1.2, seed: 11, frutti: '#7a2a4a' }));  // fico
+  panchina(g, ctx, 5.0, -13.4, Math.PI);
   // sei cassoni rialzati 1,20 x 3,40 con passaggi da 1,20
   const colture = ['pomodori', 'insalata', 'zucchine', 'cavoli', 'fagiolini', 'erbe'];
-  colture.forEach((c, i) => cassone(g, ctx, { cx: -1.6 + i * 2.4, cz: -17.7, coltura: c, seed: i + 1 }));
-  casetta(g, ctx, { x0: 11.3, x1: 13.1, z0: -20.3, z1: -18.6 });
-  // il volume sotto il terrazzo e' pieno: non ci si cammina dentro
-  ctx.addColliderBox(1.5, 8.44, -10.98, 0, 0, 3.1);
+  colture.forEach((c, i) => cassone(g, ctx, { cx: -1.6 + i * 2.4, cz: -20.2, coltura: c, seed: i + 1 }));
+  casetta(g, ctx, { x0: 11.3, x1: 13.1, z0: -22.8, z1: -21.1 });
   return g;
 }

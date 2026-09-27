@@ -1,0 +1,103 @@
+{
+  "_meta": {
+    "piano": "terra",
+    "titolo": "PIANO TERRA · SUOCERI",
+    "nome": "Piano terra (suoceri)",
+    "sorgente": "piantina-suoceri.jpg",
+    "metodo": "Misure dalle quote scritte. Le catene tornano da sole: lato ovest 349 + 180 + 339 + 200 e lato est 374 + 344 + 150 + 200 fanno entrambi 1098 con tramezzi da 10 cm; 390 + 364 e 489 + 265 fanno 764 = 854 - 2 x 45. Posizioni non quotate in proporzione dentro la stanza.",
+    "origine": "angolo nord-ovest esterno dell'edificio dei suoceri, x verso est, y verso sud",
+    "origine_nella_casa_cm": { "x": 70, "y": -1178 },
+    "coincidenza_terrazzo": "Il tetto coincide con il terrazzo del piano primo: interno del terrazzo + muretto da 40 + falda da 70 su ovest, nord ed est. 594 + 2 x 110 = 814 (tratto nord), 634 + 2 x 110 = 854 (tratto sud), 1068 + 40 + 70 = 1178; il gradino sul lato est cade a 384 dal fronte nord, come la risega del terrazzo spostata di 110.",
+    "unita": "cm",
+    "legenda_assunto": "assunto = valore non quotato in piantina",
+    "note": [
+      "Il bagno da 5,31 fa parte dell'appartamento della cognata: ci si entra dalla sua camera 16,00 (porta nel muro fra i due edifici).",
+      "La lavanderia e C.T. ha una porta verso il ripostiglio della cognata, una verso l'esterno a ovest e un passaggio dalla camera 13,22 (vano senza anta in piantina: assunta porta scorrevole)."
+    ]
+  },
+  "altezze": {
+    "quota_pavimento_m": -3.4,
+    "soffitto_cm": 300,
+    "soffitto_nota": "assunto: come il piano terra della cognata",
+    "porta_interna_h_cm": 210,
+    "portafinestra_h_cm": 240,
+    "portafinestra_nota": "da piantina: 150/240 e 90/240",
+    "portoncino_h_cm": 210,
+    "portoncino_nota": "da piantina: 90/210",
+    "finestra_davanzale_cm": 90,
+    "finestra_davanzale_assunto": true,
+    "finestra_h_cm": 150,
+    "finestra_h_nota": "da piantina: 150/150, 120/150, 60/150"
+  },
+  "muri": {
+    "esterno_spessore_cm": 45,
+    "esterno_nota": "muri est e ovest e muro nord 45 cm (disegnati spessi); muro sud 35, addossato al muro nord della cognata",
+    "interno_spessore_cm": 10,
+    "ingombro_esterno": { "larghezza_cm": 854, "profondita_cm": 1178, "nota": "814 di larghezza sul tratto nord (profondo 384), 854 sul tratto sud" },
+    "perimetro": { "nord": ["S-E-nord"], "sud": ["S-E-sud"], "ovest": ["S-E-ovest"], "est": ["S-E-est-nord", "S-E-est-sud"], "lunghezza_nord": 814 },
+    "segmenti": [
+      { "id": "S-E-nord", "rect": { "x": 0, "y": 0, "w": 814, "d": 45 }, "tipo": "esterno", "esterno": [[0, -1]], "h_cm": 310 },
+      { "id": "S-E-ovest", "rect": { "x": 0, "y": 0, "w": 45, "d": 1178 }, "tipo": "esterno", "esterno": [[-1, 0]], "h_cm": 310 },
+      { "id": "S-E-est-nord", "rect": { "x": 769, "y": 0, "w": 45, "d": 384 }, "tipo": "esterno", "esterno": [[1, 0]], "h_cm": 310 },
+      { "id": "S-E-est-sud", "rect": { "x": 809, "y": 384, "w": 45, "d": 794 }, "tipo": "esterno", "esterno": [[1, 0], [0, -1]], "h_cm": 310, "nota": "il gradino di 40 cm a 384 dal fronte nord" },
+      { "id": "S-E-sud", "rect": { "x": 0, "y": 1143, "w": 854, "d": 35 }, "tipo": "esterno", "esterno": [[0, 1]], "h_cm": 310, "nota": "addossato al muro nord della cognata" },
+      { "id": "S-I-giorno-bagno", "rect": { "x": 45, "y": 394, "w": 400, "d": 10 }, "tipo": "interno" },
+      { "id": "S-I-cucina-camera", "rect": { "x": 445, "y": 419, "w": 364, "d": 10 }, "tipo": "interno" },
+      { "id": "S-I-colonna", "rect": { "x": 435, "y": 394, "w": 10, "d": 549 }, "tipo": "interno", "nota": "dal soggiorno alla lavanderia: separa disimpegno e camera 13,22 dalla camera 12,47 e dalla cabina" },
+      { "id": "S-I-bagno-dis", "rect": { "x": 325, "y": 404, "w": 10, "d": 180 }, "tipo": "interno" },
+      { "id": "S-I-dis-camera", "rect": { "x": 45, "y": 584, "w": 390, "d": 10 }, "tipo": "interno" },
+      { "id": "S-I-camera-cabina", "rect": { "x": 445, "y": 773, "w": 364, "d": 10 }, "tipo": "interno" },
+      { "id": "S-I-nord-lavanderia", "rect": { "x": 45, "y": 933, "w": 764, "d": 10 }, "tipo": "interno" },
+      { "id": "S-I-lavanderia-bagno", "rect": { "x": 534, "y": 943, "w": 10, "d": 200 }, "tipo": "interno" }
+    ]
+  },
+  "stanze": {
+    "soggiorno_cucina": {
+      "nome": "Soggiorno e cucina-pranzo",
+      "rettangoli": [
+        { "x": 45, "y": 45, "w": 724, "d": 349, "parte": "soggiorno e cucina-pranzo" },
+        { "x": 445, "y": 394, "w": 324, "d": 25, "parte": "cucina" },
+        { "x": 769, "y": 384, "w": 40, "d": 35, "parte": "cucina" }
+      ],
+      "superficie_quotata_mq": 25.98, "superficie_calcolata_mq": 26.22,
+      "note": "724 di larghezza; profondo 349 sul lato ovest e 374 sul lato est (la cucina scende fino al muro della camera 12,47)"
+    },
+    "bagno": { "nome": "Bagno", "rect": { "x": 45, "y": 404, "w": 280, "d": 180 }, "superficie_quotata_mq": 5.04, "superficie_calcolata_mq": 5.04 },
+    "disimpegno": { "nome": "Disimpegno", "rect": { "x": 335, "y": 404, "w": 100, "d": 180 }, "superficie_quotata_mq": 1.80, "superficie_calcolata_mq": 1.80 },
+    "camera_1": { "nome": "Camera 13,22", "rect": { "x": 45, "y": 594, "w": 390, "d": 339 }, "superficie_quotata_mq": 13.22, "superficie_calcolata_mq": 13.22 },
+    "camera_2": { "nome": "Camera 12,47", "rect": { "x": 445, "y": 429, "w": 364, "d": 344 }, "superficie_quotata_mq": 12.47, "superficie_calcolata_mq": 12.52 },
+    "cabina": { "nome": "Cabina armadio", "rect": { "x": 445, "y": 783, "w": 364, "d": 150 }, "superficie_quotata_mq": 5.47, "superficie_calcolata_mq": 5.46 },
+    "lavanderia": { "nome": "Lavanderia e C.T.", "rect": { "x": 45, "y": 943, "w": 489, "d": 200 }, "superficie_quotata_mq": 9.74, "superficie_calcolata_mq": 9.78 },
+    "bagno_cognata": { "nome": "Bagno cognata", "rect": { "x": 544, "y": 943, "w": 265, "d": 200 }, "superficie_quotata_mq": 5.31, "superficie_calcolata_mq": 5.30, "note": "fa parte dell'appartamento della cognata" }
+  },
+  "porte": [
+    { "id": "S-P-ingresso", "tipo": "portoncino", "muro": "S-E-ovest", "da": "esterno", "a": "soggiorno_cucina", "y_da": 193, "y_a": 283, "luce_cm": 90, "battente": "apre verso l'interno, cerniera a nord" },
+    { "id": "S-P-dis", "tipo": "scorrevole", "muro": "S-I-giorno-bagno", "da": "soggiorno_cucina", "a": "disimpegno", "x_da": 345, "x_a": 425, "luce_cm": 80, "luce_assunta": true, "tasca": "ovest", "battente": "scorrevole a scomparsa, tasca a ovest" },
+    { "id": "S-P-bagno", "tipo": "interna", "muro": "S-I-bagno-dis", "da": "disimpegno", "a": "bagno", "y_da": 494, "y_a": 564, "luce_cm": 70, "luce_assunta": true, "battente": "apre verso il bagno, cerniera a sud", "aperta_rad": 0.4 },
+    { "id": "S-P-camera-2", "tipo": "interna", "muro": "S-I-colonna", "da": "camera_2", "a": "disimpegno", "y_da": 483, "y_a": 563, "luce_cm": 80, "luce_assunta": true, "battente": "apre verso il disimpegno, cerniera a nord", "aperta_rad": 0.5 },
+    { "id": "S-P-camera-1", "tipo": "interna", "muro": "S-I-dis-camera", "da": "disimpegno", "a": "camera_1", "x_da": 350, "x_a": 430, "luce_cm": 80, "luce_assunta": true, "battente": "apre verso la camera, cerniera a est" },
+    { "id": "S-P-cabina", "tipo": "scorrevole", "muro": "S-I-camera-cabina", "da": "camera_2", "a": "cabina", "x_da": 470, "x_a": 550, "luce_cm": 80, "luce_assunta": true, "tasca": "est", "battente": "scorrevole a scomparsa, tasca a est" },
+    { "id": "S-P-lavanderia", "tipo": "scorrevole", "muro": "S-I-nord-lavanderia", "da": "camera_1", "a": "lavanderia", "x_da": 350, "x_a": 430, "luce_cm": 80, "luce_assunta": true, "tasca": "ovest", "battente": "vano senza anta in piantina: assunta scorrevole a scomparsa" },
+    { "id": "S-P-lav-cognata", "tipo": "interna", "muro": "S-E-sud", "da": "ripostiglio (cognata)", "a": "lavanderia", "x_da": 393, "x_a": 473, "luce_cm": 80, "luce_assunta": true, "battente": "apre verso la lavanderia, cerniera a ovest", "aperta_rad": 0.6 },
+    { "id": "S-P-bagno-cognata", "tipo": "interna", "muro": "S-E-sud", "da": "camera 16,00 (cognata)", "a": "bagno_cognata", "x_da": 565, "x_a": 645, "luce_cm": 80, "luce_assunta": true, "battente": "apre verso il bagno, cerniera a ovest", "aperta_rad": 0.6 }
+  ],
+  "finestre": [
+    { "id": "S-F-nord-1", "stanza": "soggiorno_cucina", "muro": "S-E-nord", "x_da": 155, "x_a": 305, "larghezza_cm": 150, "tipo": "finestra" },
+    { "id": "S-F-nord-2", "stanza": "soggiorno_cucina", "muro": "S-E-nord", "x_da": 535, "x_a": 685, "larghezza_cm": 150, "tipo": "finestra" },
+    { "id": "S-F-cucina", "stanza": "soggiorno_cucina", "muro": "S-E-est-nord", "y_da": 241, "y_a": 301, "larghezza_cm": 60, "tipo": "finestra" },
+    { "id": "S-F-bagno", "stanza": "bagno", "muro": "S-E-ovest", "y_da": 498, "y_a": 558, "larghezza_cm": 60, "tipo": "finestra" },
+    { "id": "S-F-camera-1", "stanza": "camera_1", "muro": "S-E-ovest", "y_da": 795, "y_a": 915, "larghezza_cm": 120, "tipo": "finestra" },
+    { "id": "S-PF-camera-2", "stanza": "camera_2", "muro": "S-E-est-sud", "y_da": 554, "y_a": 704, "larghezza_cm": 150, "tipo": "portafinestra" },
+    { "id": "S-PF-lavanderia", "stanza": "lavanderia", "muro": "S-E-ovest", "y_da": 1000, "y_a": 1090, "larghezza_cm": 90, "tipo": "portafinestra", "nota": "porta di servizio verso il giardino (90/240)" },
+    { "id": "S-F-bagno-cognata", "stanza": "bagno_cognata", "muro": "S-E-est-sud", "y_da": 1005, "y_a": 1065, "larghezza_cm": 60, "tipo": "finestra" }
+  ],
+  "arredi_disegnati_in_piantina": [
+    "divano contro la parete nord sotto la prima finestra, mobile TV lungo 400 contro il muro del bagno",
+    "tavolo per sei in verticale nella zona pranzo",
+    "cucina ad L: base con lavello sotto la finestra est, piano cottura lungo il muro della camera 12,47",
+    "bagno 5,04: wc e bidet sulla parete ovest, lavabo a nord, doccia nell'angolo nord-est",
+    "camera 13,22: armadio a tre moduli a nord, letto matrimoniale con testata a sud",
+    "camera 12,47: letto matrimoniale con testata a nord",
+    "bagno 5,31: lavabo, bidet e wc a nord, doccia nell'angolo sud-est"
+  ]
+}

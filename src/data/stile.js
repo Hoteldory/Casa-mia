@@ -577,6 +577,7 @@ export function getMateriali() {
     lastre: std({ map: texLastre(), roughness: 0.7 }),
     piastrelleVerdi: std({ map: texPiastrelle('#2d5a48', 47), roughness: 0.25 }),
     piastrelleCrema: std({ map: texPiastrelle('#ece3cf', 48, '#cfc5b2', 0.1), roughness: 0.28 }),
+    piastrelleOcra: std({ map: texPiastrelle('#c3903d', 49, '#e0d4bb', 0.3), roughness: 0.25 }),
     cartaRighe: std({ map: texRighe('#e6dcc7', PALETTE.salviaChiaro), roughness: 0.9 }),
     bluPetrolio: std({ map: texVernice('#2e6470', 35), roughness: 0.9 }),
     bluPolvere: std({ map: texVernice('#7f98a4', 36), roughness: 0.85 }),
@@ -584,7 +585,7 @@ export function getMateriali() {
     vellutoRuggine: new THREE.MeshPhysicalMaterial({ map: texVelluto('#8a4124', 38), roughness: 0.92, sheen: 0.7, sheenColor: new THREE.Color('#d9895f') }),
   };
   // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
-  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'cartaRighe', 'bluPetrolio']) {
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio']) {
     _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
   }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
@@ -607,6 +608,7 @@ export function getMateriali() {
   _MAT.terraOrto.map.repeat.set(1, 1);
   _MAT.piastrelleVerdi.map.repeat.set(1 / 0.4, 1 / 0.4);
   _MAT.piastrelleCrema.map.repeat.set(1 / 0.4, 1 / 0.4);
+  _MAT.piastrelleOcra.map.repeat.set(1 / 0.3, 1 / 0.3);
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);

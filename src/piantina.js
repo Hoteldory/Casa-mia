@@ -1,5 +1,6 @@
 // Piantina quotata in bianco e nero, generata dagli stessi dati del modello 3D
-// (src/data/planimetria.json per il piano primo, src/data/piano-terra.json per il piano terra).
+// (src/data/planimetria.json per il piano primo; per il piano terra src/data/piano-terra.json,
+// la cognata, e src/data/piano-suoceri.json, i suoceri: un foglio per appartamento).
 // Non tocca la scena: e' un pannello SVG a parte.
 import planPrimo from './data/planimetria.json';
 
@@ -21,7 +22,7 @@ function aperture() {
     ...p, verso: p.a, provenienza: p.da,
     a: p.x_da ?? p.y_da, b: p.x_a ?? p.y_a, larghezza: p.luce_cm,
     altezza: p.h_cm ?? (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm),
-    davanzale: 0, kind: 'porta', sigla: 'P' + (i + 1),
+    davanzale: 0, kind: p.tipo === 'vano' ? 'vano' : 'porta', sigla: (p.tipo === 'vano' ? 'V' : 'P') + (i + 1),
   }));
   plan.finestre.forEach((f, i) => {
     const pf = f.tipo === 'portafinestra';
@@ -144,6 +145,9 @@ function simboli(aper) {
         out += horiz ? line(o.a, c0 + t * f, o.b, c0 + t * f, 'serr')
                      : line(c0 + t * f, o.a, c0 + t * f, o.b, 'serr');
       }
+    } else if (o.tipo === 'vano') {
+      // passaggio senza anta: la porta e' nel muro accostato dell'altro appartamento
+      out += horiz ? rect(o.a, c0, L, t, 'vuoto') : rect(c0, o.a, t, L, 'vuoto');
     } else if (o.tipo === 'scorrevole') {
       // scorrevole a scomparsa: vano vuoto e anta tratteggiata dentro la tasca del muro
       out += horiz ? rect(o.a, c0, L, t, 'vuoto') : rect(c0, o.a, t, L, 'vuoto');
@@ -259,10 +263,11 @@ function quotePerimetro(aper) {
   let out = '';
   const per = plan.muri.perimetro || { nord: ['E-nord'], sud: ['E-sud-soggiorno', 'E-sud-camera-sud'], ovest: ['E-ovest'], est: ['E-est'] };
   const pick = (ids) => ids.flatMap((id) => aper.map[id] || []).sort((a, b) => a.a - b.a);
-  // nord
-  let p = [0]; pick(per.nord).forEach((o) => p.push(o.a, o.b)); p.push(W);
+  // nord (puo' essere piu' corto del lato sud: edificio dei suoceri)
+  const Wn = per.lunghezza_nord ?? W;
+  let p = [0]; pick(per.nord).forEach((o) => p.push(o.a, o.b)); p.push(Wn);
   if (p.length > 2) out += catena(p, -120, 'x', null, true); // senza aperture basta la quota totale
-  out += quota(0, -210, W, -210, W, true);
+  out += quota(0, -210, Wn, -210, Wn, true);
   // sud
   p = [0]; pick(per.sud).forEach((o) => p.push(o.a, o.b)); p.push(W);
   out += catena(p, D + 120, 'x', null, false);
@@ -306,12 +311,31 @@ function tabelle(aper) {
     <tr><td>Portoncino</td><td>h ${A.portoncino_h_cm} cm${fonte(A.portoncino_nota)}</td></tr>
     <tr><td>Portefinestre</td><td>h ${A.portafinestra_h_cm} cm${fonte(A.portafinestra_nota)}</td></tr>
     <tr><td>Finestre</td><td>davanzale ${A.finestra_davanzale_cm} cm (assunto), h ${A.finestra_h_cm} cm${fonte(A.finestra_h_nota)}</td></tr>
-    ${T ? `<tr><td>Muro del terrazzo</td><td>${T.recinzione.spessore_cm} cm, h ${T.recinzione.altezza_cm} cm (assunti)</td></tr>` : ''}
+    ${T ? `<tr><td>Muro del terrazzo</td><td>${T.recinzione.spessore_cm} cm${T.recinzione.assunto ? ' (assunto)' : ''}, h ${T.recinzione.altezza_cm} cm (assunta)</td></tr>` : ''}
+    ${T?.falde_cm ? `<tr><td>Falde oltre il muretto</td><td>${T.falde_cm} cm su ovest, nord ed est (tetto dei suoceri)</td></tr>` : ''}
   </tbody></table></div>`;
 }
 
 // ---------- assemblaggio ----------
+// P: un piano o un elenco di piani (il piano terra ha due appartamenti, un foglio ciascuno)
 export function creaPiantina(P = planPrimo) {
+  const piani = Array.isArray(P) ? P : [P];
+  const fogli = piani.map(foglio);
+  const titolo = piani.length > 1 || piani[0]._meta.piano === 'terra' ? 'piano terra' : 'piano primo';
+  const el = document.createElement('div');
+  el.id = 'piantina';
+  el.innerHTML = `
+    <div class="pg-barra">
+      <strong>Piantina quotata · ${titolo}</strong>
+      <span class="pg-nota">Misure in cm ricavate dal rilievo della piantina. I valori marcati "assunto" non sono quotati sul disegno.</span>
+      <button id="pg-stampa">Stampa</button>
+      <button id="pg-chiudi">Torna al 3D</button>
+    </div>
+    ${fogli.map((f) => `<div class="pg-foglio">${f}</div>`).join('')}`;
+  return el;
+}
+
+function foglio(P) {
   usaPiano(P);
   const aper = aperture();
   const I = plan.muri.ingombro_esterno;
@@ -327,7 +351,7 @@ export function creaPiantina(P = planPrimo) {
   } else {
     maxY += 250; // spazio per titolo e scala grafica sotto la pianta
   }
-  const titolo = plan._meta.piano === 'terra' ? 'PIANO TERRA' : 'PIANO PRIMO';
+  const titolo = plan._meta.titolo ?? (plan._meta.piano === 'terra' ? 'PIANO TERRA' : 'PIANO PRIMO');
 
   const svg = `<svg viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" xmlns="http://www.w3.org/2000/svg">
     <rect x="${minX}" y="${minY}" width="${maxX - minX}" height="${maxY - minY}" fill="#fff"/>
@@ -352,15 +376,6 @@ export function creaPiantina(P = planPrimo) {
     ${txt((minX + maxX) / 2, maxY - 55, 'misure in centimetri', 'mis', 'text-anchor="middle"')}
   </svg>`;
 
-  const el = document.createElement('div');
-  el.id = 'piantina';
-  el.innerHTML = `
-    <div class="pg-barra">
-      <strong>Piantina quotata · ${titolo.toLowerCase()}</strong>
-      <span class="pg-nota">Misure in cm ricavate dal rilievo della piantina. I valori marcati "assunto" non sono quotati sul disegno.</span>
-      <button id="pg-stampa">Stampa</button>
-      <button id="pg-chiudi">Torna al 3D</button>
-    </div>
-    <div class="pg-foglio">${svg}${tabelle(aper)}</div>`;
-  return el;
+  const nota = plan._meta.coincidenza_terrazzo ? `<p class="pg-nota">${esc(plan._meta.coincidenza_terrazzo)}</p>` : '';
+  return svg + nota + tabelle(aper);
 }

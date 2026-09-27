@@ -33,7 +33,7 @@ export function arredi(ctx, stanze) {
     arredaCameraEst(ctx, stanze),
     arredaTerrazzo(ctx),
   ];
-  comuni[comuni.length - 1].userData.esterno = true; // il terrazzo resta visibile anche in vista del piano terra
+  comuni[comuni.length - 1].userData.esterno = true; // il terrazzo e' il tetto dei suoceri: resta in vista del piano terra (con il tetto acceso)
   const varianti = {};
   for (const [tag, build] of Object.entries(PARTI)) {
     ctx.variante = tag; // ingombri e punti luce nascono marchiati con l'allestimento

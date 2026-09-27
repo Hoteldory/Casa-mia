@@ -159,6 +159,8 @@ function buildPorta(p, seg, ctx, P = plan) {
   g.add(along(w + 0.04, s, (p.a + p.b) / 2 * C, h + s / 2));
   // soglia in pietra
   g.add(horiz ? box(w, 0.012, T, M.pietra, (p.a + p.b) / 2 * C, 0.006, cross) : box(T, 0.012, w, M.pietra, cross, 0.006, (p.a + p.b) / 2 * C));
+  // vano: passaggio senza anta (la porta, se c'e', e' nel muro accostato dell'altro edificio)
+  if (p.tipo === 'vano') return g;
   // scorrevole a scomparsa: l'anta e' quasi tutta nella tasca del muro; se ne vede il bordo
   // con la maniglia a incasso in ottone, dal lato della tasca (p.tasca, di default sud/est)
   if (p.tipo === 'scorrevole') {
@@ -461,7 +463,7 @@ function esterni(ctx, walls) {
   // rampa bassa: salendo verso nord, la destra e' il lato est
   ringhieraRampa(r1.x + r1.w, r1.z + r1.d, -3.4, r1.x + r1.w, r1.z, -1.7, n1);
   // il piano terra (casa della cognata) e' costruito a parte, vedi pianoTerra.js
-  g.add(terrazzoNord(ctx));
+  // il terrazzo (tetto dei suoceri) e' un gruppo a parte: vedi costruisciArchitettura
   // lanterne in ottone: ingresso, balcone a ovest e balcone a sud-est
   // sono appese ai muri del piano primo: stanno con i muri, cosi' spariscono insieme a loro
   // (vista del piano terra, pareti basse) invece di restare sospese nel vuoto
@@ -475,7 +477,34 @@ function esterni(ctx, walls) {
 }
 
 // ---------- terrazzo a nord ----------
-// Solaio, pavimento in cotto e recinzione a muro pieno (piantina aggiornata, 67,12 mq).
+// E' il tetto dell'edificio dei suoceri: solaio, pavimento in cotto, recinzione a muro pieno
+// da 40 cm e, oltre il muretto, falde in coppi da 70 cm su ovest, nord ed est che arrivano a filo
+// dei loro muri esterni (594 + 2 x (40 + 70) = 814, vedi piano-suoceri.json).
+const Y_TESTA_SUOCERI = -0.30; // testa dei muri dei suoceri: 3,40 - 3,10
+function falda(L, f, { yB = Y_TESTA_SUOCERI, yI = 0, yO = -0.21 } = {}) {
+  // falda lungo x (lunghezza L, centrata), in pendenza verso -z: interno a z = 0, gronda a z = -f
+  const M = getMateriali();
+  const g = new THREE.Group();
+  const sh = new THREE.Shape();
+  sh.moveTo(0, yB); sh.lineTo(f, yB); sh.lineTo(f, yO); sh.lineTo(0, yI); sh.closePath();
+  const gm = mergeVertices(new THREE.ExtrudeGeometry(sh, { depth: L, bevelEnabled: false, curveSegments: 1 }));
+  gm.rotateY(Math.PI / 2);               // s della sezione -> -z, estrusione -> +x
+  gm.translate(-L / 2, 0, 0);
+  const corpo = new THREE.Mesh(gm, M.intonacoEsterno);
+  corpo.castShadow = true; corpo.receiveShadow = true;
+  g.add(corpo);
+  // manto in coppi appoggiato sulla pendenza
+  const a = Math.atan2(yI - yO, f), w = Math.hypot(f, yI - yO), t = 0.03;
+  const cop = box(L, t, w, M.coppi, 0, 0, 0);
+  cop.rotation.x = -a;
+  cop.position.set(0, (yI + yO) / 2 + (t / 2) * Math.cos(a), -f / 2 - (t / 2) * Math.sin(a));
+  g.add(cop);
+  // grondaia in rame lungo la gronda
+  const gr = cyl(0.055, 0.055, L, M.rame, 0, yO - 0.02, -f - 0.05, 12);
+  gr.rotation.z = Math.PI / 2;
+  g.add(gr);
+  return g;
+}
 function terrazzoNord(ctx) {
   const M = getMateriali();
   const g = new THREE.Group();
@@ -484,11 +513,13 @@ function terrazzoNord(ctx) {
   const xO = I.x_ovest * C, zS = I.z_sud * C, zN = I.z_nord * C, zR = I.z_risega * C;
   const xEs = I.x_est_tratto_sud * C, xEn = I.x_est_tratto_nord * C;
   const sp = T.recinzione.spessore_cm * C, hm = T.recinzione.altezza_cm * C;
-  // solaio del terrazzo e volume del piano terra che lo regge
-  const x0 = xO - sp, x1 = xEs + sp, z0 = zN - sp, z1 = zS;
-  g.add(box(x1 - x0, 0.26, z1 - z0, M.intonacoEsterno, (x0 + x1) / 2, -0.13, (z0 + z1) / 2));
-  g.add(box(x1 - x0, 3.19, z1 - z0, M.intonacoEsterno, (x0 + x1) / 2, -1.855, (z0 + z1) / 2));
-  // pavimento in cotto, nei due tratti di larghezza diversa
+  const f = (T.falde_cm ?? 0) * C;
+  // solaio: poggia sulla testa dei muri dei suoceri, nei due tratti di larghezza diversa
+  const yB = Y_TESTA_SUOCERI;
+  for (const [x0, z0, x1, z1] of [[xO - sp, zR - sp, xEs + sp, zS], [xO - sp, zN - sp, xEn + sp, zR - sp]]) {
+    g.add(box(x1 - x0, -yB, z1 - z0, M.intonacoEsterno, (x0 + x1) / 2, yB / 2, (z0 + z1) / 2));
+  }
+  // pavimento in cotto
   g.add(plane(xEs - xO, zS - zR, M.cotto, (xO + xEs) / 2, 0.002, (zR + zS) / 2, 'y+'));
   g.add(plane(xEn - xO, zR - zN, M.cotto, (xO + xEn) / 2, 0.002, (zN + zR) / 2, 'y+'));
   // recinzione: anello di muri pieni, tratti adiacenti e mai sovrapposti
@@ -504,11 +535,18 @@ function terrazzoNord(ctx) {
   muro(xEn, zN, xEn + sp, zR - sp, [xEn, zN, xEn + sp + ag, zR - sp]);     // est, tratto nord
   muro(xEn, zR - sp, xEs + sp, zR, [xEn, zR - sp, xEs + sp + ag, zR]);     // risega di 40 cm
   muro(xEs, zR, xEs + sp, zS, [xEs, zR, xEs + sp + ag, zS]);               // est, tratto sud
-  // aperture del piano terra sotto il terrazzo, per non lasciare un volume cieco
-  for (const [wx, wz, nx, nz] of [[3.0, zN - sp, 0, -1], [5.2, zN - sp, 0, -1], [7.4, zN - sp, 0, -1],
-                                  [xO - sp, -8.2, -1, 0], [xO - sp, -5.4, -1, 0], [xO - sp, -2.6, -1, 0],
-                                  [xEs + sp, -8.2, 1, 0], [xEs + sp, -4.0, 1, 0]]) {
-    g.add(box(nx ? 0.04 : 1.2, 1.4, nz ? 0.04 : 1.2, M.nero, wx + nx * 0.01, -1.75, wz + nz * 0.01, { cast: false }));
+  if (!f) return g;
+  // falde oltre il muretto: ogni falda corre per tutto il lato, negli angoli si incrociano
+  const xW = xO - sp, zNo = zN - sp, xEn2 = xEn + sp, xEs2 = xEs + sp, zR2 = zR - sp;
+  const metti = (fa, x, z, ry) => { fa.position.set(x, 0, z); fa.rotation.y = ry; g.add(fa); };
+  metti(falda(zS - (zNo - f), f), xW, (zNo - f + zS) / 2, Math.PI / 2);                    // ovest
+  metti(falda(xEn2 + f - (xW - f), f), (xW - f + xEn2 + f) / 2, zNo, 0);                   // nord
+  metti(falda(zR2 - (zNo - f), f), xEn2, (zNo - f + zR2) / 2, -Math.PI / 2);              // est, tratto nord
+  metti(falda(xEs2 + f - xEn2, f), (xEn2 + xEs2 + f) / 2, zR2, 0);                         // sopra il gradino
+  metti(falda(zS - (zR2 - f), f), xEs2, (zR2 - f + zS) / 2, -Math.PI / 2);                // est, tratto sud
+  // pluviali in rame agli angoli esterni
+  for (const [x, z] of [[xW - f - 0.05, zNo - f - 0.05], [xEn2 + f + 0.05, zNo - f - 0.05], [xEs2 + f + 0.05, zS - 0.12], [xW - f - 0.05, zS - 0.12]]) {
+    g.add(cyl(0.04, 0.04, 3.4 + yB, M.rame, x, (yB - 3.4) / 2 - 0.02, z, 10));
   }
   return g;
 }
@@ -695,5 +733,6 @@ export function costruisciArchitettura(ctx) {
   ceilings.add(roof2);
 
   const exterior = esterni(ctx, walls);
-  return { walls, wallsLow, floors, ceilings, exterior, stanze: st };
+  const terrazzo = terrazzoNord(ctx);
+  return { walls, wallsLow, floors, ceilings, exterior, terrazzo, stanze: st };
 }

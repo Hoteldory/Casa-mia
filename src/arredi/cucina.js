@@ -4,13 +4,15 @@ import * as THREE from 'three';
 import { box, cyl, sphere, plane, group, place, antaTelaio, manigliaOttone, pendente, libri, MAT } from './comune.js';
 
 // ---- base cucina lineare con ante a telaio e maniglie in ottone (lungo Z, contro il muro ovest) ----
-export function baseCucina(ctx, { x0, z0, z1, hobZ, sinkZ }) {
+// hobZ o sinkZ a null: tratto senza piano cottura o senza lavello; mat = colore delle ante
+export function baseCucina(ctx, { x0, z0, z1, hobZ = null, sinkZ = null, mat }) {
   const M = MAT();
+  const F = mat || M.salvia;
   const g = new THREE.Group();
   const L = z1 - z0, D = 0.6, Hb = 0.86;
   const cx = x0 + D / 2, cz = (z0 + z1) / 2;
   g.add(box(D - 0.06, 0.1, L - 0.04, M.noceScuro, cx - 0.03 + 0.05, 0.05, cz)); // zoccolo arretrato
-  g.add(box(D, Hb - 0.1, L, M.salvia, cx, 0.1 + (Hb - 0.1) / 2, cz)); // corpo
+  g.add(box(D, Hb - 0.1, L, F, cx, 0.1 + (Hb - 0.1) / 2, cz)); // corpo
   // top in pietra a spessore
   g.add(box(D + 0.03, 0.04, L + 0.02, M.pietra, cx + 0.015, Hb + 0.02, cz));
   // ante: moduli da ~60 cm, faccia verso +X
@@ -18,50 +20,55 @@ export function baseCucina(ctx, { x0, z0, z1, hobZ, sinkZ }) {
   const aw = L / n;
   for (let i = 0; i < n; i++) {
     const z = z0 + aw * (i + 0.5);
-    const isHob = Math.abs(z - hobZ) < aw / 2;
+    const isHob = hobZ !== null && Math.abs(z - hobZ) < aw / 2;
     if (isHob) {
       // forno sotto il piano cottura: cassetto sopra + anta forno con vetro scuro
-      const dr = antaTelaio(aw - 0.02, 0.18, M.salvia, 0.04);
+      const dr = antaTelaio(aw - 0.02, 0.18, F, 0.04);
       dr.rotation.y = Math.PI / 2; dr.position.set(x0 + D + 0.005, Hb - 0.12, z); g.add(dr);
       g.add(manigliaOttone(0.25, x0 + D + 0.02, Hb - 0.12, z).rotateY(Math.PI / 2));
       g.add(box(0.02, 0.5, aw - 0.02, M.nero, x0 + D + 0.005, 0.37, z));
       g.add(box(0.01, 0.03, aw - 0.06, M.ottone, x0 + D + 0.02, 0.58, z));
       g.add(box(0.01, 0.26, aw - 0.1, M.pietraScura, x0 + D + 0.015, 0.32, z));
-    } else if (Math.abs(z - sinkZ) < aw / 2) {
+    } else if (sinkZ !== null && Math.abs(z - sinkZ) < aw / 2) {
       // lavello a catino: frontale in ceramica a vista
       g.add(box(0.06, 0.24, aw - 0.02, M.ceramica, x0 + D + 0.02, Hb - 0.1, z));
-      const a = antaTelaio(aw - 0.02, Hb - 0.36, M.salvia);
+      const a = antaTelaio(aw - 0.02, Hb - 0.36, F);
       a.rotation.y = Math.PI / 2; a.position.set(x0 + D + 0.005, (Hb - 0.36) / 2 + 0.1, z); g.add(a);
       g.add(manigliaOttone(0.12, x0 + D + 0.02, 0.55, z).rotateY(Math.PI / 2));
     } else {
-      const a = antaTelaio(aw - 0.02, Hb - 0.14, M.salvia);
+      const a = antaTelaio(aw - 0.02, Hb - 0.14, F);
       a.rotation.y = Math.PI / 2; a.position.set(x0 + D + 0.005, (Hb - 0.14) / 2 + 0.1, z); g.add(a);
       const h = manigliaOttone(0.12, x0 + D + 0.02, 0.62, z + (i % 2 ? -0.16 : 0.16), true);
       h.rotation.y = Math.PI / 2; g.add(h);
     }
   }
   // piano cottura: 4 fuochi con griglie in ghisa e manopole in ottone
-  for (const [dz, dx] of [[-0.14, -0.12], [0.14, -0.12], [-0.14, 0.12], [0.14, 0.12]]) {
-    g.add(cyl(0.045, 0.045, 0.012, M.ottoneScuro, cx + dx, Hb + 0.046, hobZ + dz, 16));
-    g.add(cyl(0.02, 0.02, 0.02, M.ferro, cx + dx, Hb + 0.05, hobZ + dz, 12));
-    g.add(box(0.2, 0.01, 0.2, M.ferro, cx + dx, Hb + 0.06, hobZ + dz));
+  if (hobZ !== null) {
+    for (const [dz, dx] of [[-0.14, -0.12], [0.14, -0.12], [-0.14, 0.12], [0.14, 0.12]]) {
+      g.add(cyl(0.045, 0.045, 0.012, M.ottoneScuro, cx + dx, Hb + 0.046, hobZ + dz, 16));
+      g.add(cyl(0.02, 0.02, 0.02, M.ferro, cx + dx, Hb + 0.05, hobZ + dz, 12));
+      g.add(box(0.2, 0.01, 0.2, M.ferro, cx + dx, Hb + 0.06, hobZ + dz));
+    }
+    for (let i = 0; i < 4; i++) g.add(cyl(0.012, 0.012, 0.02, M.ottone, x0 + D - 0.03, Hb + 0.05, hobZ - 0.2 + i * 0.13, 10));
+    // pentola in rame sul fuoco
+    g.add(cyl(0.11, 0.1, 0.12, M.ottoneScuro, cx - 0.12, Hb + 0.12, hobZ + 0.14, 20));
+    g.add(cyl(0.006, 0.006, 0.2, M.ferro, cx - 0.12, Hb + 0.16, hobZ + 0.3, 8).rotateX(Math.PI / 2));
   }
-  for (let i = 0; i < 4; i++) g.add(cyl(0.012, 0.012, 0.02, M.ottone, x0 + D - 0.03, Hb + 0.05, hobZ - 0.2 + i * 0.13, 10));
   // lavello: incasso nel top + rubinetto a collo d'oca in ottone brunito
-  g.add(box(0.44, 0.02, 0.5, M.ceramica, cx, Hb + 0.035, sinkZ));
-  g.add(box(0.36, 0.01, 0.42, M.pietraScura, cx, Hb + 0.046, sinkZ, { cast: false }));
-  const tap = group(
-    cyl(0.018, 0.022, 0.06, M.ottoneScuro, 0, 0.03, 0),
-    cyl(0.011, 0.011, 0.3, M.ottoneScuro, 0, 0.2, 0),
-    (() => { const t = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.011, 8, 16, Math.PI), M.ottoneScuro); t.position.set(0.1, 0.35, 0); return t; })(),
-    cyl(0.011, 0.011, 0.08, M.ottoneScuro, 0.2, 0.31, 0),
-    cyl(0.006, 0.006, 0.08, M.ottoneScuro, 0, 0.12, 0).rotateX(Math.PI / 2),
-  );
-  tap.position.set(x0 + 0.1, Hb + 0.04, sinkZ); g.add(tap);
-  // oggetti: tagliere, vasetti, pentola in rame sul fuoco
-  g.add(box(0.28, 0.02, 0.4, M.rovere, cx, Hb + 0.05, sinkZ + 0.6));
-  g.add(cyl(0.11, 0.1, 0.12, M.ottoneScuro, cx - 0.12, Hb + 0.12, hobZ + 0.14, 20));
-  g.add(cyl(0.006, 0.006, 0.2, M.ferro, cx - 0.12, Hb + 0.16, hobZ + 0.3, 8).rotateX(Math.PI / 2));
+  if (sinkZ !== null) {
+    g.add(box(0.44, 0.02, 0.5, M.ceramica, cx, Hb + 0.035, sinkZ));
+    g.add(box(0.36, 0.01, 0.42, M.pietraScura, cx, Hb + 0.046, sinkZ, { cast: false }));
+    const tap = group(
+      cyl(0.018, 0.022, 0.06, M.ottoneScuro, 0, 0.03, 0),
+      cyl(0.011, 0.011, 0.3, M.ottoneScuro, 0, 0.2, 0),
+      (() => { const t = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.011, 8, 16, Math.PI), M.ottoneScuro); t.position.set(0.1, 0.35, 0); return t; })(),
+      cyl(0.011, 0.011, 0.08, M.ottoneScuro, 0.2, 0.31, 0),
+      cyl(0.006, 0.006, 0.08, M.ottoneScuro, 0, 0.12, 0).rotateX(Math.PI / 2),
+    );
+    tap.position.set(x0 + 0.1, Hb + 0.04, sinkZ); g.add(tap);
+    if (sinkZ + 0.8 < z1) g.add(box(0.28, 0.02, 0.4, M.rovere, cx, Hb + 0.05, sinkZ + 0.6)); // tagliere
+  }
+  // vasetti in ceramica in fondo al piano
   for (let i = 0; i < 3; i++) g.add(cyl(0.05, 0.05, 0.14 + i * 0.03, M.ceramica, cx - 0.15, Hb + 0.11 + i * 0.015, z1 - 0.3 - i * 0.13, 16));
   ctx.solid(box(D + 0.05, Hb, L, M.nero, cx, Hb / 2, cz, { cast: false })).visible = false;
   return g;
@@ -122,17 +129,18 @@ export function mensole(ctx, { x, z0, z1, ys = [1.62, 2.02] }) {
 }
 
 // ---- colonne dispensa/frigo con ante a telaio ----
-export function colonne(ctx, { x1, z0, z1 }) {
+export function colonne(ctx, { x1, z0, z1, mat }) {
   const M = MAT();
+  const F = mat || M.salvia;
   const g = new THREE.Group();
   const D = 0.6, Hc = 2.2, L = z1 - z0, cx = x1 - D / 2, cz = (z0 + z1) / 2;
   g.add(box(D - 0.05, 0.1, L, M.noceScuro, cx + 0.025, 0.05, cz));
-  g.add(box(D, Hc - 0.1, L, M.salvia, cx, 0.1 + (Hc - 0.1) / 2, cz));
+  g.add(box(D, Hc - 0.1, L, F, cx, 0.1 + (Hc - 0.1) / 2, cz));
   g.add(box(D + 0.02, 0.05, L + 0.02, M.noce, cx - 0.01, Hc + 0.025, cz));
   const n = 2, aw = L / n;
   for (let i = 0; i < n; i++) {
     const z = z0 + aw * (i + 0.5);
-    const a = antaTelaio(aw - 0.02, Hc - 0.16, M.salvia, 0.07);
+    const a = antaTelaio(aw - 0.02, Hc - 0.16, F, 0.07);
     a.rotation.y = -Math.PI / 2; a.position.set(x1 - D - 0.005, (Hc - 0.16) / 2 + 0.1, z); g.add(a);
     const h = manigliaOttone(0.4, x1 - D - 0.02, 1.1, z + (i ? 0.2 : -0.2), true);
     h.rotation.y = -Math.PI / 2; g.add(h);
