@@ -1,0 +1,590 @@
+{
+  "_meta": {
+    "piano": "terra",
+    "nome": "Piano terra (cognata)",
+    "sorgente": "piantina-terra.jpg",
+    "metodo": "La foto e' in prospettiva (scala variabile fra 1,64 e 2,26 cm/px), quindi le misure vengono dalle quote scritte in piantina. Le posizioni di porte, finestre e arredi non quotate sono ricavate in proporzione dentro la stanza che le contiene. Le superfici quotate tornano con le misure: camera 10,99 = 395x250 + nicchia 100x111; camera 10,48 = 395x296 meno la rientranza 108x111; camera 16,00 = 404x396; bagno 7,68 = 404x190; ripostiglio 4,40 = 176x250.",
+    "origine": "angolo nord-ovest esterno, x verso est, y verso sud (stesso sistema del piano primo)",
+    "unita": "cm",
+    "legenda_assunto": "assunto = valore non leggibile o non riportato in piantina, scelto per coerenza",
+    "allineamento_piano_primo": "Il perimetro coincide con quello del piano primo: la piantina riporta 1053 x 1105, il piano primo 1051 x 1097. Le facce esterne sono allineate a quelle del piano primo (facciata continua); i 2 cm in larghezza e gli 8 in profondita' sono assorbiti dagli spessori dei muri esterni. Le misure interne delle stanze sono quelle della piantina.",
+    "modifiche_post_rilievo": [
+      "Finestra aggiunta sulla parete est del soggiorno, sopra il divano (richiesta: non presente in piantina)"
+    ]
+  },
+  "altezze": {
+    "quota_pavimento_m": -3.4,
+    "interpiano_cm": 340,
+    "soffitto_cm": 300,
+    "soffitto_nota": "assunto: interpiano 340 (dalla scala esterna del piano primo) meno 40 di solaio",
+    "porta_interna_h_cm": 210,
+    "portafinestra_h_cm": 254,
+    "portafinestra_nota": "da piantina: 240/254",
+    "portoncino_h_cm": 249,
+    "portoncino_nota": "da piantina: 90/249",
+    "finestra_davanzale_cm": 90,
+    "finestra_davanzale_assunto": true,
+    "finestra_h_cm": 150,
+    "finestra_h_nota": "da piantina: 120/150, 150/150, 60/150"
+  },
+  "muri": {
+    "esterno_spessore_cm": 25,
+    "interno_spessore_cm": 8,
+    "interno_nota": "tramezzi fra le camere 8 cm; muri del disimpegno 14 cm (disegnati piu' spessi)",
+    "ingombro_esterno": {
+      "larghezza_cm": 1051,
+      "profondita_cm": 1097,
+      "quota_piantina": "1053 x 1105"
+    },
+    "segmenti": [
+      {
+        "id": "T-E-nord",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 1051,
+          "d": 25
+        },
+        "tipo": "esterno",
+        "esterno": [
+          [
+            0,
+            -1
+          ]
+        ],
+        "h_cm": 340
+      },
+      {
+        "id": "T-E-ovest",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 25,
+          "d": 965
+        },
+        "tipo": "esterno",
+        "esterno": [
+          [
+            -1,
+            0
+          ]
+        ],
+        "h_cm": 340
+      },
+      {
+        "id": "T-E-est",
+        "rect": {
+          "x": 1028,
+          "y": 0,
+          "w": 23,
+          "d": 1097
+        },
+        "tipo": "esterno",
+        "esterno": [
+          [
+            1,
+            0
+          ]
+        ],
+        "h_cm": 340
+      },
+      {
+        "id": "T-E-sud",
+        "rect": {
+          "x": 0,
+          "y": 942,
+          "w": 584,
+          "d": 23
+        },
+        "tipo": "esterno",
+        "esterno": [
+          [
+            0,
+            1
+          ]
+        ],
+        "h_cm": 340,
+        "nota": "facciata sud sotto il pianerottolo del piano primo, con il portoncino"
+      },
+      {
+        "id": "T-E-sud-ovest-soggiorno",
+        "rect": {
+          "x": 584,
+          "y": 942,
+          "w": 40,
+          "d": 155
+        },
+        "tipo": "esterno",
+        "esterno": [
+          [
+            -1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "h_cm": 340,
+        "nota": "fianco ovest del soggiorno che sporge a sud (122 in piantina); faccia esterna a 584 come al piano primo (591 in piantina)"
+      },
+      {
+        "id": "T-E-sud-soggiorno",
+        "rect": {
+          "x": 624,
+          "y": 1077,
+          "w": 404,
+          "d": 20
+        },
+        "tipo": "esterno",
+        "esterno": [
+          [
+            0,
+            1
+          ]
+        ],
+        "h_cm": 340
+      },
+      {
+        "id": "T-I-cam1-cam2-a",
+        "rect": {
+          "x": 25,
+          "y": 275,
+          "w": 295,
+          "d": 8
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-cam1-cam2-b",
+        "rect": {
+          "x": 312,
+          "y": 283,
+          "w": 8,
+          "d": 111
+        },
+        "tipo": "interno",
+        "nota": "gradino del tramezzo: la nicchia d'ingresso della camera 10,99 (100 x 111) entra nella camera 10,48"
+      },
+      {
+        "id": "T-I-cam1-cam2-c",
+        "rect": {
+          "x": 312,
+          "y": 386,
+          "w": 108,
+          "d": 8
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-cam2-cucina",
+        "rect": {
+          "x": 25,
+          "y": 579,
+          "w": 395,
+          "d": 8
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-dis-ovest",
+        "rect": {
+          "x": 420,
+          "y": 25,
+          "w": 14,
+          "d": 621
+        },
+        "tipo": "interno",
+        "nota": "da nord fino alla fine del piano cucina; porte delle due camere a ovest"
+      },
+      {
+        "id": "T-I-rip-dis",
+        "rect": {
+          "x": 434,
+          "y": 275,
+          "w": 176,
+          "d": 8
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-dis-sud",
+        "rect": {
+          "x": 434,
+          "y": 529,
+          "w": 176,
+          "d": 8
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-dis-est",
+        "rect": {
+          "x": 610,
+          "y": 25,
+          "w": 14,
+          "d": 621
+        },
+        "tipo": "interno",
+        "nota": "porte della camera 16,00 e del bagno"
+      },
+      {
+        "id": "T-I-cam3-bagno",
+        "rect": {
+          "x": 624,
+          "y": 421,
+          "w": 404,
+          "d": 10
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-bagno-soggiorno",
+        "rect": {
+          "x": 624,
+          "y": 621,
+          "w": 404,
+          "d": 14
+        },
+        "tipo": "interno"
+      },
+      {
+        "id": "T-I-armadio-sud",
+        "rect": {
+          "x": 550,
+          "y": 646,
+          "w": 74,
+          "d": 15
+        },
+        "tipo": "interno",
+        "nota": "testata piena in fondo all'armadio a muro 60 x 109"
+      },
+      {
+        "id": "T-I-ingresso",
+        "rect": {
+          "x": 420,
+          "y": 842,
+          "w": 14,
+          "d": 100
+        },
+        "tipo": "interno",
+        "nota": "setto di 100 cm fra cucina e ingresso"
+      }
+    ],
+    "perimetro": {
+      "nord": [
+        "T-E-nord"
+      ],
+      "sud": [
+        "T-E-sud",
+        "T-E-sud-soggiorno"
+      ],
+      "ovest": [
+        "T-E-ovest"
+      ],
+      "est": [
+        "T-E-est"
+      ]
+    }
+  },
+  "stanze": {
+    "camera_1": {
+      "nome": "Camera 10,99",
+      "rettangoli": [
+        {
+          "x": 25,
+          "y": 25,
+          "w": 395,
+          "d": 250
+        },
+        {
+          "x": 320,
+          "y": 275,
+          "w": 100,
+          "d": 111
+        }
+      ],
+      "superficie_quotata_mq": 10.99,
+      "superficie_calcolata_mq": 10.985,
+      "note": "letto singolo contro la parete nord, armadio a due moduli contro la parete sud; si entra dalla nicchia 100 x 111"
+    },
+    "camera_2": {
+      "nome": "Camera 10,48",
+      "rettangoli": [
+        {
+          "x": 25,
+          "y": 283,
+          "w": 287,
+          "d": 111
+        },
+        {
+          "x": 25,
+          "y": 394,
+          "w": 395,
+          "d": 185
+        }
+      ],
+      "superficie_quotata_mq": 10.48,
+      "superficie_calcolata_mq": 10.49,
+      "note": "letto singolo contro il tramezzo nord, armadio a tre moduli contro la parete sud"
+    },
+    "ripostiglio": {
+      "nome": "Ripostiglio",
+      "rect": {
+        "x": 434,
+        "y": 25,
+        "w": 176,
+        "d": 250
+      },
+      "superficie_quotata_mq": 4.4,
+      "superficie_calcolata_mq": 4.4
+    },
+    "disimpegno": {
+      "nome": "Disimpegno",
+      "rect": {
+        "x": 434,
+        "y": 283,
+        "w": 176,
+        "d": 246
+      },
+      "superficie_quotata_mq": 4.23,
+      "superficie_calcolata_mq": 4.33,
+      "note": "quote 176 x 246 (4,33); la piantina dichiara 4,23"
+    },
+    "camera_3": {
+      "nome": "Camera 16,00",
+      "rect": {
+        "x": 624,
+        "y": 25,
+        "w": 404,
+        "d": 396
+      },
+      "superficie_quotata_mq": 16.0,
+      "superficie_calcolata_mq": 16.0,
+      "note": "letto matrimoniale con testata a sud, armadio a tre moduli a nord"
+    },
+    "bagno": {
+      "nome": "Bagno",
+      "rect": {
+        "x": 624,
+        "y": 431,
+        "w": 404,
+        "d": 190
+      },
+      "superficie_quotata_mq": 7.68,
+      "superficie_calcolata_mq": 7.68,
+      "note": "lavabo, wc e bidet contro la parete sud; doccia 80 x 80 nell'angolo nord-est (disegnata come rettangolo: assunta doccia)"
+    },
+    "zona_giorno": {
+      "nome": "Cucina-pranzo, ingresso e soggiorno",
+      "rettangoli": [
+        {
+          "x": 25,
+          "y": 587,
+          "w": 395,
+          "d": 355,
+          "parte": "cucina-pranzo"
+        },
+        {
+          "x": 420,
+          "y": 646,
+          "w": 14,
+          "d": 196,
+          "parte": "raccordo"
+        },
+        {
+          "x": 434,
+          "y": 646,
+          "w": 190,
+          "d": 296,
+          "parte": "ingresso"
+        },
+        {
+          "x": 434,
+          "y": 537,
+          "w": 116,
+          "d": 109,
+          "parte": "passaggio verso il disimpegno"
+        },
+        {
+          "x": 624,
+          "y": 635,
+          "w": 404,
+          "d": 442,
+          "parte": "soggiorno"
+        }
+      ],
+      "superficie_quotata_mq": 39.3,
+      "superficie_calcolata_mq": 39.03,
+      "note": "open space: cucina 395 x 355, ingresso 187 di larghezza, soggiorno 404 x 442"
+    }
+  },
+  "porte": [
+    {
+      "id": "T-P-ingresso",
+      "tipo": "portoncino",
+      "muro": "T-E-sud",
+      "da": "esterno",
+      "a": "zona_giorno",
+      "x_da": 467,
+      "x_a": 557,
+      "luce_cm": 90,
+      "h_cm": 249,
+      "battente": "apre verso l'interno, cerniera a ovest"
+    },
+    {
+      "id": "T-P-cam1",
+      "tipo": "interna",
+      "muro": "T-I-dis-ovest",
+      "da": "disimpegno",
+      "a": "camera_1",
+      "y_da": 290,
+      "y_a": 370,
+      "luce_cm": 80,
+      "luce_assunta": true,
+      "battente": "apre verso la camera, cerniera a sud"
+    },
+    {
+      "id": "T-P-cam2",
+      "tipo": "interna",
+      "muro": "T-I-dis-ovest",
+      "da": "disimpegno",
+      "a": "camera_2",
+      "y_da": 410,
+      "y_a": 490,
+      "luce_cm": 80,
+      "luce_assunta": true,
+      "battente": "apre verso la camera, cerniera a nord"
+    },
+    {
+      "id": "T-P-rip",
+      "tipo": "scorrevole",
+      "muro": "T-I-rip-dis",
+      "da": "disimpegno",
+      "a": "ripostiglio",
+      "x_da": 442,
+      "x_a": 512,
+      "luce_cm": 70,
+      "luce_assunta": true,
+      "battente": "scorrevole a scomparsa nel muro"
+    },
+    {
+      "id": "T-P-dis",
+      "tipo": "scorrevole",
+      "muro": "T-I-dis-sud",
+      "da": "zona_giorno",
+      "a": "disimpegno",
+      "x_da": 442,
+      "x_a": 522,
+      "luce_cm": 80,
+      "luce_assunta": true,
+      "battente": "scorrevole a scomparsa nel muro"
+    },
+    {
+      "id": "T-P-cam3",
+      "tipo": "interna",
+      "muro": "T-I-dis-est",
+      "da": "disimpegno",
+      "a": "camera_3",
+      "y_da": 292,
+      "y_a": 372,
+      "luce_cm": 80,
+      "luce_assunta": true,
+      "battente": "apre verso la camera, cerniera a sud"
+    },
+    {
+      "id": "T-P-bagno",
+      "tipo": "interna",
+      "muro": "T-I-dis-est",
+      "da": "disimpegno",
+      "a": "bagno",
+      "y_da": 440,
+      "y_a": 520,
+      "luce_cm": 80,
+      "luce_assunta": true,
+      "battente": "apre verso il bagno, cerniera a nord",
+      "aperta_rad": 0.35
+    }
+  ],
+  "finestre": [
+    {
+      "id": "T-F-cam1",
+      "stanza": "camera_1",
+      "muro": "T-E-ovest",
+      "y_da": 127,
+      "y_a": 247,
+      "larghezza_cm": 120,
+      "tipo": "finestra"
+    },
+    {
+      "id": "T-F-cam2",
+      "stanza": "camera_2",
+      "muro": "T-E-ovest",
+      "y_da": 440,
+      "y_a": 560,
+      "larghezza_cm": 120,
+      "tipo": "finestra"
+    },
+    {
+      "id": "T-F-cucina",
+      "stanza": "zona_giorno",
+      "muro": "T-E-ovest",
+      "y_da": 660,
+      "y_a": 780,
+      "larghezza_cm": 120,
+      "tipo": "finestra"
+    },
+    {
+      "id": "T-F-cam3",
+      "stanza": "camera_3",
+      "muro": "T-E-est",
+      "y_da": 149,
+      "y_a": 299,
+      "larghezza_cm": 150,
+      "tipo": "finestra"
+    },
+    {
+      "id": "T-F-bagno",
+      "stanza": "bagno",
+      "muro": "T-E-est",
+      "y_da": 518,
+      "y_a": 578,
+      "larghezza_cm": 60,
+      "tipo": "finestra"
+    },
+    {
+      "id": "T-F-soggiorno-est",
+      "stanza": "zona_giorno",
+      "muro": "T-E-est",
+      "y_da": 715,
+      "y_a": 865,
+      "larghezza_cm": 150,
+      "tipo": "finestra",
+      "modifica_richiesta": true,
+      "nota": "aggiunta su richiesta: sopra il divano addossato alla parete est; 150 x 150 come la camera 16,00, davanzale a 90 sopra lo schienale (misure assunte)"
+    },
+    {
+      "id": "T-PF-soggiorno-sud",
+      "stanza": "zona_giorno",
+      "muro": "T-E-sud-soggiorno",
+      "x_da": 708,
+      "x_a": 948,
+      "larghezza_cm": 240,
+      "tipo": "portafinestra",
+      "altezza_cm": 254,
+      "scuri": "a libro",
+      "scuri_nota": "scuri a libro: con ante intere da 123 cm sporgerebbero oltre lo spigolo est"
+    }
+  ],
+  "arredi_disegnati_in_piantina": [
+    "cucina lineare 395 x 60 sulla parete nord della cucina: lavello a due vasche con gocciolatoio, piano cottura a 4 fuochi",
+    "tavolo da pranzo con 6 sedie al centro della cucina",
+    "camino all'estremita' ovest della parete sud della cucina, con panca in muratura 395 x 60 lungo la parete (rettangolo con diagonale: letto come piano in muratura)",
+    "camera 10,99: letto singolo a nord con comodino, armadio a due moduli a sud",
+    "camera 10,48: letto singolo a nord, armadio a tre moduli a sud",
+    "camera 16,00: letto matrimoniale con due comodini, testata a sud; armadio a tre moduli a nord",
+    "bagno: lavabo, wc, bidet a sud; doccia nell'angolo nord-est",
+    "soggiorno: divano a due posti contro la parete est, divano a tre posti davanti alla portafinestra sud, TV sulla parete nord",
+    "passaggio: armadio a muro 60 x 109 (rettangolo con diagonale)"
+  ]
+}

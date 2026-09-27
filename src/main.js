@@ -6,6 +6,8 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { costruisciArchitettura, H } from './architettura.js';
 import { arredi, VERSIONI, TAVOLO_STATI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
+import { costruisciPianoTerra, PIANO_TERRA, QUOTA_TERRA } from './pianoTerra.js';
+import { arredaPianoTerra } from './arredi/piano_terra.js';
 
 // ---------- contesto condiviso ----------
 const colliders = []; // {minX,maxX,minZ,maxZ,minY,maxY}
@@ -36,6 +38,34 @@ const ctx = {
   },
   pareti: null, // gruppo per elementi appesi ai muri (boiserie, carta, quadri)
 };
+let piano = 'primo'; // piano in vista: 'primo' (casa nostra) | 'terra' (cognata)
+
+// Contesto per un piano costruito in un gruppo spostato (il piano terra): gli ingombri si
+// registrano e si calcolano alla fine, quando ogni pezzo e' al suo posto nella scena.
+// "cornice" e' il gruppo in cui si sta costruendo: serve per i box di ingombro non agganciati.
+function contestoDifferito(radice, H) {
+  const attesa = [];
+  return {
+    H, variante: null, pareti: null, cornice: radice,
+    addCollider(mesh) { attesa.push({ obj: mesh, cornice: this.cornice }); },
+    solid(obj) { attesa.push({ obj, cornice: this.cornice }); return obj; },
+    addColliderBox(minX, maxX, minZ, maxZ, minY = 0, maxY = 2) {
+      attesa.push({ box: new THREE.Box3(new THREE.Vector3(minX, minY, minZ), new THREE.Vector3(maxX, maxY, maxZ)), cornice: this.cornice });
+    },
+    addLight(light, bulb, shade) { ctx.addLight(light, bulb, shade); },
+    risolvi() {
+      radice.updateMatrixWorld(true);
+      for (const a of attesa) {
+        let b;
+        if (a.box) b = a.box.clone().applyMatrix4(a.cornice.matrixWorld);
+        else if (a.obj.parent) b = new THREE.Box3().setFromObject(a.obj);
+        else b = new THREE.Box3().setFromObject(a.obj).applyMatrix4(a.cornice.matrixWorld);
+        colliders.push({ minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, minY: b.min.y, maxY: b.max.y, v: null });
+      }
+      attesa.length = 0;
+    },
+  };
+}
 
 // ---------- renderer ----------
 const app = document.getElementById('app');
@@ -63,9 +93,27 @@ const { comuni: gruppiArredi, varianti } = arredi(ctx, arch.stanze);
 for (const g of gruppiArredi) scene.add(g);
 for (const g of Object.values(varianti)) scene.add(g);
 
+// ---------- piano terra: stesso edificio, un interpiano piu' sotto ----------
+const terra = new THREE.Group();
+terra.position.y = QUOTA_TERRA;
+scene.add(terra);
+const ctxT = contestoDifferito(terra, PIANO_TERRA.altezze.soffitto_cm / 100);
+const archT = costruisciPianoTerra(ctxT);
+ctxT.pareti = new THREE.Group();
+archT.walls.add(ctxT.pareti);
+terra.add(archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno);
+archT.wallsLow.visible = false;
+archT.soletta.visible = false;
+const arrediT = arredaPianoTerra(ctxT);
+for (const g of arrediT) terra.add(g);
+ctxT.risolvi();
+
 // ---------- ottimizzazione: fonde le mesh statiche per materiale (meno draw call) ----------
 function ottimizza(root) {
   root.updateMatrixWorld(true);
+  // le geometrie fuse restano figlie di root: si portano nelle sue coordinate (root puo' essere spostato)
+  const inv = root.matrixWorld.clone().invert();
+  const rel = new THREE.Matrix4();
   const buckets = new Map();
   const daRimuovere = [];
   root.traverse((o) => {
@@ -74,7 +122,7 @@ function ottimizza(root) {
     if (Array.isArray(o.material)) return; // multi-materiale (muri esterni, solette): restano come sono
     const key = `${o.material.uuid}|${o.castShadow ? 1 : 0}${o.receiveShadow ? 1 : 0}`;
     if (!buckets.has(key)) buckets.set(key, { material: o.material, cast: o.castShadow, receive: o.receiveShadow, geoms: [] });
-    const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
+    const g = o.geometry.clone().applyMatrix4(rel.multiplyMatrices(inv, o.matrixWorld));
     for (const name of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
     buckets.get(key).geoms.push(g);
     daRimuovere.push(o);
@@ -88,15 +136,18 @@ function ottimizza(root) {
     root.add(m);
   }
 }
-for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi, ...Object.values(varianti)]) ottimizza(g);
+for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi, ...Object.values(varianti),
+  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT]) ottimizza(g);
 
 // luci artificiali vicine tra loro (< 1.5 m) vengono fuse in una sola: meno luci nello shader
 {
   const tenute = [];
   const pa = new THREE.Vector3(), pb = new THREE.Vector3();
+  // ogni luce appartiene a un piano: si accende solo quando quel piano e' in vista
+  for (const l of luciArtificiali) l.piano = l.light.getWorldPosition(pa).y < -0.3 ? 'terra' : 'primo';
   for (const l of luciArtificiali) {
     l.light.getWorldPosition(pa);
-    const vicina = tenute.find((t) => t.v === l.v && t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
+    const vicina = tenute.find((t) => t.v === l.v && t.piano === l.piano && t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
     if (vicina) { vicina.base = Math.max(vicina.base, l.base) * 1.12; l.light.removeFromParent(); }
     else tenute.push(l);
   }
@@ -156,7 +207,7 @@ function applicaLuce() {
     riempimento.color.set('#2d3a52'); riempimento.intensity = 0.08;
     renderer.toneMappingExposure = 0.95;
     for (const l of luciArtificiali) {
-      l.light.visible = true;
+      l.light.visible = l.piano === piano;
       l.light.intensity = l.base * FATTORE_SERA;
     }
     for (const e of emissivi) {
@@ -185,10 +236,13 @@ window.addEventListener('keydown', (e) => { keys[e.code] = true; });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 const pos = new THREE.Vector3(2.2, EYE, 5.6);
 
+const quotaPiano = () => (piano === 'terra' ? QUOTA_TERRA : 0);
+
 function blocca(x, z) {
+  const q = quotaPiano();
   for (const c of colliders) {
     if (c.v && !attivi.has(c.v)) continue;
-    if (c.minY >= EYE - 0.1 || c.maxY <= 0.3) continue;
+    if (c.minY >= q + EYE - 0.1 || c.maxY <= q + 0.3) continue;
     if (x + RADIUS > c.minX && x - RADIUS < c.maxX && z + RADIUS > c.minZ && z - RADIUS < c.maxZ) return true;
   }
   return false;
@@ -209,13 +263,13 @@ function aggiornaFP(dt) {
   const nx = pos.x + mv.x, nz = pos.z + mv.z;
   if (!blocca(nx, pos.z)) pos.x = nx;
   if (!blocca(pos.x, nz)) pos.z = nz;
-  camera.position.set(pos.x, EYE, pos.z);
+  camera.position.set(pos.x, quotaPiano() + EYE, pos.z);
 }
 
 function entraFP() {
   modoFP = true;
   orbit.enabled = false;
-  camera.position.set(pos.x, EYE, pos.z);
+  camera.position.set(pos.x, quotaPiano() + EYE, pos.z);
   document.body.classList.add('fp');
   document.getElementById('btn-fp').classList.add('on');
   document.getElementById('btn-orbit').classList.remove('on');
@@ -235,7 +289,7 @@ fp.addEventListener('unlock', () => { if (modoFP) esciFP(); });
 renderer.domElement.addEventListener('click', () => { if (modoFP && !fp.isLocked) fp.lock(); });
 
 // ---------- pannello ----------
-const viste = {
+const vistePrimo = {
   terrazzo: { fp: [2.7, -1.7, 5.4, -6.5], orbit: [4.9, -5.3, 4.9, 13.5, 3.5] },
   soggiorno: { fp: [2.0, 7.6, 2.0, 3.0], orbit: [2.2, 5.2, 5.5, 5.6, 6.5] },
   cucina: { fp: [3.2, 2.4, 0.9, 1.4], orbit: [1.9, 2.2, 4.5, 3.4, 3.8] },
@@ -245,23 +299,41 @@ const viste = {
   camera_est: { fp: [9.6, 5.9, 7.4, 4.8], orbit: [8.4, 5.2, 11.4, 6.4, 7.6] },
   camera_sud: { fp: [7.0, 8.5, 9.3, 7.2], orbit: [8.2, 8.2, 10.5, 9.5, 11.2] },
 };
-const nomi = { terrazzo: 'Terrazzo (67 mq)', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e lavanderia)', camera_sud: 'Camera sud (matrimoniale)' };
+const nomiPrimo = { terrazzo: 'Terrazzo (67 mq)', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e lavanderia)', camera_sud: 'Camera sud (matrimoniale)' };
+// piano terra: altezze riferite al pavimento del piano
+const visteTerra = {
+  cucina: { fp: [3.7, 6.9, 0.9, 8.6], orbit: [2.2, 7.6, 5.6, 4.2, 4.4] },
+  soggiorno: { fp: [6.7, 7.0, 9.8, 9.9], orbit: [8.2, 8.5, 4.8, 4.4, 12.8] },
+  ingresso: { fp: [5.1, 9.0, 3.0, 7.0], orbit: [5.1, 7.9, 6.6, 4.4, 12.9] },
+  camera_3: { fp: [6.8, 1.0, 9.6, 3.6], orbit: [8.4, 2.2, 12.2, 4.6, 5.6] },
+  bagno: { fp: [6.6, 4.9, 9.8, 5.9], orbit: [8.2, 5.2, 11.0, 4.6, 8.4] },
+  camera_1: { fp: [3.7, 3.4, 1.0, 0.8], orbit: [2.2, 1.4, -2.2, 4.6, 4.6] },
+  camera_2: { fp: [3.9, 4.6, 0.9, 3.4], orbit: [2.2, 4.2, -2.4, 4.6, 7.4] },
+  disimpegno: { fp: [5.2, 5.1, 5.2, 0.9], orbit: [5.2, 2.8, 5.2, 6.0, 8.4] },
+};
+const nomiTerra = { cucina: 'Cucina-pranzo e camino', soggiorno: 'Soggiorno', ingresso: 'Ingresso', camera_3: 'Camera 16,00 (matrimoniale)', bagno: 'Bagno', camera_1: 'Camera 10,99', camera_2: 'Camera 10,48', disimpegno: 'Disimpegno e ripostiglio' };
+const vistePiano = () => (piano === 'terra' ? visteTerra : vistePrimo);
 const divStanze = document.getElementById('stanze');
-for (const k of Object.keys(viste)) {
-  const b = document.createElement('button');
-  b.textContent = nomi[k];
-  b.onclick = () => vaiA(k);
-  divStanze.appendChild(b);
+function elencoStanze() {
+  divStanze.innerHTML = '';
+  const nomi = piano === 'terra' ? nomiTerra : nomiPrimo;
+  for (const k of Object.keys(vistePiano())) {
+    const b = document.createElement('button');
+    b.textContent = nomi[k];
+    b.onclick = () => vaiA(k);
+    divStanze.appendChild(b);
+  }
 }
 function vaiA(k) {
-  const v = viste[k];
-  pos.set(v.fp[0], EYE, v.fp[1]);
+  const v = vistePiano()[k];
+  const q = quotaPiano();
+  pos.set(v.fp[0], q + EYE, v.fp[1]);
   if (modoFP) {
     camera.position.copy(pos);
-    camera.lookAt(v.fp[2], EYE - 0.1, v.fp[3]);
+    camera.lookAt(v.fp[2], q + EYE - 0.1, v.fp[3]);
   } else {
-    orbit.target.set(v.orbit[0], 1.0, v.orbit[1]);
-    camera.position.set(v.orbit[2], v.orbit[3], v.orbit[4]);
+    orbit.target.set(v.orbit[0], q + 1.0, v.orbit[1]);
+    camera.position.set(v.orbit[2], q + v.orbit[3], v.orbit[4]);
   }
 }
 // ---------- allestimento: versione (V1 / V2) e tavolo (chiuso / aperto) ----------
@@ -275,7 +347,7 @@ function applicaAllestimento() {
   attivi.clear();
   attivi.add(versione);
   attivi.add(`${versione}-${statoTavolo}`);
-  for (const [tag, g] of Object.entries(varianti)) g.visible = attivi.has(tag);
+  for (const [tag, g] of Object.entries(varianti)) g.visible = piano === 'primo' && attivi.has(tag);
   for (const k of Object.keys(bottoniVersione)) bottoniVersione[k].classList.toggle('on', k === versione);
   for (const k of Object.keys(bottoniTavolo)) bottoniTavolo[k].classList.toggle('on', k === statoTavolo);
   notaVersione.textContent = VERSIONI[versione].nota;
@@ -300,14 +372,50 @@ apri.onclick = () => { const on = document.body.classList.toggle('pannello-apert
 divStanze.addEventListener('click', () => { if (getComputedStyle(apri).display !== 'none') apri.click(); });
 document.getElementById('btn-fp').onclick = () => entraFP();
 const bt = document.getElementById('btn-tetto');
-bt.onclick = () => { arch.ceilings.visible = !arch.ceilings.visible; bt.classList.toggle('on', arch.ceilings.visible); };
 const bp = document.getElementById('btn-pareti');
+let tettoOn = true, paretiIntere = true;
+// Visibilita' dei due piani. In vista del piano primo il piano terra resta intero sotto
+// (e' la facciata); in vista del piano terra il piano primo sparisce, restano gli esterni.
+function applicaVisibilita() {
+  const t = piano === 'terra';
+  arch.walls.visible = !t && paretiIntere;
+  arch.wallsLow.visible = !t && !paretiIntere;
+  arch.floors.visible = !t;
+  arch.ceilings.visible = !t && tettoOn;
+  for (const g of gruppiArredi) g.visible = !t || !!g.userData.esterno;
+  applicaAllestimento();
+  archT.walls.visible = !t || paretiIntere;
+  archT.wallsLow.visible = t && !paretiIntere;
+  archT.ceilings.visible = !t || tettoOn;
+  archT.soletta.visible = t && tettoOn;
+  bt.classList.toggle('on', tettoOn);
+  bp.classList.toggle('on', paretiIntere);
+  applicaLuce();
+}
+bt.onclick = () => { tettoOn = !tettoOn; applicaVisibilita(); };
 bp.onclick = () => {
-  const full = !arch.walls.visible;
-  arch.walls.visible = full; arch.wallsLow.visible = !full;
-  if (!full && arch.ceilings.visible) bt.click();
-  bp.classList.toggle('on', full);
+  paretiIntere = !paretiIntere;
+  if (!paretiIntere) tettoOn = false;
+  applicaVisibilita();
 };
+
+// ---------- piano in vista ----------
+const bottoniPiano = { primo: document.getElementById('btn-primo'), terra: document.getElementById('btn-terra') };
+function cambiaPiano(p) {
+  if (p === piano) return;
+  const dq = (p === 'terra' ? QUOTA_TERRA : 0) - quotaPiano();
+  piano = p;
+  for (const k of Object.keys(bottoniPiano)) bottoniPiano[k].classList.toggle('on', k === piano);
+  document.getElementById('sez-allestimento').style.display = piano === 'terra' ? 'none' : '';
+  if (piantinaEl) { piantinaEl.remove(); piantinaEl = null; }
+  applicaVisibilita();
+  elencoStanze();
+  // la vista scende (o sale) di un piano; in prima persona si entra nella prima stanza del piano
+  if (modoFP) vaiA(Object.keys(vistePiano())[0]);
+  else { orbit.target.y += dq; camera.position.y += dq; }
+}
+for (const k of Object.keys(bottoniPiano)) bottoniPiano[k].onclick = () => cambiaPiano(k);
+elencoStanze();
 const bg = document.getElementById('btn-giorno');
 bg.onclick = () => { giorno = !giorno; applicaLuce(); bg.classList.toggle('on', giorno); bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera'; };
 
@@ -317,7 +425,7 @@ let piantinaAperta = false;
 const btnPiantina = document.getElementById('btn-piantina');
 function mostraPiantina(on) {
   if (on && !piantinaEl) {
-    piantinaEl = creaPiantina();
+    piantinaEl = creaPiantina(piano === 'terra' ? PIANO_TERRA : undefined);
     document.body.appendChild(piantinaEl);
     piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
     piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();
@@ -354,4 +462,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__casa = { scene, camera, renderer, colliders, vaiA, arch, blocca, pos, orbit, varianti, applicaVersione, applicaTavolo, luci: luciArtificiali };
+window.__casa = { scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaVersione, applicaTavolo, cambiaPiano, luci: luciArtificiali };

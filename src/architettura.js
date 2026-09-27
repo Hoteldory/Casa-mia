@@ -14,6 +14,13 @@ const ESTERNO_NORMALE = {
   'E-sud-soggiorno': [0, 1], 'E-sud-camera-sud': [0, 1], 'E-vano-scala-est': [-1, 0],
 };
 
+// normali delle facce esterne di un muro: dal JSON del piano ("esterno": [[nx, nz], ...])
+// o, per il piano primo, dalla tabella qui sopra
+function normaliEsterne(seg) {
+  if (seg.esterno) return seg.esterno;
+  return ESTERNO_NORMALE[seg.id] ? [ESTERNO_NORMALE[seg.id]] : null;
+}
+
 const r2m = (r) => ({ x: r.x * C, z: r.y * C, w: r.w * C, d: r.d * C, cx: (r.x + r.w / 2) * C, cz: (r.y + r.d / 2) * C });
 
 // Foro del vano scala nella camera est: attraversa soffitto e solaio di copertura
@@ -34,32 +41,37 @@ function pezziConForo(rx0, rz0, rx1, rz1, h) {
 }
 
 // Stanze con rettangoli in metri (per pavimenti, soffitti, UI)
-export function stanze() {
-  const S = plan.stanze;
+export function stanzeDi(P) {
+  const S = P.stanze;
   const out = {};
   for (const k of Object.keys(S)) {
     const rects = (S[k].rettangoli || [S[k].rect]).map(r2m);
     const main = rects[0];
     out[k] = { id: k, nome: S[k].nome, rects, centro: [main.cx, main.cz] };
   }
+  return out;
+}
+export function stanze() {
+  const out = stanzeDi(plan);
   out.soggiorno.centro = [2.2, 5.6];
   return out;
 }
 
 // Aperture per muro
-function aperturePerMuro() {
+function aperturePerMuro(P = plan) {
+  const A = P.altezze;
   const map = {};
   const push = (id, o) => (map[id] = map[id] || []).push(o);
-  for (const p of plan.porte) {
-    const top = p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm;
+  for (const p of P.porte) {
+    const top = p.h_cm ?? (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm);
     push(p.muro, { ...p, a: p.x_da ?? p.y_da, b: p.x_a ?? p.y_a, bottom: 0, top, kind: 'porta' });
   }
-  for (const f of plan.finestre) {
+  for (const f of P.finestre) {
     const pf = f.tipo === 'portafinestra';
     // davanzale e altezza si possono sovrascrivere per singola finestra (es. sopra il piano cucina)
     const dav = f.davanzale_cm ?? A.finestra_davanzale_cm;
     const alt = f.altezza_cm ?? A.finestra_h_cm;
-    push(f.muro, { ...f, a: f.x_da ?? f.y_da, b: f.x_a ?? f.y_a, bottom: pf ? 0 : dav, top: pf ? A.portafinestra_h_cm : dav + alt, kind: pf ? 'portafinestra' : 'finestra' });
+    push(f.muro, { ...f, a: f.x_da ?? f.y_da, b: f.x_a ?? f.y_a, bottom: pf ? 0 : dav, top: pf ? (f.altezza_cm ?? A.portafinestra_h_cm) : dav + alt, kind: pf ? 'portafinestra' : 'finestra' });
   }
   for (const k in map) map[k].sort((p, q) => p.a - q.a);
   return map;
@@ -83,16 +95,18 @@ function buildMuro(seg, aperture, hMax, ctx, low = false, precedenti = []) {
   aperture = [...aperture, ...tagli].sort((p, q) => p.a - q.a);
   const cross = (horiz ? r.y : r.x) + thick / 2;
   const g = new THREE.Group();
-  const nrm = ESTERNO_NORMALE[seg.id];
+  const normali = normaliEsterne(seg);
   const matFor = () => {
-    if (!nrm) return M.intonaco;
+    if (!normali) return M.intonaco;
     // BoxGeometry: facce +x -x +y -y +z -z
     const mats = new Array(6).fill(M.intonaco);
     mats[2] = M.intonacoEsterno;
-    if (nrm[0] === 1) mats[0] = M.intonacoEsterno;
-    if (nrm[0] === -1) mats[1] = M.intonacoEsterno;
-    if (nrm[1] === 1) mats[4] = M.intonacoEsterno;
-    if (nrm[1] === -1) mats[5] = M.intonacoEsterno;
+    for (const nrm of normali) {
+      if (nrm[0] === 1) mats[0] = M.intonacoEsterno;
+      if (nrm[0] === -1) mats[1] = M.intonacoEsterno;
+      if (nrm[1] === 1) mats[4] = M.intonacoEsterno;
+      if (nrm[1] === -1) mats[5] = M.intonacoEsterno;
+    }
     return mats;
   };
   const piece = (a, b, y0, y1) => {
@@ -116,20 +130,21 @@ function buildMuro(seg, aperture, hMax, ctx, low = false, precedenti = []) {
 }
 
 // ---------- porte ----------
-function centroStanza(nome) {
-  const s = plan.stanze[nome];
+function centroStanza(nome, P = plan) {
+  const s = P.stanze[nome];
   if (!s) return null;
   const r = (s.rettangoli || [s.rect])[0];
   return [(r.x + r.w / 2) * C, (r.y + r.d / 2) * C];
 }
 
-function buildPorta(p, seg, ctx) {
+function buildPorta(p, seg, ctx, P = plan) {
   const M = getMateriali();
+  const A = P.altezze;
   const r = seg.rect;
   const horiz = r.w >= r.d;
   const thick = (horiz ? r.d : r.w) * C;
   const w = (p.b - p.a) * C;
-  const h = (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm) * C;
+  const h = (p.h_cm ?? (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm)) * C;
   const cross = ((horiz ? r.y : r.x) + (horiz ? r.d : r.w) / 2) * C;
   const g = new THREE.Group();
   const matT = p.tipo === 'portoncino' ? M.noceScuro : M.noce;
@@ -144,6 +159,8 @@ function buildPorta(p, seg, ctx) {
   g.add(along(w + 0.04, s, (p.a + p.b) / 2 * C, h + s / 2));
   // soglia in pietra
   g.add(horiz ? box(w, 0.012, T, M.pietra, (p.a + p.b) / 2 * C, 0.006, cross) : box(T, 0.012, w, M.pietra, cross, 0.006, (p.a + p.b) / 2 * C));
+  // scorrevole a scomparsa: l'anta e' dentro il muro, resta il vano con il telaio
+  if (p.tipo === 'scorrevole') return g;
 
   // battente: cerniera e verso di apertura
   const cern = /cerniera a (nord|sud|est|ovest)/.exec(p.battente || '')?.[1];
@@ -176,10 +193,10 @@ function buildPorta(p, seg, ctx) {
     leaf.position.set(cross, 0.01, hingeA * C);
   }
   // normale verso la stanza "a"
-  const dest = plan.porte.find((q) => q.id === p.id);
-  const cTo = centroStanza(dest.a);
+  const dest = P.porte.find((q) => q.id === p.id);
+  const cTo = centroStanza(dest.a, P);
   n = horiz ? new THREE.Vector3(0, 0, Math.sign(cTo[1] - cross) || 1) : new THREE.Vector3(Math.sign(cTo[0] - cross) || 1, 0, 0);
-  const ang = p.tipo === 'portoncino' ? 0 : (p.id === 'P-bagno' ? 0.35 : 1.15);
+  const ang = p.aperta_rad ?? (p.tipo === 'portoncino' ? 0 : (p.id === 'P-bagno' ? 0.35 : 1.15));
   const d = dir0.clone().multiplyScalar(Math.cos(ang)).add(n.clone().multiplyScalar(Math.sin(ang)));
   leaf.rotation.y = Math.atan2(-d.z, d.x);
   g.add(leaf);
@@ -196,7 +213,8 @@ function buildFinestra(f, seg, ctx) {
   const w = (f.b - f.a) * C;
   const y0 = f.bottom * C, y1 = f.top * C, h = y1 - y0;
   const cross = ((horiz ? r.y : r.x) + (horiz ? r.d : r.w) / 2) * C;
-  const nrm = ESTERNO_NORMALE[seg.id];
+  // la normale che conta e' quella della faccia lunga del muro
+  const nrm = normaliEsterne(seg).find((n) => (horiz ? n[1] !== 0 : n[0] !== 0));
   const mid = (f.a + f.b) / 2 * C;
   // gruppo locale: X lungo l'apertura, Z = normale esterna
   const g = new THREE.Group();
@@ -242,31 +260,33 @@ function buildFinestra(f, seg, ctx) {
   } else {
     g.add(box(w + 0.1, 0.02, thick + 0.1, M.pietra, 0, 0.01, 0));
   }
-  // scuri esterni in legno, aperti e appoggiati alla facciata
-  const sh = h + 0.06, sw = w / 2 + 0.03;
+  // scuri esterni in legno, aperti e appoggiati alla facciata; "a libro" = due ante ripiegate
+  // per lato, per le aperture larghe che altrimenti sporgerebbero oltre lo spigolo
+  const libro = f.scuri === 'a libro';
+  const sh = h + 0.06, sw = (w / 2 + 0.03) / (libro ? 2 : 1);
   const matS = M.noceScuro;
-  for (const side of [-1, 1]) {
+  for (const side of [-1, 1]) for (let k = 0; k < (libro ? 2 : 1); k++) {
     const sg = new THREE.Group();
     const leafB = box(sw, sh, 0.04, matS, side * sw / 2, 0, 0);
     sg.add(leafB);
     for (const yy of [-sh / 2 + 0.2, 0, sh / 2 - 0.2]) sg.add(box(sw - 0.08, 0.1, 0.06, matS, side * sw / 2, yy, 0));
     // cardini in ferro
     for (const yy of [-sh / 2 + 0.25, sh / 2 - 0.25]) sg.add(cyl(0.012, 0.012, 0.05, M.ferro, side * 0.03, yy, -0.02, 8));
-    sg.position.set(side * (w / 2 + 0.02), y0 + h / 2, thick / 2 + 0.045);
+    sg.position.set(side * (w / 2 + 0.02), y0 + h / 2, thick / 2 + 0.045 + k * 0.045);
     g.add(sg);
   }
   return g;
 }
 
 // ---------- battiscopa ----------
-function battiscopa(st, ctx) {
+function battiscopa(st, ctx, P = plan) {
   const M = getMateriali();
   const g = new THREE.Group();
-  const segs = plan.muri.segmenti;
-  const aper = aperturePerMuro();
+  const segs = P.muri.segmenti;
+  const aper = aperturePerMuro(P);
   const inWall = (x, y) => segs.find((s) => x >= s.rect.x && x <= s.rect.x + s.rect.w && y >= s.rect.y && y <= s.rect.y + s.rect.d);
   for (const k of Object.keys(st)) {
-    for (const rc of plan.stanze[k].rettangoli || [plan.stanze[k].rect]) {
+    for (const rc of P.stanze[k].rettangoli || [P.stanze[k].rect]) {
       const edges = [
         { a: rc.x, b: rc.x + rc.w, horiz: true, at: rc.y, out: -3 },
         { a: rc.x, b: rc.x + rc.w, horiz: true, at: rc.y + rc.d, out: 3 },
@@ -430,19 +450,7 @@ function esterni(ctx) {
   g.add(ringhiera(r1.x + r1.w, pm.z + pm.d, r2.x, pm.z + pm.d, ctx, { y: -1.7 }));
   // rampa bassa: salendo verso nord, la destra e' il lato est
   ringhieraRampa(r1.x + r1.w, r1.z + r1.d, -3.4, r1.x + r1.w, r1.z, -1.7, n1);
-  // volume del piano terra
-  const I = plan.muri.ingombro_esterno;
-  // volume del piano terra: la faccia superiore arriva esattamente a quota 0,
-  // continua con i muri del piano (i pavimenti stanno 5 mm piu' in alto, mai complanari)
-  const pt = box(I.larghezza_cm * C, 3.45, 9.65, M.intonacoEsterno, I.larghezza_cm * C / 2, -1.725, 9.65 / 2);
-  g.add(pt);
-  const pt2 = box((I.larghezza_cm - 584) * C, 3.45, 1.32, M.intonacoEsterno, (584 + (I.larghezza_cm - 584) / 2) * C, -1.725, 9.65 + 0.66);
-  g.add(pt2);
-  // finestre "cieche" al piano terra: semplici rientranze scure
-  for (const [x, z, nx, nz] of [[10.51, 2.5, 1, 0], [10.51, 6, 1, 0], [0, 2.5, -1, 0], [0, 6, -1, 0]]) {
-    const wnd = box(nx ? 0.04 : 1.2, 1.4, nz ? 0.04 : 1.2, M.nero, x + nx * 0.01, -1.6, z + nz * 0.01, { cast: false });
-    g.add(wnd);
-  }
+  // il piano terra (casa della cognata) e' costruito a parte, vedi pianoTerra.js
   g.add(terrazzoNord(ctx));
   // lanterne in ottone: ingresso, balcone a ovest e balcone a sud-est
   g.add(lanterna(ctx, 5.78, 2.15, 9.66, 'z+', { intensita: 16 }));
@@ -508,32 +516,55 @@ function travi(st) {
   return g;
 }
 
-// ---------- costruzione completa ----------
-export function costruisciArchitettura(ctx) {
+// ---------- involucro di un piano: muri con aperture, porte, finestre, battiscopa ----------
+// hMuro(seg) = altezza del muro in metri (i muri esterni del piano terra salgono fino al piano primo)
+function involucro(P, st, ctx, walls, wallsLow, hMuro) {
+  const aper = aperturePerMuro(P);
+  const segById = {};
+  const precedenti = [];
+  for (const seg of P.muri.segmenti) {
+    segById[seg.id] = seg;
+    walls.add(buildMuro(seg, aper[seg.id] || [], hMuro(seg), ctx, false, precedenti));
+    wallsLow.add(buildMuro(seg, aper[seg.id] || [], 0.45, { addCollider() {} }, true, precedenti));
+    precedenti.push(seg);
+  }
+  for (const p of P.porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
+  for (const f of P.finestre) {
+    const o = aper[f.muro].find((x) => x.id === f.id);
+    walls.add(buildFinestra(o, segById[f.muro], ctx));
+  }
+  walls.add(battiscopa(st, ctx, P));
+}
+
+// ---------- un piano generico (piano terra): involucro, pavimenti e soffitti ----------
+// Tutto e' costruito con il pavimento a quota 0: chi lo usa sposta il gruppo alla quota del piano.
+export function costruisciPiano(P, ctx, { floorMat = {}, ceilMat = {} } = {}) {
   const M = getMateriali();
-  const st = stanze();
-  const aper = aperturePerMuro();
+  const Hp = P.altezze.soffitto_cm * C;
+  const st = stanzeDi(P);
   const walls = new THREE.Group();
   const wallsLow = new THREE.Group();
   const floors = new THREE.Group();
   const ceilings = new THREE.Group();
-
-  const segById = {};
-  const precedenti = [];
-  for (const seg of plan.muri.segmenti) {
-    segById[seg.id] = seg;
-    walls.add(buildMuro(seg, aper[seg.id] || [], H, ctx, false, precedenti));
-    wallsLow.add(buildMuro(seg, aper[seg.id] || [], 0.45, { addCollider() {} }, true, precedenti));
-    precedenti.push(seg);
+  involucro(P, st, ctx, walls, wallsLow, (seg) => (seg.h_cm ? seg.h_cm * C : Hp));
+  for (const k of Object.keys(st)) {
+    for (const r of st[k].rects) {
+      floors.add(plane(r.w, r.d, floorMat[k] || M.cotto, r.cx, 0.005, r.cz, 'y+'));
+      ceilings.add(plane(r.w, r.d, ceilMat[k] || M.intonacoSoffitto, r.cx, Hp - 0.012, r.cz, 'y-'));
+    }
   }
-  // riempimento angolo nord-ovest tra muro nord e ovest già coperto dai rettangoli (i rect si sovrappongono).
+  return { walls, wallsLow, floors, ceilings, stanze: st, H: Hp };
+}
 
-  for (const p of plan.porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx));
-  for (const f of plan.finestre) {
-    const o = aper[f.muro].find((x) => x.id === f.id);
-    walls.add(buildFinestra(o, segById[f.muro], ctx));
-  }
-  walls.add(battiscopa(st, ctx));
+// ---------- costruzione completa del piano primo ----------
+export function costruisciArchitettura(ctx) {
+  const M = getMateriali();
+  const st = stanze();
+  const walls = new THREE.Group();
+  const wallsLow = new THREE.Group();
+  const floors = new THREE.Group();
+  const ceilings = new THREE.Group();
+  involucro(plan, st, ctx, walls, wallsLow, () => H);
 
   // pavimenti e soffitti
   const floorMat = { soggiorno: M.cotto, bagno: M.cementine, disimpegno: M.cotto, camera_nord: M.parquet, camera_est: M.parquet, camera_sud: M.parquet };

@@ -1,4 +1,4 @@
-# Casa mia — piano primo in 3D
+# Casa mia in 3D — piano primo e piano terra
 
 Modello 3D navigabile nel browser dell'appartamento al piano primo descritto in `piantina.png`,
 completo di arredamento. Tutto è procedurale: nessun asset 3D esterno, texture generate via canvas.
@@ -25,6 +25,34 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 - **Pannello laterale**: scelta della versione (V1/V2), tavolo chiuso o aperto, salto rapido
   a ogni stanza, toggle tetto/soffitti, toggle pareti intere (pareti a 45 cm per la vista
   dall'alto), toggle luce del giorno / luce della sera, piantina quotata.
+
+## Piano terra (casa della cognata)
+
+Il selettore **Piano** in cima al pannello passa dal piano primo al piano terra. Il piano terra e'
+lo stesso edificio, un interpiano (340 cm) piu' sotto: la piantina riporta 1053 x 1105 contro i
+1051 x 1097 del piano primo, quindi le facce esterne sono allineate a quelle di sopra e la
+facciata resta continua. Al posto del volume pieno che c'era prima ora ci sono muri, finestre,
+portoncino e stanze vere.
+
+- Misure in `src/data/piano-terra.json`, ricavate dalle quote scritte (la foto e' in prospettiva,
+  la scala varia da 1,64 a 2,26 cm/px). Le superfici tornano con le quote: camera 10,99 =
+  395 x 250 + nicchia d'ingresso 100 x 111; camera 10,48 = 395 x 296 meno la rientranza.
+- Aggiunta su richiesta: finestra 150 x 150 sulla parete est del soggiorno, sopra il divano.
+- Assunti: altezza interna 300 cm (interpiano 340 meno solaio 40), davanzali a 90, porte interne
+  80 x 210, porte scorrevoli a scomparsa per ripostiglio e disimpegno, doccia 80 x 80 nel
+  rettangolo disegnato nell'angolo del bagno, armadio a muro nel rettangolo 60 x 109.
+- In vista del piano terra il piano primo sparisce (restano scala, pianerottolo, balconi e
+  terrazzo), "Tetto e soffitti" mette o toglie il solaio, la prima persona cammina a quota -3,40,
+  la piantina quotata disegna il piano terra.
+
+| Ambiente | Dettaglio di carattere |
+|---|---|
+| Cucina-pranzo | camino in pietra con cappa in piastrelle smaltate verde bottiglia, brace accesa di sera |
+| Soggiorno | parete est in blu petrolio, con la finestra nuova sopra il divano |
+| Camera 16,00 | testiera in velluto ruggine |
+| Camera 10,99 | carta da parati a righe salvia sulla parete del letto |
+| Camera 10,48 | armadio a tre moduli laccato blu polvere |
+| Bagno | rivestimento a 120 cm in piastrelle verdi, a tutta altezza nella doccia |
 
 ## Le due versioni
 
@@ -63,6 +91,10 @@ src/architettura.js          muri con aperture, pavimenti, soffitti, porte, fine
 src/arredi/comune.js         helper geometrici e oggetti ricorrenti (lampade, tende, quadri…)
 src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Group
 src/arredi/index.js          registro delle stanze e degli allestimenti (V1/V2, tavolo chiuso/aperto)
+piantina-terra.jpg           piantina del piano terra
+src/data/piano-terra.json    misure del piano terra in cm
+src/pianoTerra.js            involucro del piano terra, solaio, lanterna d'ingresso
+src/arredi/piano_terra.js    arredi del piano terra (camino, panca, letti singoli, doccia...)
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
 ```
 

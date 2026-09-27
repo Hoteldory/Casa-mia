@@ -1,10 +1,16 @@
 // Piantina quotata in bianco e nero, generata dagli stessi dati del modello 3D
-// (src/data/planimetria.json). Non tocca la scena: e' un pannello SVG a parte.
-import plan from './data/planimetria.json';
+// (src/data/planimetria.json per il piano primo, src/data/piano-terra.json per il piano terra).
+// Non tocca la scena: e' un pannello SVG a parte.
+import planPrimo from './data/planimetria.json';
 
-const A = plan.altezze;
-const SP_EST = plan.muri.esterno_spessore_cm;
-const SP_INT = plan.muri.interno_spessore_cm;
+// piano in disegno: impostato da creaPiantina()
+let plan = planPrimo, A, SP_EST, SP_INT;
+function usaPiano(P) {
+  plan = P;
+  A = P.altezze;
+  SP_EST = P.muri.esterno_spessore_cm;
+  SP_INT = P.muri.interno_spessore_cm;
+}
 
 // ---------- aperture indicizzate per muro, con sigla progressiva ----------
 function aperture() {
@@ -14,13 +20,13 @@ function aperture() {
   plan.porte.forEach((p, i) => push(p.muro, {
     ...p, verso: p.a, provenienza: p.da,
     a: p.x_da ?? p.y_da, b: p.x_a ?? p.y_a, larghezza: p.luce_cm,
-    altezza: p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm,
+    altezza: p.h_cm ?? (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm),
     davanzale: 0, kind: 'porta', sigla: 'P' + (i + 1),
   }));
   plan.finestre.forEach((f, i) => {
     const pf = f.tipo === 'portafinestra';
     const dav = pf ? 0 : (f.davanzale_cm ?? A.finestra_davanzale_cm);
-    const alt = pf ? A.portafinestra_h_cm : (f.altezza_cm ?? A.finestra_h_cm);
+    const alt = pf ? (f.altezza_cm ?? A.portafinestra_h_cm) : (f.altezza_cm ?? A.finestra_h_cm);
     push(f.muro, { ...f, a: f.x_da ?? f.y_da, b: f.x_a ?? f.y_a, larghezza: f.larghezza_cm,
       altezza: alt, davanzale: dav, kind: pf ? 'portafinestra' : 'finestra',
       sigla: (pf ? 'PF' : 'F') + (i + 1) });
@@ -33,7 +39,7 @@ function aperture() {
 // (il serif dei nomi ha anche 2 unita' di spaziatura per lettera)
 const fitSerif = (t, maxW, maxFont) => {
   const n = String(t).length;
-  return Math.max(10, Math.min(maxFont, (maxW * 0.92 - 2 * n) / (0.66 * n)));
+  return Math.max(10, Math.min(maxFont, (maxW * 0.9 - 2 * n) / (0.72 * n)));
 };
 const fitMono = (t, maxW, maxFont) => Math.max(10, Math.min(maxFont, (maxW * 0.92) / (0.605 * String(t).length)));
 
@@ -43,7 +49,7 @@ function centroStanza(nome) {
     const r = (st.rettangoli || [st.rect])[0];
     return [r.x + r.w / 2, r.y + r.d / 2];
   }
-  const e = plan.esterni[nome];
+  const e = plan.esterni?.[nome];
   if (e) {
     const r = e.rect || e.rettangoli[0];
     return [r.x + r.w / 2, r.y + r.d / 2];
@@ -94,7 +100,8 @@ function blocco(cx, cy, w, d, righe) {
   let y = -tot / 2 + dim[0];
   let out = '';
   righe.forEach(([t, cls], i) => {
-    out += txt(0, y, t, cls, `text-anchor="middle" font-size="${dim[i].toFixed(1)}"`);
+    // style e non attributo: il font-size delle classi CSS vincerebbe sull'attributo
+    out += txt(0, y, t, cls, `text-anchor="middle" style="font-size:${dim[i].toFixed(1)}px"`);
     if (i < dim.length - 1) y += dim[i + 1] * 1.3;
   });
   return `<g transform="translate(${cx} ${cy})${ruota ? ' rotate(-90)' : ''}">${out}</g>`;
@@ -137,6 +144,11 @@ function simboli(aper) {
         out += horiz ? line(o.a, c0 + t * f, o.b, c0 + t * f, 'serr')
                      : line(c0 + t * f, o.a, c0 + t * f, o.b, 'serr');
       }
+    } else if (o.tipo === 'scorrevole') {
+      // scorrevole a scomparsa: vano vuoto e anta tratteggiata dentro la tasca del muro
+      out += horiz ? rect(o.a, c0, L, t, 'vuoto') : rect(c0, o.a, t, L, 'vuoto');
+      const cm = (c0 + c1) / 2;
+      out += horiz ? line(o.b, cm, o.b + L, cm, 'battente tasca') : line(cm, o.b, cm, o.b + L, 'battente tasca');
     } else {
       // porta: vano vuoto, battente aperto a 90 gradi e arco di apertura
       out += horiz ? rect(o.a, c0, L, t, 'vuoto') : rect(c0, o.a, t, L, 'vuoto');
@@ -175,10 +187,22 @@ function stanze() {
     const big = rs.reduce((a, b) => (a.w * a.d > b.w * b.d ? a : b));
     const cx = big.x + big.w / 2, cy = big.y + big.d / 2;
     for (const r of rs) out += rect(r.x, r.y, r.w, r.d, 'stanza');
+    const quot = s.superficie_quotata_mq ? ` (quot. ${s.superficie_quotata_mq.toFixed(2)})` : '';
+    if (rs.some((r) => r.parte)) {
+      // ambiente aperto diviso in parti: ogni parte ampia ha il suo nome e le sue misure,
+      // il totale va sulla parte piu' grande
+      for (const r of rs) {
+        if (r.w < 150 || r.d < 150) continue;
+        const righe = [[r.parte.toUpperCase(), 'nome', 30], [`${r.w} x ${r.d} cm`, 'mis', 24]];
+        if (r === big) righe.push([`totale ${area.toFixed(2)} mq${quot}`, 'mis', 24]);
+        out += blocco(r.x + r.w / 2, r.y + r.d / 2, r.w, r.d, righe);
+      }
+      continue;
+    }
     const nome = s.nome.replace(/\s*\(.*\)$/, '').toUpperCase();
     const mis = `${big.w} x ${big.d} cm`;
     const stretta = Math.min(big.w, big.d) < 200;
-    const sup = `${area.toFixed(2)} mq` + (!stretta && s.superficie_quotata_mq ? ` (quot. ${s.superficie_quotata_mq})` : '');
+    const sup = `${area.toFixed(2)} mq` + (!stretta ? quot : '');
     out += blocco(cx, cy, big.w, big.d, [[nome, 'nome', 30], [mis, 'mis', 24], [sup, 'mis', 24]]);
   }
   return out;
@@ -231,20 +255,21 @@ function quotePerimetro(aper) {
   const I = plan.muri.ingombro_esterno;
   const W = I.larghezza_cm, D = I.profondita_cm;
   let out = '';
-  const pick = (id) => (aper.map[id] || []);
+  const per = plan.muri.perimetro || { nord: ['E-nord'], sud: ['E-sud-soggiorno', 'E-sud-camera-sud'], ovest: ['E-ovest'], est: ['E-est'] };
+  const pick = (ids) => ids.flatMap((id) => aper.map[id] || []).sort((a, b) => a.a - b.a);
   // nord
-  let p = [0]; pick('E-nord').forEach((o) => p.push(o.a, o.b)); p.push(W);
-  out += catena(p, -120, 'x', null, true);
+  let p = [0]; pick(per.nord).forEach((o) => p.push(o.a, o.b)); p.push(W);
+  if (p.length > 2) out += catena(p, -120, 'x', null, true); // senza aperture basta la quota totale
   out += quota(0, -210, W, -210, W, true);
-  // sud (due muri)
-  p = [0]; [...pick('E-sud-soggiorno'), ...pick('E-sud-camera-sud')].forEach((o) => p.push(o.a, o.b)); p.push(W);
+  // sud
+  p = [0]; pick(per.sud).forEach((o) => p.push(o.a, o.b)); p.push(W);
   out += catena(p, D + 120, 'x', null, false);
   // ovest
-  p = [0]; pick('E-ovest').forEach((o) => p.push(o.a, o.b)); p.push(D);
+  p = [0]; pick(per.ovest).forEach((o) => p.push(o.a, o.b)); p.push(D);
   out += catena(p, -120, 'y', null, true);
   out += quota(-210, 0, -210, D, D, true);
   // est
-  p = [0]; pick('E-est').forEach((o) => p.push(o.a, o.b)); p.push(D);
+  p = [0]; pick(per.est).forEach((o) => p.push(o.a, o.b)); p.push(D);
   out += catena(p, W + 120, 'y', null, false);
   return out;
 }
@@ -261,40 +286,50 @@ function tabelle(aper) {
     const big = rs.reduce((a, b) => (a.w * a.d > b.w * b.d ? a : b));
     return `<tr><td>${esc(s.nome)}</td><td>${big.w} x ${big.d}</td><td>${area.toFixed(2)}</td><td>${s.superficie_quotata_mq ?? '-'}</td></tr>`;
   }).join('');
-  const T = plan.esterni.terrazzo_nord;
+  const T = plan.esterni?.terrazzo_nord;
+  const fonte = (nota, assunto = true) => (nota ? ' (da piantina)' : assunto ? ' (assunta)' : '');
   return `
   <h3>Abaco delle aperture</h3>
   <div class="pg-tab"><table><thead><tr><th>Sigla</th><th>Tipo</th><th>Luce (cm)</th><th>Altezza (cm)</th><th>Davanzale (cm)</th><th>Muro</th><th>Riferimento</th></tr></thead><tbody>${righe}</tbody></table></div>
   <h3>Superfici</h3>
   <div class="pg-tab"><table><thead><tr><th>Ambiente</th><th>Interno (cm)</th><th>Calcolata (mq)</th><th>Quotata (mq)</th></tr></thead><tbody>${stanzeR}
-    <tr><td>Terrazzo nord</td><td>${T.quote_piantina.larghezza_tratto_sud} x ${T.quote_piantina.tratto_sud} + ${T.quote_piantina.larghezza_tratto_nord} x ${T.quote_piantina.tratto_nord}</td><td>${T.superficie_calcolata_mq}</td><td>${T.quota_piantina_mq}</td></tr>
+    ${T ? `<tr><td>Terrazzo nord</td><td>${T.quote_piantina.larghezza_tratto_sud} x ${T.quote_piantina.tratto_sud} + ${T.quote_piantina.larghezza_tratto_nord} x ${T.quote_piantina.tratto_nord}</td><td>${T.superficie_calcolata_mq}</td><td>${T.quota_piantina_mq}</td></tr>` : ''}
   </tbody></table></div>
   <h3>Spessori e altezze</h3>
   <div class="pg-tab"><table><tbody>
     <tr><td>Muri esterni</td><td>${SP_EST} cm</td></tr>
     <tr><td>Muri interni</td><td>${SP_INT} cm</td></tr>
-    <tr><td>Altezza interna</td><td>${A.soffitto_cm} cm${A.soffitto_assunto ? ' (assunta)' : ''}</td></tr>
+    <tr><td>Altezza interna</td><td>${A.soffitto_cm} cm${A.soffitto_assunto || A.soffitto_nota ? ' (assunta)' : ''}</td></tr>
     <tr><td>Porte interne</td><td>h ${A.porta_interna_h_cm} cm (assunta)</td></tr>
-    <tr><td>Portefinestre</td><td>h ${A.portafinestra_h_cm} cm (assunta)</td></tr>
-    <tr><td>Muro del terrazzo</td><td>${T.recinzione.spessore_cm} cm, h ${T.recinzione.altezza_cm} cm (assunti)</td></tr>
+    <tr><td>Portoncino</td><td>h ${A.portoncino_h_cm} cm${fonte(A.portoncino_nota)}</td></tr>
+    <tr><td>Portefinestre</td><td>h ${A.portafinestra_h_cm} cm${fonte(A.portafinestra_nota)}</td></tr>
+    <tr><td>Finestre</td><td>davanzale ${A.finestra_davanzale_cm} cm (assunto), h ${A.finestra_h_cm} cm${fonte(A.finestra_h_nota)}</td></tr>
+    ${T ? `<tr><td>Muro del terrazzo</td><td>${T.recinzione.spessore_cm} cm, h ${T.recinzione.altezza_cm} cm (assunti)</td></tr>` : ''}
   </tbody></table></div>`;
 }
 
 // ---------- assemblaggio ----------
-export function creaPiantina() {
+export function creaPiantina(P = planPrimo) {
+  usaPiano(P);
   const aper = aperture();
   const I = plan.muri.ingombro_esterno;
   const E = plan.esterni;
-  const T = E.terrazzo_nord.interno_cm, spT = E.terrazzo_nord.recinzione.spessore_cm;
-  const minX = Math.min(E.balcone_ovest.rect.x, T.x_ovest - spT) - 300;
-  const maxX = Math.max(...E.balcone_sud_est.rettangoli.map((r) => r.x + r.w), I.larghezza_cm) + 300;
-  const minY = T.z_nord - spT - 300;
-  const maxY = Math.max(...E.balcone_sud_est.rettangoli.map((r) => r.y + r.d),
-    E.pianerottolo_esterno.scala_esterna_rampa1.rect.y + E.pianerottolo_esterno.scala_esterna_rampa1.rect.d) + 300;
+  let minX = -300, maxX = I.larghezza_cm + 300, minY = -300, maxY = I.profondita_cm + 300;
+  if (E?.terrazzo_nord) {
+    const T = E.terrazzo_nord.interno_cm, spT = E.terrazzo_nord.recinzione.spessore_cm;
+    minX = Math.min(E.balcone_ovest.rect.x, T.x_ovest - spT) - 300;
+    maxX = Math.max(...E.balcone_sud_est.rettangoli.map((r) => r.x + r.w), I.larghezza_cm) + 300;
+    minY = T.z_nord - spT - 300;
+    maxY = Math.max(...E.balcone_sud_est.rettangoli.map((r) => r.y + r.d),
+      E.pianerottolo_esterno.scala_esterna_rampa1.rect.y + E.pianerottolo_esterno.scala_esterna_rampa1.rect.d) + 300;
+  } else {
+    maxY += 250; // spazio per titolo e scala grafica sotto la pianta
+  }
+  const titolo = plan._meta.piano === 'terra' ? 'PIANO TERRA' : 'PIANO PRIMO';
 
   const svg = `<svg viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" xmlns="http://www.w3.org/2000/svg">
     <rect x="${minX}" y="${minY}" width="${maxX - minX}" height="${maxY - minY}" fill="#fff"/>
-    ${esterni()}
+    ${E?.terrazzo_nord ? esterni() : ''}
     ${stanze()}
     ${muri(aper)}
     ${simboli(aper)}
@@ -311,7 +346,7 @@ export function creaPiantina() {
       ${txt(minX + 380, maxY - 350, '2 m', 'mis', 'text-anchor="middle"')}
       ${txt(minX + 580, maxY - 350, '4 m', 'mis', 'text-anchor="middle"')}
     </g>
-    ${txt((minX + maxX) / 2, maxY - 110, 'PIANO PRIMO', 'titolo', 'text-anchor="middle"')}
+    ${txt((minX + maxX) / 2, maxY - 110, titolo, 'titolo', 'text-anchor="middle"')}
     ${txt((minX + maxX) / 2, maxY - 55, 'misure in centimetri', 'mis', 'text-anchor="middle"')}
   </svg>`;
 
@@ -319,7 +354,7 @@ export function creaPiantina() {
   el.id = 'piantina';
   el.innerHTML = `
     <div class="pg-barra">
-      <strong>Piantina quotata</strong>
+      <strong>Piantina quotata · ${titolo.toLowerCase()}</strong>
       <span class="pg-nota">Misure in cm ricavate dal rilievo della piantina. I valori marcati "assunto" non sono quotati sul disegno.</span>
       <button id="pg-stampa">Stampa</button>
       <button id="pg-chiudi">Torna al 3D</button>

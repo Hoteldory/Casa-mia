@@ -300,6 +300,65 @@ export function texPietra(seed = 17, base = '#b7b0a2') {
   }, { seed });
 }
 
+// Lastre di pietra a correre, 60 x 60 cm (texture = 1,2 m): tono diverso per lastra, fughe sottili
+export function texLastre(base = '#c9c0ad', seed = 43) {
+  return canvasTexture(512, (ctx, s, r) => {
+    const t = s / 2;
+    ctx.fillStyle = '#8f877a';
+    ctx.fillRect(0, 0, s, s);
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+      ctx.fillStyle = base;
+      ctx.fillRect(i * t + 2, j * t + 2, t - 4, t - 4);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(i * t + 2, j * t + 2, t - 4, t - 4); ctx.clip();
+      ctx.globalAlpha = 0.10 + r() * 0.12;
+      ctx.fillStyle = r() < 0.5 ? '#8a8171' : '#efe8da';
+      ctx.fillRect(i * t, j * t, t, t);
+      ctx.globalAlpha = 1;
+      noiseOver(ctx, s, r, { n: 2500, alpha: 0.10, colors: ['#6e6558', '#ffffff', '#a39a88'], rmin: 1, rmax: 4 });
+      ctx.restore();
+    }
+  }, { seed });
+}
+
+// Piastrelle smaltate fatte a mano 10 x 10 (texture = 40 cm): smalto irregolare, fuga chiara
+export function texPiastrelle(color, seed = 47, fuga = '#d8d0c0', variazione = 0.36) {
+  return canvasTexture(512, (ctx, s, r) => {
+    const n = 4, t = s / n;
+    ctx.fillStyle = fuga;
+    ctx.fillRect(0, 0, s, s);
+    const c = new THREE.Color(color);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      const hsl = {}; c.getHSL(hsl);
+      const tone = new THREE.Color().setHSL(hsl.h + (r() - 0.5) * 0.02, hsl.s * (0.85 + r() * 0.3), hsl.l * (1 - variazione / 2 + r() * variazione));
+      ctx.fillStyle = '#' + tone.getHexString();
+      ctx.fillRect(i * t + 3, j * t + 3, t - 6, t - 6);
+      // riflesso dello smalto e bordi piu' scuri, come nelle piastrelle fatte a mano
+      const gr = ctx.createRadialGradient(i * t + t * 0.35, j * t + t * 0.3, 2, i * t + t / 2, j * t + t / 2, t * 0.75);
+      gr.addColorStop(0, 'rgba(255,255,255,0.18)');
+      gr.addColorStop(1, 'rgba(0,0,0,0.16)');
+      ctx.fillStyle = gr;
+      ctx.fillRect(i * t + 3, j * t + 3, t - 6, t - 6);
+    }
+    noiseOver(ctx, s, r, { n: 1500, alpha: 0.08, colors: ['#000', '#fff'], rmin: 0.5, rmax: 2 });
+  }, { seed });
+}
+
+// Carta da parati a righe (texture = 50 cm di larghezza): fondo e righe larghe, filetti sottili
+export function texRighe(fondo, riga, seed = 53) {
+  return canvasTexture(512, (ctx, s, r) => {
+    ctx.fillStyle = fondo;
+    ctx.fillRect(0, 0, s, s);
+    ctx.fillStyle = riga;
+    for (let k = 0; k < 4; k++) {
+      const x0 = k * s / 4;
+      ctx.fillRect(x0 + s * 0.04, 0, s * 0.09, s);
+      ctx.fillRect(x0 + s * 0.17, 0, s * 0.012, s);
+    }
+    noiseOver(ctx, s, r, { n: 3000, alpha: 0.05, colors: ['#000', '#fff'], rmin: 0.5, rmax: 1.5 });
+  }, { seed });
+}
+
 // Velluto: colore pieno con grana finissima
 export function texVelluto(color = PALETTE.senape, seed = 19) {
   return canvasTexture(256, (ctx, s, r) => {
@@ -467,9 +526,18 @@ export function getMateriali() {
     paralume: new THREE.MeshStandardMaterial({ color: '#f3e8d0', roughness: 0.9, side: THREE.DoubleSide, emissive: '#000000' }),
     foglia: std({ color: '#3f6b3a', roughness: 0.8, side: THREE.DoubleSide }),
     lampadina: new THREE.MeshStandardMaterial({ color: '#ffe3b0', emissive: '#ffd08a', emissiveIntensity: 0 }),
+    // ---- piano terra ----
+    lastre: std({ map: texLastre(), roughness: 0.7 }),
+    piastrelleVerdi: std({ map: texPiastrelle('#2d5a48', 47), roughness: 0.25 }),
+    piastrelleCrema: std({ map: texPiastrelle('#ece3cf', 48, '#cfc5b2', 0.1), roughness: 0.28 }),
+    cartaRighe: std({ map: texRighe('#e6dcc7', PALETTE.salviaChiaro), roughness: 0.9 }),
+    bluPetrolio: std({ map: texVernice('#2e6470', 35), roughness: 0.9 }),
+    bluPolvere: std({ map: texVernice('#7f98a4', 36), roughness: 0.85 }),
+    crema: std({ map: texVernice(PALETTE.crema, 37), roughness: 0.85 }),
+    vellutoRuggine: new THREE.MeshPhysicalMaterial({ map: texVelluto('#8a4124', 38), roughness: 0.92, sheen: 0.7, sheenColor: new THREE.Color('#d9895f') }),
   };
   // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
-  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone']) {
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'cartaRighe', 'bluPetrolio']) {
     _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
   }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
@@ -485,8 +553,12 @@ export function getMateriali() {
   _MAT.terreno.map.repeat.set(0.5, 0.5);
   _MAT.cartaBotanica.map.repeat.set(1 / 1.4, 1 / 1.4);
   _MAT.reteOttone.map.repeat.set(1 / 0.16, 1 / 0.16);
+  _MAT.lastre.map.repeat.set(1 / 1.2, 1 / 1.2);
+  _MAT.piastrelleVerdi.map.repeat.set(1 / 0.4, 1 / 0.4);
+  _MAT.piastrelleCrema.map.repeat.set(1 / 0.4, 1 / 0.4);
+  _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
-  for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora']) _MAT[k].map.repeat.set(3, 3);
+  for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine']) _MAT[k].map.repeat.set(3, 3);
   return _MAT;
 }
 

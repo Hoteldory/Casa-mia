@@ -42,6 +42,7 @@ export function arredi(ctx, stanze) {
     arredaCameraEst(ctx, stanze),
     arredaTerrazzo(ctx),
   ];
+  comuni[comuni.length - 1].userData.esterno = true; // il terrazzo resta visibile anche in vista del piano terra
   const varianti = {};
   for (const [tag, build] of Object.entries(PARTI)) {
     ctx.variante = tag; // ingombri e punti luce nascono marchiati con l'allestimento

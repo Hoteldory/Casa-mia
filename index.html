@@ -61,6 +61,7 @@
     .vuoto { fill: #fff; }
     .vuotoL, .serr { stroke: #141414; stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
     .battente { stroke: #141414; stroke-width: 5; vector-effect: non-scaling-stroke; }
+    .battente.tasca { stroke: #fff; stroke-width: 3; stroke-dasharray: 10 6; }
     .arco { fill: none; stroke: #141414; stroke-width: 2; stroke-dasharray: 12 8; vector-effect: non-scaling-stroke; }
     .quota { stroke: #141414; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
     .quotaTxt { font-family: ui-monospace, monospace; font-size: 26px; fill: #141414; }
@@ -111,6 +112,7 @@
     .vuoto { fill: #fff; }
     .vuotoL, .serr { stroke: #141414; stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
     .battente { stroke: #141414; stroke-width: 5; vector-effect: non-scaling-stroke; }
+    .battente.tasca { stroke: #fff; stroke-width: 3; stroke-dasharray: 10 6; }
     .arco { fill: none; stroke: #141414; stroke-width: 2; stroke-dasharray: 12 8; vector-effect: non-scaling-stroke; }
     .quota { stroke: #141414; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
     .quotaTxt { font-family: ui-monospace, monospace; font-size: 26px; fill: #141414; }
@@ -139,8 +141,14 @@
   <div id="app"></div>
   <button id="apri-pannello" type="button">Menu</button>
   <div id="pannello">
-    <h1>Casa mia · piano primo</h1>
+    <h1>Casa mia</h1>
     <div class="sub">antico in chiave moderna</div>
+    <h2>Piano</h2>
+    <div class="row">
+      <button id="btn-primo" class="on">Piano primo</button>
+      <button id="btn-terra">Piano terra</button>
+    </div>
+    <div id="sez-allestimento">
     <h2>Versione</h2>
     <div class="row">
       <button id="btn-v1" class="on">V1</button>
@@ -153,6 +161,7 @@
       <button id="btn-t-aperto" class="on">Aperto</button>
     </div>
     <div class="hint" id="nota-tavolo"></div>
+    </div>
     <h2>Stanze</h2>
     <div id="stanze"></div>
     <h2>Vista</h2>
