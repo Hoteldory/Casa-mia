@@ -466,7 +466,8 @@
       "x_a": 512,
       "luce_cm": 70,
       "luce_assunta": true,
-      "battente": "scorrevole a scomparsa nel muro"
+      "battente": "scorrevole a scomparsa nel muro",
+      "tasca": "est"
     },
     {
       "id": "T-P-dis",
@@ -478,7 +479,8 @@
       "x_a": 522,
       "luce_cm": 80,
       "luce_assunta": true,
-      "battente": "scorrevole a scomparsa nel muro"
+      "battente": "scorrevole a scomparsa nel muro",
+      "tasca": "est"
     },
     {
       "id": "T-P-cam3",

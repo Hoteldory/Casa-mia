@@ -159,8 +159,18 @@ function buildPorta(p, seg, ctx, P = plan) {
   g.add(along(w + 0.04, s, (p.a + p.b) / 2 * C, h + s / 2));
   // soglia in pietra
   g.add(horiz ? box(w, 0.012, T, M.pietra, (p.a + p.b) / 2 * C, 0.006, cross) : box(T, 0.012, w, M.pietra, cross, 0.006, (p.a + p.b) / 2 * C));
-  // scorrevole a scomparsa: l'anta e' dentro il muro, resta il vano con il telaio
-  if (p.tipo === 'scorrevole') return g;
+  // scorrevole a scomparsa: l'anta e' quasi tutta nella tasca del muro; se ne vede il bordo
+  // con la maniglia a incasso in ottone, dal lato della tasca (p.tasca, di default sud/est)
+  if (p.tipo === 'scorrevole') {
+    const dopo = !p.tasca || p.tasca === 'sud' || p.tasca === 'est';
+    const hl = h - 0.02, sporge = 0.07;
+    const pos = dopo ? p.b * C - s + 0.02 - sporge / 2 : p.a * C + s - 0.02 + sporge / 2;
+    const bordo = horiz ? box(sporge, hl, 0.04, M.salvia, pos, hl / 2 + 0.01, cross) : box(0.04, hl, sporge, M.salvia, cross, hl / 2 + 0.01, pos);
+    g.add(bordo);
+    const bpos = dopo ? pos - sporge / 2 + 0.004 : pos + sporge / 2 - 0.004;
+    g.add(horiz ? box(0.008, 0.16, 0.05, M.ottone, bpos, 1.05, cross) : box(0.05, 0.16, 0.008, M.ottone, cross, 1.05, bpos));
+    return g;
+  }
 
   // battente: cerniera e verso di apertura
   const cern = /cerniera a (nord|sud|est|ovest)/.exec(p.battente || '')?.[1];

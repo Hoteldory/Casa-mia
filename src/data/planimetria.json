@@ -12,7 +12,8 @@
       "F-camera-nord trasformata in portafinestra PF-camera-nord (124 cm, come quella della cucina)",
       "aggiunta F-cucina-lavello sul muro ovest (124 cm, dal piano di lavoro a 90 cm fino a 220 cm) in asse con il lavello",
       "camera est: scala a chiocciola esistente (diametro 150 cm) addossata al muro nord vicino alla porta, con foro nel solaio; lavatrice in colonna con vano predisposto per l'asciugatrice",
-      "aggiunto il terrazzo nord da 67,12 mq della piantina aggiornata, con recinzione a muro pieno"
+      "aggiunto il terrazzo nord da 67,12 mq della piantina aggiornata, con recinzione a muro pieno",
+      "Porte soggiorno-disimpegno e disimpegno-camera est (scala) scorrevoli a scomparsa"
     ],
     "sorgente_terrazzo": "piantina-terrazzo.jpg (PIANO PRIMO aggiornato)"
   },
@@ -318,7 +319,7 @@
     },
     {
       "id": "P-dis",
-      "tipo": "interna",
+      "tipo": "scorrevole",
       "muro": "I-dis-ovest",
       "da": "soggiorno",
       "a": "disimpegno",
@@ -326,7 +327,10 @@
       "y_da": 436,
       "y_a": 524,
       "luce_cm": 88,
-      "battente": "apre verso il soggiorno, cerniera a nord"
+      "battente": "scorrevole a scomparsa nel muro, tasca a nord",
+      "tasca": "nord",
+      "modifica_richiesta": true,
+      "nota_modifica": "era a battente verso il soggiorno: resa scorrevole per risparmiare spazio"
     },
     {
       "id": "P-camera-nord",
@@ -342,7 +346,7 @@
     },
     {
       "id": "P-camera-est",
-      "tipo": "interna",
+      "tipo": "scorrevole",
       "muro": "I-spina-camere",
       "da": "disimpegno",
       "a": "camera_est",
@@ -350,7 +354,10 @@
       "y_da": 426,
       "y_a": 507,
       "luce_cm": 81,
-      "battente": "apre verso la camera, cerniera a nord"
+      "battente": "scorrevole a scomparsa nel muro, tasca a sud",
+      "tasca": "sud",
+      "modifica_richiesta": true,
+      "nota_modifica": "porta verso la scala a chiocciola: resa scorrevole per risparmiare spazio"
     },
     {
       "id": "P-camera-sud",

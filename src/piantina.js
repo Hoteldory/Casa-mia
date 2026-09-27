@@ -148,7 +148,9 @@ function simboli(aper) {
       // scorrevole a scomparsa: vano vuoto e anta tratteggiata dentro la tasca del muro
       out += horiz ? rect(o.a, c0, L, t, 'vuoto') : rect(c0, o.a, t, L, 'vuoto');
       const cm = (c0 + c1) / 2;
-      out += horiz ? line(o.b, cm, o.b + L, cm, 'battente tasca') : line(cm, o.b, cm, o.b + L, 'battente tasca');
+      const dopo = !o.tasca || o.tasca === 'sud' || o.tasca === 'est';
+      const [t0, t1] = dopo ? [o.b, o.b + L] : [o.a - L, o.a];
+      out += horiz ? line(t0, cm, t1, cm, 'battente tasca') : line(cm, t0, cm, t1, 'battente tasca');
     } else {
       // porta: vano vuoto, battente aperto a 90 gradi e arco di apertura
       out += horiz ? rect(o.a, c0, L, t, 'vuoto') : rect(c0, o.a, t, L, 'vuoto');
