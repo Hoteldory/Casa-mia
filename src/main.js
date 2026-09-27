@@ -269,6 +269,12 @@ function aggiornaFP(dt) {
 function entraFP() {
   modoFP = true;
   orbit.enabled = false;
+  // senza elenco delle stanze si parte dal soggiorno del piano in vista, se il punto attuale e' occupato
+  if (blocca(pos.x, pos.z) || Math.abs(pos.y - quotaPiano() - EYE) > 0.5) {
+    vaiA('soggiorno');
+    const v = vistePiano().soggiorno;
+    camera.lookAt(v.fp[2], quotaPiano() + EYE - 0.1, v.fp[3]);
+  }
   camera.position.set(pos.x, quotaPiano() + EYE, pos.z);
   document.body.classList.add('fp');
   document.getElementById('btn-fp').classList.add('on');
@@ -299,7 +305,6 @@ const vistePrimo = {
   camera_est: { fp: [9.6, 5.9, 7.4, 4.8], orbit: [8.4, 5.2, 11.4, 6.4, 7.6] },
   camera_sud: { fp: [7.0, 8.5, 9.3, 7.2], orbit: [8.2, 8.2, 10.5, 9.5, 11.2] },
 };
-const nomiPrimo = { terrazzo: 'Terrazzo (67 mq)', soggiorno: 'Soggiorno', cucina: 'Cucina', bagno: 'Bagno', disimpegno: 'Disimpegno', camera_nord: 'Camera nord (matrimoniale)', camera_est: 'Camera est (scala e lavanderia)', camera_sud: 'Camera sud (matrimoniale)' };
 // piano terra: altezze riferite al pavimento del piano
 const visteTerra = {
   cucina: { fp: [3.7, 6.9, 0.9, 8.6], orbit: [2.2, 7.6, 5.6, 4.2, 4.4] },
@@ -311,19 +316,7 @@ const visteTerra = {
   camera_2: { fp: [3.9, 4.6, 0.9, 3.4], orbit: [2.2, 4.2, -2.4, 4.6, 7.4] },
   disimpegno: { fp: [5.2, 5.1, 5.2, 0.9], orbit: [5.2, 2.8, 5.2, 6.0, 8.4] },
 };
-const nomiTerra = { cucina: 'Cucina-pranzo e camino', soggiorno: 'Soggiorno', ingresso: 'Ingresso', camera_3: 'Camera 16,00 (matrimoniale)', bagno: 'Bagno', camera_1: 'Camera 10,99', camera_2: 'Camera 10,48', disimpegno: 'Disimpegno e ripostiglio' };
 const vistePiano = () => (piano === 'terra' ? visteTerra : vistePrimo);
-const divStanze = document.getElementById('stanze');
-function elencoStanze() {
-  divStanze.innerHTML = '';
-  const nomi = piano === 'terra' ? nomiTerra : nomiPrimo;
-  for (const k of Object.keys(vistePiano())) {
-    const b = document.createElement('button');
-    b.textContent = nomi[k];
-    b.onclick = () => vaiA(k);
-    divStanze.appendChild(b);
-  }
-}
 function vaiA(k) {
   const v = vistePiano()[k];
   const q = quotaPiano();
@@ -368,8 +361,6 @@ applicaAllestimento();
 document.getElementById('btn-orbit').onclick = () => esciFP();
 const apri = document.getElementById('apri-pannello');
 apri.onclick = () => { const on = document.body.classList.toggle('pannello-aperto'); apri.textContent = on ? 'Chiudi' : 'Menu'; };
-// su schermi piccoli il pannello si chiude dopo la scelta di una stanza
-divStanze.addEventListener('click', () => { if (getComputedStyle(apri).display !== 'none') apri.click(); });
 document.getElementById('btn-fp').onclick = () => entraFP();
 const bt = document.getElementById('btn-tetto');
 const bp = document.getElementById('btn-pareti');
@@ -409,13 +400,11 @@ function cambiaPiano(p) {
   document.getElementById('sez-allestimento').style.display = piano === 'terra' ? 'none' : '';
   if (piantinaEl) { piantinaEl.remove(); piantinaEl = null; }
   applicaVisibilita();
-  elencoStanze();
   // la vista scende (o sale) di un piano; in prima persona si entra nella prima stanza del piano
-  if (modoFP) vaiA(Object.keys(vistePiano())[0]);
+  if (modoFP) vaiA('soggiorno');
   else { orbit.target.y += dq; camera.position.y += dq; }
 }
 for (const k of Object.keys(bottoniPiano)) bottoniPiano[k].onclick = () => cambiaPiano(k);
-elencoStanze();
 const bg = document.getElementById('btn-giorno');
 bg.onclick = () => { giorno = !giorno; applicaLuce(); bg.classList.toggle('on', giorno); bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera'; };
 

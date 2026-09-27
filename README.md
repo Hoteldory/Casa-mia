@@ -22,9 +22,10 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 - **Orbita** (default): trascina per ruotare, rotella per zoom, tasto destro per traslare.
 - **Prima persona**: clic sulla scena per catturare il mouse; `W A S D` o frecce per muoversi,
   `Shift` per correre, `Esc` per uscire. Altezza occhio 165 cm, collisioni con muri, ringhiere e arredi.
-- **Pannello laterale**: scelta della versione (V1/V2), tavolo chiuso o aperto, salto rapido
-  a ogni stanza, toggle tetto/soffitti, toggle pareti intere (pareti a 45 cm per la vista
-  dall'alto), toggle luce del giorno / luce della sera, piantina quotata.
+- **Pannello laterale**: piano primo o piano terra, versione (V1/V2) e tavolo chiuso o aperto
+  per il piano primo, orbita o prima persona, toggle tetto/soffitti, toggle pareti intere
+  (pareti a 45 cm per la vista dall'alto), toggle luce del giorno / luce della sera, piantina
+  quotata. La prima persona parte dal soggiorno del piano in vista.
 
 ## Piano terra (casa della cognata)
 

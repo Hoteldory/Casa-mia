@@ -347,7 +347,7 @@ export function ringhiera(x0, z0, x1, z1, ctx, { h = 1.05, y = 0 } = {}) {
 }
 
 // ---------- esterni ----------
-function esterni(ctx) {
+function esterni(ctx, walls) {
   const M = getMateriali();
   const g = new THREE.Group();
   const E = plan.esterni;
@@ -453,9 +453,11 @@ function esterni(ctx) {
   // il piano terra (casa della cognata) e' costruito a parte, vedi pianoTerra.js
   g.add(terrazzoNord(ctx));
   // lanterne in ottone: ingresso, balcone a ovest e balcone a sud-est
-  g.add(lanterna(ctx, 5.78, 2.15, 9.66, 'z+', { intensita: 16 }));
-  g.add(lanterna(ctx, -0.01, 2.15, 7.85, 'x-', { intensita: 12 }));
-  g.add(lanterna(ctx, 9.35, 2.15, 10.98, 'z+', { intensita: 12 }));
+  // sono appese ai muri del piano primo: stanno con i muri, cosi' spariscono insieme a loro
+  // (vista del piano terra, pareti basse) invece di restare sospese nel vuoto
+  walls.add(lanterna(ctx, 5.78, 2.15, 9.66, 'z+', { intensita: 16 }));
+  walls.add(lanterna(ctx, -0.01, 2.15, 7.85, 'x-', { intensita: 12 }));
+  walls.add(lanterna(ctx, 9.35, 2.15, 10.98, 'z+', { intensita: 12 }));
   // terreno
   const ground = plane(70, 70, M.terreno, 5, -3.4, 0, 'y+');
   g.add(ground);
@@ -610,6 +612,6 @@ export function costruisciArchitettura(ctx) {
   const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, matTetto, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
   ceilings.add(roof2);
 
-  const exterior = esterni(ctx);
+  const exterior = esterni(ctx, walls);
   return { walls, wallsLow, floors, ceilings, exterior, stanze: st };
 }
