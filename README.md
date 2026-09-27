@@ -103,6 +103,13 @@ Il foro della scala a chiocciola porta al sottotetto. "Tetto e soffitti" lo most
 - davanti (sud): muretto intonacato con cancellata in ferro, cancelletto con pilastri e lanterne,
   vialetto in lastre verso i due ingressi e la scala, patio con tavolino davanti alla portafinestra
   del piano terra, aiuole fiorite lungo il muretto, lavanda, un olivo e un albero da ombra;
+- due posti auto in lastre (2,90 x 5,10) ai capi del fronte, contro le recinzioni laterali:
+  a ovest quello del piano primo, accanto al piede della scala esterna; a est quello del piano
+  terra. Ognuno ha il suo cancello carrabile scorrevole in ferro: varco 300 cm, anta 330,
+  pilastro di battuta da 40 cm verso il confine e pilastro di guida verso il centro, con motore,
+  lampeggiante e binario. L'anta si apre verso il centro del fronte, dietro la recinzione, che
+  deve restare dritta per anta + 20 cm di fine corsa = 350 cm: a ovest fino al cancelletto ce ne
+  sono 420, a est 450. Aprendo verso il centro, dalla parte del confine basta il pilastro;
 - lati: sentieri in ghiaia, cipressi a ovest, arancio, melo e aiuola lungo la casa a est;
 - attorno alla casa dei suoceri: lastre davanti all'ingresso e alla porta della lavanderia,
   patio con tavolino davanti alla portafinestra della camera a est;

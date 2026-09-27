@@ -1,6 +1,7 @@
 // Giardino intorno alla casa, al piano del terreno: davanti (sud, lato ingressi), sui due lati
 // e dietro (nord), dove e' piu' profondo e ospita l'orto oltre la casa dei suoceri.
-// Recinzione: a sud muretto intonacato con cancellata in ferro e cancelletto sul vialetto;
+// Recinzione: a sud muretto intonacato con cancellata in ferro, cancelletto sul vialetto e ai due
+// capi i cancelli carrabili scorrevoli dei due posti auto;
 // sui lati e dietro staccionata in castagno a doghe. Misure in metri, terreno a quota 0
 // (main.js sposta il gruppo alla quota del piano terra).
 import * as THREE from 'three';
@@ -12,6 +13,17 @@ import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 // x 0,70-9,24 da z -7,94 a 0 e x 0,70-8,84 da z -11,78 a -7,94
 export const LOTTO = { x0: -3.5, x1: 14.0, z0: -23.5, z1: 17.5 };
 const CANCELLO = { x0: 4.5, x1: 5.7 }; // in asse con il vialetto per i due ingressi
+// Cancelli carrabili scorrevoli ai due capi del fronte, con il posto auto subito dentro, contro
+// la recinzione laterale. Varco 300, anta 330 (sormonta 5 cm la battuta e resta 25 cm dietro il
+// pilastro di guida); in apertura l'anta corre verso il centro del fronte, dietro la recinzione,
+// che deve quindi restare dritta per anta + 20 cm di fine corsa = 350 cm dal varco. Scorrendo
+// verso l'interno, dalla parte del confine basta il pilastro di battuta da 40 cm.
+// verso = direzione di apertura (+1 verso est, -1 verso ovest)
+export const CARRABILI = [
+  { per: 'piano primo', x0: -3.1, x1: -0.1, verso: 1, posto: [-3.35, -0.45], auto: '#34505a' },  // a ovest, vicino alla scala
+  { per: 'piano terra', x0: 10.6, x1: 13.6, verso: -1, posto: [10.95, 13.85], auto: '#d8cdb4' }, // a est
+];
+const ANTA = 3.3, FINE_CORSA = 0.2, POSTO_Z = [12.2, 17.3];
 
 // ---- albero: tronco e chioma a masse, con frutti se richiesti ----
 function albero(ctx, { x, z, h = 3.2, r = 1.1, seed = 1, frutti = null, colori = VERDI, cipresso = false }) {
@@ -75,9 +87,7 @@ function cancellata(g, ctx, { x0, x1, z }) {
 function ingressoCancello(g, ctx, { x0, x1, z }) {
   const M = MAT();
   for (const x of [x0 - 0.2, x1 + 0.2]) {
-    g.add(box(0.4, 1.6, 0.4, M.intonacoEsterno, x, 0.8, z));
-    g.add(box(0.48, 0.06, 0.48, M.pietra, x, 1.63, z));
-    ctx.addColliderBox(x - 0.2, x + 0.2, z - 0.2, z + 0.2, 0, 1.6);
+    pilastro(g, ctx, x, z);
     g.add(lanterna(ctx, x, 1.25, z + 0.2, 'z+', { intensita: 10 }));
   }
   // anta in ferro socchiusa verso il giardino, incernierata al pilastro ovest
@@ -90,6 +100,78 @@ function ingressoCancello(g, ctx, { x0, x1, z }) {
   anta.position.set(x0 + 0.02, 0, z);
   anta.rotation.y = 0.9; // aperta verso nord, dentro il giardino
   g.add(anta);
+}
+
+// ---- pilastro intonacato con copertina in pietra ----
+function pilastro(g, ctx, x, z) {
+  const M = MAT();
+  g.add(box(0.4, 1.6, 0.4, M.intonacoEsterno, x, 0.8, z));
+  g.add(box(0.48, 0.06, 0.48, M.pietra, x, 1.63, z));
+  ctx.addColliderBox(x - 0.2, x + 0.2, z - 0.2, z + 0.2, 0, 1.6);
+}
+
+// ---- cancello carrabile scorrevole in ferro, chiuso: pilastro di battuta verso il confine,
+// pilastro di guida verso il centro, binario a terra lungo tutta la corsa, motore e lampeggiante ----
+function cancelloScorrevole(g, ctx, { x0, x1, z, verso }) {
+  const M = MAT();
+  const xB = verso > 0 ? x0 - 0.2 : x1 + 0.2;   // battuta, verso il confine
+  const xG = verso > 0 ? x1 + 0.2 : x0 - 0.2;   // guida, dalla parte in cui l'anta si apre
+  pilastro(g, ctx, xB, z);
+  pilastro(g, ctx, xG, z);
+  const zi = z - 0.28;                           // l'anta corre dentro il giardino, dietro i pilastri
+  // anta: parte 5 cm dentro la battuta e finisce 25 cm dietro il pilastro di guida
+  const a = verso > 0 ? x0 - 0.05 : x1 + 0.05, b = a + verso * ANTA;
+  const xa = Math.min(a, b), L = ANTA, cx = xa + L / 2;
+  g.add(box(L, 0.1, 0.05, M.ferro, cx, 0.13, zi));
+  g.add(box(L, 0.04, 0.05, M.ferro, cx, 1.45, zi));
+  g.add(box(L, 0.025, 0.03, M.ferro, cx, 0.72, zi));
+  for (const x of [xa + 0.025, xa + L - 0.025]) g.add(box(0.05, 1.36, 0.05, M.ferro, x, 0.79, zi));
+  const n = Math.round(L / 0.12);
+  for (let i = 1; i < n; i++) {
+    const x = xa + (L * i) / n;
+    g.add(box(0.016, 1.27, 0.016, M.ferro, x, 0.815, zi));
+    if (i % 4 === 2) g.add(box(0.05, 0.05, 0.02, M.ferro, x, 1.2, zi).rotateZ(Math.PI / 4));
+  }
+  for (const x of [xa + 0.4, xa + L - 0.4]) g.add(cyl(0.06, 0.06, 0.04, M.ferro, x, 0.07, zi, 12).rotateX(Math.PI / 2));
+  g.add(box(0.03, 0.2, 0.05, M.ottone, (verso > 0 ? xa + 0.12 : xa + L - 0.12), 1.05, zi - 0.03)); // maniglia di sblocco
+  // binario: dal varco fino a fine corsa (anta + 20 cm)
+  const r0 = verso > 0 ? x0 - 0.05 : x1 + 0.05, r1 = (verso > 0 ? x1 : x0) + verso * (ANTA + FINE_CORSA);
+  g.add(box(Math.abs(r1 - r0), 0.02, 0.05, M.ferro, (r0 + r1) / 2, 0.01, zi, { cast: false }));
+  g.add(box(0.06, 0.12, 0.08, M.ferro, r1, 0.06, zi)); // fermo di fine corsa
+  // motore accanto al pilastro di guida e lampeggiante sulla sua copertina
+  const motore = matColore('#6d6f6b', 0.6);
+  g.add(box(0.28, 0.34, 0.2, motore, xG + verso * 0.45, 0.17, zi - 0.2));
+  g.add(sphere(0.07, matColore('#d9822b', 0.35), xG, 1.72, z, 10));
+  ctx.addColliderBox(x0, x1, zi - 0.05, z + 0.15, 0, 1.5);
+}
+
+// ---- automobile stilizzata (muso verso -z), per dare la scala ai posti auto ----
+function automobile(g, ctx, { x, z, colore }) {
+  const M = MAT();
+  const c = new THREE.Group();
+  const carr = matColore(colore, 0.35);
+  const vetri = matColore('#26313a', 0.15);
+  const gomme = matColore('#1d1d1d', 0.9);
+  const W = 1.78, L = 4.25;
+  c.add(box(W, 0.55, L, carr, 0, 0.5, 0));                       // scocca
+  c.add(box(W - 0.04, 0.12, L - 0.2, carr, 0, 0.83, 0.05));      // spalla
+  c.add(box(W - 0.18, 0.46, 2.1, vetri, 0, 1.12, 0.25));          // abitacolo vetrato
+  c.add(box(W - 0.22, 0.05, 1.9, carr, 0, 1.37, 0.3));            // tetto
+  for (const s of [-1, 1]) {
+    for (const zz of [-1.35, 1.35]) {
+      const r = cyl(0.32, 0.32, 0.22, gomme, s * (W / 2 - 0.1), 0.32, zz, 18);
+      r.rotation.z = Math.PI / 2; c.add(r);
+      const cer = cyl(0.19, 0.19, 0.23, M.pietra, s * (W / 2 - 0.1), 0.32, zz, 14);
+      cer.rotation.z = Math.PI / 2; c.add(cer);
+    }
+    c.add(box(0.36, 0.1, 0.03, M.ceramica, s * 0.6, 0.62, -L / 2 - 0.005));        // fari
+    c.add(box(0.36, 0.08, 0.03, matColore('#8a2a22', 0.4), s * 0.6, 0.66, L / 2 + 0.005)); // fanali
+    c.add(box(0.03, 0.06, 0.14, carr, s * (W / 2 + 0.06), 1.0, -0.72));          // specchietti
+  }
+  c.add(box(0.8, 0.14, 0.03, matColore('#2a2a2a', 0.6), 0, 0.42, -L / 2 - 0.005)); // griglia
+  c.position.set(x, 0, z);
+  ctx.solid(c);
+  g.add(c);
 }
 
 // ---- cassone rialzato dell'orto con le sue colture ----
@@ -235,25 +317,37 @@ export function giardino(ctx) {
   const pav = (x0, z0, x1, z1, mat) => g.add(box(x1 - x0, 0.015, z1 - z0, mat, (x0 + x1) / 2, 0.0075, (z0 + z1) / 2, { cast: false }));
   pav(0.03, 9.65, 5.84, 10.97, M.lastre);            // sotto la loggia, davanti al portoncino del piano terra
   pav(CANCELLO.x0, 10.97, CANCELLO.x1, L.z1, M.lastre); // vialetto dal cancelletto
-  pav(-2.4, 13.9, CANCELLO.x0, 15.0, M.lastre);      // ramo verso la scala e il lato ovest
+  pav(-0.25, 13.9, CANCELLO.x0, 15.0, M.lastre);     // ramo verso la scala e il posto auto ovest
   pav(6.3, 10.97, 10.2, 13.0, M.lastre);             // patio davanti alla portafinestra del soggiorno
-  pav(10.2, 11.5, 12.9, 12.5, M.ghiaia);             // raccordo verso il lato est
-  pav(-2.4, -14.8, -1.4, 13.9, M.ghiaia);            // sentiero lato ovest
+  pav(10.2, 11.5, 12.9, POSTO_Z[0], M.ghiaia);       // raccordo verso il lato est e il posto auto
+  pav(-2.4, -14.8, -1.4, POSTO_Z[0], M.ghiaia);      // sentiero lato ovest, fino al posto auto
   pav(11.9, -14.8, 12.9, 11.5, M.ghiaia);            // sentiero lato est
   pav(-2.8, -22.9, 13.3, -14.8, M.ghiaia);           // orto
   pav(-1.4, -9.95, 0.70, -8.85, M.lastre);           // ingresso dei suoceri
   pav(-1.4, -1.95, 0.70, -0.7, M.lastre);            // porta di servizio della lavanderia
   pav(9.24, -6.5, 11.9, -4.5, M.lastre);             // patio della camera dei suoceri
   // ---- recinzione ----
-  cancellata(g, ctx, { x0: L.x0, x1: CANCELLO.x0 - 0.4, z: L.z1 });
-  cancellata(g, ctx, { x0: CANCELLO.x1 + 0.4, x1: L.x1, z: L.z1 });
+  // fronte: cancello carrabile, recinzione su cui scorre l'anta, cancelletto pedonale, e di nuovo
+  const [ovest, est] = CARRABILI;
+  cancellata(g, ctx, { x0: ovest.x1 + 0.4, x1: CANCELLO.x0 - 0.4, z: L.z1 });
+  cancellata(g, ctx, { x0: CANCELLO.x1 + 0.4, x1: est.x0 - 0.4, z: L.z1 });
   ingressoCancello(g, ctx, { x0: CANCELLO.x0, x1: CANCELLO.x1, z: L.z1 });
+  for (const c of CARRABILI) {
+    cancelloScorrevole(g, ctx, { ...c, z: L.z1 });
+    // posto auto in lastre 2,90 x 5,10, contro la recinzione laterale, con cordolo in pietra
+    const [px0, px1] = c.posto, [pz0, pz1] = POSTO_Z;
+    pav(px0, pz0, px1, pz1, M.lastre);
+    const xc = c.verso > 0 ? px1 : px0; // lato verso la casa
+    g.add(box(0.12, 0.1, pz1 - pz0, M.pietra, xc + c.verso * 0.06, 0.05, (pz0 + pz1) / 2));
+    automobile(g, ctx, { x: (px0 + px1) / 2, z: (pz0 + pz1) / 2 - 0.1, colore: c.auto });
+  }
   staccionata(g, ctx, { x0: L.x0, z0: L.z0, x1: L.x0, z1: L.z1 - 0.15 });
   staccionata(g, ctx, { x0: L.x1, z0: L.z0, x1: L.x1, z1: L.z1 - 0.15 });
   staccionata(g, ctx, { x0: L.x0, z0: L.z0, x1: L.x1, z1: L.z0 });
   // ---- davanti: aiuole lungo il muretto, due alberi, tavolino sul patio ----
-  aiuola(g, ctx, { x0: -3.2, x1: 4.0, z0: 16.6, z1: 17.25, seed: 1 });
-  aiuola(g, ctx, { x0: 6.2, x1: 13.7, z0: 16.6, z1: 17.25, seed: 2 });
+  // le aiuole lungo il muretto lasciano libera la corsa delle ante (a 28 cm dalla recinzione)
+  aiuola(g, ctx, { x0: 0.8, x1: 4.0, z0: 16.5, z1: 17.05, seed: 1 });
+  aiuola(g, ctx, { x0: 6.3, x1: 9.7, z0: 16.5, z1: 17.05, seed: 2 });
   aiuola(g, ctx, { x0: 5.9, x1: 6.2, z0: 13.0, z1: 16.3, seed: 3, fiori: ['#8a6fb0', '#9b82c0'] }); // lavanda lungo il vialetto
   g.add(albero(ctx, { x: 2.2, z: 16.0, h: 3.0, r: 1.0, seed: 4, colori: ['#7d8f6a', '#8a9b78', '#6b7d5a'] })); // olivo
   g.add(albero(ctx, { x: 9.0, z: 15.4, h: 3.6, r: 1.25, seed: 5 }));
