@@ -55,6 +55,27 @@ portoncino e stanze vere.
 | Camera 10,48 | armadio a tre moduli laccato blu polvere |
 | Bagno | rivestimento a 120 cm in piastrelle verdi, a tutta altezza nella doccia |
 
+## Tetto e giardino
+
+**Tetto a capanna** sopra il piano primo: colmo est-ovest a meta' profondita', pendenza 32%,
+falde in coppi con sporto di 45 cm e travetti in legno a vista, timpani intonacati sulle
+facciate est e ovest, grondaie e pluviali in rame, comignolo sopra il camino del piano terra.
+La falda sud copre anche il pianerottolo d'ingresso, che diventa una loggia con trave in legno.
+Il foro della scala a chiocciola porta al sottotetto. "Tetto e soffitti" lo mostra o lo toglie.
+
+**Giardino** (lotto 17,50 x 38,50 m, recintato):
+- davanti (sud): muretto intonacato con cancellata in ferro, cancelletto con pilastri e lanterne,
+  vialetto in lastre verso i due ingressi e la scala, patio con tavolino davanti alla portafinestra
+  del piano terra, aiuole fiorite lungo il muretto, lavanda, un olivo e un albero da ombra;
+- lati: sentieri in ghiaia, cipressi a ovest, arancio, melo e aiuola lungo la casa a est;
+- dietro (nord), piu' profondo: prato fra il terrazzo e l'orto, limone, fico, panchina, e l'orto
+  in ghiaia con sei cassoni rialzati 1,20 x 3,40 (pomodori, insalata, zucchine, cavoli,
+  fagiolini, erbe e fragole) e la casetta degli attrezzi con la botte per l'acqua piovana;
+- staccionata in castagno a doghe sui lati e dietro.
+
+Le luci del giardino restano accese di sera qualunque piano sia in vista; recinzioni, alberi,
+cassoni e casetta sono ostacoli per la prima persona.
+
 ## Le due versioni
 
 Il modello e' uno solo: cambia l'arredo della zona giorno, con il selettore in cima al pannello.
@@ -96,6 +117,7 @@ piantina-terra.jpg           piantina del piano terra
 src/data/piano-terra.json    misure del piano terra in cm
 src/pianoTerra.js            involucro del piano terra, solaio, lanterna d'ingresso
 src/arredi/piano_terra.js    arredi del piano terra (camino, panca, letti singoli, doccia...)
+src/arredi/giardino.js       giardino, recinzioni e orto
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
 ```
 
@@ -128,6 +150,8 @@ contro "circa 44"). Altezza soffitto **270 cm (assunta)**, muri esterni 25 cm, i
 
 ## Prestazioni
 
-Le mesh statiche vengono fuse per materiale dopo la costruzione (circa 750 draw call incluse le
-ombre, 100k triangoli). Le ombre sono proiettate solo dal sole; le luci artificiali sono luci
+Le mesh statiche vengono fuse per materiale dopo la costruzione; quelle con un materiale per
+faccia (muri esterni, solette, falde del tetto) vengono prima divise per gruppo di facce, cosi'
+si fondono anche loro: la vista esterna completa (due piani, tetto e giardino) passa da circa
+2000 a circa 950 draw call, ombre incluse, e circa 370k triangoli. Le ombre sono proiettate solo dal sole; le luci artificiali sono luci
 puntiformi senza ombre, attive nella modalità sera. Pixel ratio limitato a 1,5.

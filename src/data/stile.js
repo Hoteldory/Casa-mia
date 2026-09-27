@@ -359,6 +359,47 @@ export function texRighe(fondo, riga, seed = 53) {
   }, { seed });
 }
 
+// Coppi in cotto visti dall'alto (texture = 80 x 80 cm): 4 file da 20 cm, corsi da 40 cm,
+// ogni coppo con la sua ombreggiatura a mezzo cilindro e un tono leggermente diverso
+export function texCoppi(seed = 59) {
+  return canvasTexture(512, (ctx, s, r) => {
+    const nc = 4, nr = 2, cw = s / nc, rh = s / nr;
+    ctx.fillStyle = '#5e2f1c';
+    ctx.fillRect(0, 0, s, s);
+    for (let j = 0; j < nr; j++) for (let i = 0; i < nc; i++) {
+      const hue = 14 + r() * 8, lum = 36 + r() * 10;
+      const gr = ctx.createLinearGradient(i * cw, 0, (i + 1) * cw, 0);
+      gr.addColorStop(0, `hsl(${hue}, 45%, ${lum - 14}%)`);
+      gr.addColorStop(0.45, `hsl(${hue}, 50%, ${lum + 6}%)`);
+      gr.addColorStop(1, `hsl(${hue}, 45%, ${lum - 16}%)`);
+      ctx.fillStyle = gr;
+      ctx.fillRect(i * cw + 2, j * rh + 3, cw - 4, rh - 3);
+      // bordo inferiore del coppo che sormonta il corso sotto
+      ctx.fillStyle = 'rgba(40, 18, 8, 0.45)';
+      ctx.fillRect(i * cw + 2, (j + 1) * rh - 7, cw - 4, 5);
+    }
+    noiseOver(ctx, s, r, { n: 5000, alpha: 0.12, colors: ['#2a140a', '#d9956a', '#8a8a6a'], rmin: 0.5, rmax: 3 });
+  }, { seed });
+}
+
+// Prato (texture = 2 m): verde variato con ciuffi piu' chiari e piu' scuri
+export function texPrato(seed = 61) {
+  return canvasTexture(512, (ctx, s, r) => {
+    ctx.fillStyle = '#5d7a3c';
+    ctx.fillRect(0, 0, s, s);
+    noiseOver(ctx, s, r, { n: 26000, alpha: 0.35, colors: ['#4a6a2e', '#7a9650', '#3f5a28', '#6f8c45', '#8aa35c'], rmin: 0.8, rmax: 3 });
+  }, { seed });
+}
+
+// Ghiaia chiara (texture = 1 m)
+export function texGhiaia(seed = 67) {
+  return canvasTexture(512, (ctx, s, r) => {
+    ctx.fillStyle = '#b9ad98';
+    ctx.fillRect(0, 0, s, s);
+    noiseOver(ctx, s, r, { n: 22000, alpha: 0.5, colors: ['#8d8271', '#d8cfbd', '#a29680', '#e9e2d3', '#766b5c'], rmin: 1, rmax: 3.5 });
+  }, { seed });
+}
+
 // Velluto: colore pieno con grana finissima
 export function texVelluto(color = PALETTE.senape, seed = 19) {
   return canvasTexture(256, (ctx, s, r) => {
@@ -526,6 +567,11 @@ export function getMateriali() {
     paralume: new THREE.MeshStandardMaterial({ color: '#f3e8d0', roughness: 0.9, side: THREE.DoubleSide, emissive: '#000000' }),
     foglia: std({ color: '#3f6b3a', roughness: 0.8, side: THREE.DoubleSide }),
     lampadina: new THREE.MeshStandardMaterial({ color: '#ffe3b0', emissive: '#ffd08a', emissiveIntensity: 0 }),
+    coppi: std({ map: texCoppi(), roughness: 0.85 }),
+    rame: std({ color: '#a2603a', metalness: 0.75, roughness: 0.4 }),
+    prato: std({ map: texPrato(), roughness: 1 }),
+    ghiaia: std({ map: texGhiaia(), roughness: 1 }),
+    terraOrto: std({ map: texTerreno(71), color: '#6b4a32', roughness: 1 }),
     // ---- piano terra ----
     lastre: std({ map: texLastre(), roughness: 0.7 }),
     piastrelleVerdi: std({ map: texPiastrelle('#2d5a48', 47), roughness: 0.25 }),
@@ -554,6 +600,10 @@ export function getMateriali() {
   _MAT.cartaBotanica.map.repeat.set(1 / 1.4, 1 / 1.4);
   _MAT.reteOttone.map.repeat.set(1 / 0.16, 1 / 0.16);
   _MAT.lastre.map.repeat.set(1 / 1.2, 1 / 1.2);
+  _MAT.coppi.map.repeat.set(1 / 0.8, 1 / 0.8);
+  _MAT.prato.map.repeat.set(0.5, 0.5);
+  _MAT.ghiaia.map.repeat.set(1, 1);
+  _MAT.terraOrto.map.repeat.set(1, 1);
   _MAT.piastrelleVerdi.map.repeat.set(1 / 0.4, 1 / 0.4);
   _MAT.piastrelleCrema.map.repeat.set(1 / 0.4, 1 / 0.4);
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);

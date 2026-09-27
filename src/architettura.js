@@ -568,6 +568,90 @@ export function costruisciPiano(P, ctx, { floorMat = {}, ceilMat = {} } = {}) {
   return { walls, wallsLow, floors, ceilings, stanze: st, H: Hp };
 }
 
+// ---------- tetto a capanna ----------
+// Colmo est-ovest a meta' profondita', falde a nord e a sud in coppi, timpani sulle facciate
+// est e ovest. Il perimetro del piano primo e' un rettangolo pieno (1051 x 1097) con la loggia
+// d'ingresso rientrata a sud-ovest: la falda sud la copre, retta da una trave in legno.
+const PENDENZA = 0.32;
+function prisma(punti, sp, mat, xFilo) {
+  // sagoma nel piano (z, y) estrusa verso -x di sp, con la faccia esterna a x = xFilo
+  const sh = new THREE.Shape();
+  punti.forEach(([z, y], i) => (i ? sh.lineTo(z, y) : sh.moveTo(z, y)));
+  sh.closePath();
+  const gm = mergeVertices(new THREE.ExtrudeGeometry(sh, { depth: sp, bevelEnabled: false, curveSegments: 1 }));
+  gm.rotateY(-Math.PI / 2);
+  const m = new THREE.Mesh(gm, getMateriali().intonacoEsterno);
+  m.position.x = xFilo;
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function tettoCapanna() {
+  const M = getMateriali();
+  const g = new THREE.Group();
+  const I = plan.muri.ingombro_esterno;
+  const W = I.larghezza_cm * C, D = I.profondita_cm * C;
+  const p = PENDENZA, a = Math.atan(p);
+  const y0 = H + 0.3;                       // intradosso della falda sul filo dei muri
+  const zc = D / 2, yc = y0 + zc * p;       // colmo (intradosso)
+  const sporto = 0.45, sportoT = 0.35, t = 0.18;
+  const yFalda = (z) => y0 + (zc - Math.abs(z - zc)) * p; // intradosso in ogni punto
+  // falde: sopra coppi, sotto tavolato in legno, bordi in cotto
+  const matFalda = [M.cotto, M.cotto, M.coppi, M.rovere, M.cotto, M.cotto];
+  const Lx = W + 2 * sportoT;
+  for (const verso of [1, -1]) {           // 1 = falda nord (sale verso sud), -1 = falda sud
+    const zGronda = verso > 0 ? -sporto : D + sporto;
+    const run = zc - zGronda;
+    const Ls = Math.hypot(run, run * p);
+    const zm = (zGronda + zc) / 2, ym = yFalda(zm);
+    const f = box(Lx, t, Math.abs(Ls), matFalda, W / 2, 0, 0);
+    f.rotation.x = -verso * a;
+    const nY = Math.cos(a), nZ = -verso * Math.sin(a);
+    f.position.set(W / 2, ym + (t / 2) * nY, zm + (t / 2) * nZ);
+    g.add(f);
+    // travetti a vista sotto lo sporto (e sotto tutta la loggia, a sud-ovest)
+    for (let x = -0.2; x <= W + 0.2; x += 0.6) {
+      const zIn = verso > 0 ? 0 : (x < 5.84 ? 9.65 : D);
+      const za = Math.min(zIn, zGronda), zb = Math.max(zIn, zGronda);
+      const L = (zb - za) / Math.cos(a);
+      const tr = box(0.08, 0.12, L, M.noceScuro, x, 0, 0, { cast: false });
+      tr.rotation.x = -verso * a;
+      const zt = (za + zb) / 2;
+      tr.position.set(x, yFalda(zt) - 0.06 / Math.cos(a), zt);
+      g.add(tr);
+    }
+    // grondaia in rame
+    const gr = cyl(0.06, 0.06, Lx, M.rame, W / 2, yFalda(zGronda) - 0.02, zGronda - verso * 0.05, 12);
+    gr.rotation.z = Math.PI / 2;
+    g.add(gr);
+  }
+  // coppi di colmo
+  const colmo = cyl(0.12, 0.12, Lx + 0.04, M.coppi, W / 2, yc + t / Math.cos(a), zc, 12);
+  colmo.rotation.z = Math.PI / 2;
+  g.add(colmo);
+  // timpani est e ovest, dalla testa dei muri fino all'intradosso delle falde
+  const tri = [[0, H], [D, H], [D, y0], [zc, yc], [0, y0]];
+  g.add(prisma(tri, 0.25, M.intonacoEsterno, 0.25));
+  g.add(prisma(tri, 0.25, M.intonacoEsterno, W));
+  // chiusure del sottotetto sopra la loggia: muro sud del soggiorno e fianco verso la camera sud
+  g.add(box(5.84 - 0.25, yFalda(9.40) + 0.06 - (H + 0.28), 0.25, M.intonacoEsterno, (0.25 + 5.84) / 2, (yFalda(9.40) + 0.06 + H + 0.28) / 2, 9.525));
+  g.add(prisma([[9.65, H + 0.28], [D, H + 0.28], [D, yFalda(D) + 0.05], [9.65, yFalda(9.65) + 0.05]], 0.3, M.intonacoEsterno, 6.14));
+  // trave in legno sul fronte della loggia
+  g.add(box(5.84 - 0.25, yFalda(D - 0.15) + 0.01 - H, 0.15, M.noceScuro, (0.25 + 5.84) / 2, (H + yFalda(D - 0.15) + 0.01) / 2, D - 0.075));
+  // pluviali in rame agli angoli nord, lontani dal terrazzo
+  for (const x of [0.4, W - 0.4]) {
+    g.add(cyl(0.045, 0.045, yFalda(-sporto) + 3.4, M.rame, x, (yFalda(-sporto) - 3.4) / 2, -sporto + 0.02, 10));
+  }
+  // comignolo sopra il camino del piano terra
+  const cx = 0.8, cz = 9.0, yTop = yFalda(cz) + t + 0.95;
+  g.add(box(0.55, yTop - (H + 0.28), 0.55, M.intonacoEsterno, cx, (yTop + H + 0.28) / 2, cz));
+  g.add(box(0.7, 0.05, 0.7, M.pietra, cx, yTop + 0.025, cz));
+  for (const s of [-1, 1]) g.add(box(0.1, 0.22, 0.1, M.pietra, cx + s * 0.22, yTop + 0.16, cz));
+  const cap = cyl(0.02, 0.5, 0.22, M.coppi, cx, yTop + 0.38, cz, 4);
+  cap.rotation.y = Math.PI / 4;
+  g.add(cap);
+  return g;
+}
+
 // ---------- costruzione completa del piano primo ----------
 export function costruisciArchitettura(ctx) {
   const M = getMateriali();
@@ -604,20 +688,8 @@ export function costruisciArchitettura(ctx) {
   for (const p of pezziConForo(-0.25, -0.25, W + 0.25, 9.9, VANO_SCALA)) {
     ceilings.add(box(p.w, 0.26, p.d, matTetto, p.cx, H + 0.15, p.cz));
   }
-  // lucernario a filo sul foro della scala: il tetto resta piatto, nessun volume in rilievo
-  {
-    const V = VANO_SCALA, e = 0.05, yTop = H + 0.28;
-    const w = V.x1 - V.x0 + 2 * e, d = V.z1 - V.z0 + 2 * e;
-    const cx = (V.x0 + V.x1) / 2, cz = (V.z0 + V.z1) / 2;
-    ceilings.add(box(w, 0.045, d, M.vetro, cx, yTop - 0.022, cz, { cast: false }));
-    // telaio metallico sottile, incassato nello spessore del solaio
-    for (const [a, c, b, dd] of [
-      [V.x0 - e, V.z0 - e, V.x1 + e, V.z0], [V.x0 - e, V.z1, V.x1 + e, V.z1 + e],
-      [V.x0 - e, V.z0, V.x0, V.z1], [V.x1, V.z0, V.x1 + e, V.z1],
-    ]) ceilings.add(box(b - a, 0.05, dd - c, M.ferro, (a + b) / 2, yTop - 0.025, (c + dd) / 2, { cast: false }));
-    // traversi del lucernario
-    for (const fx of [1 / 3, 2 / 3]) ceilings.add(box(0.05, 0.05, d, M.ferro, V.x0 + (V.x1 - V.x0) * fx, yTop - 0.025, cz, { cast: false }));
-  }
+  // tetto a capanna sopra il solaio: il foro della scala porta al sottotetto
+  ceilings.add(tettoCapanna());
   const roof = box(0.001, 0.001, 0.001, matTetto, -50, -50, -50);
   const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, matTetto, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
   ceilings.add(roof2);

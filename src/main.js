@@ -8,6 +8,7 @@ import { arredi, VERSIONI, TAVOLO_STATI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
 import { costruisciPianoTerra, PIANO_TERRA, QUOTA_TERRA } from './pianoTerra.js';
 import { arredaPianoTerra } from './arredi/piano_terra.js';
+import { giardino } from './arredi/giardino.js';
 
 // ---------- contesto condiviso ----------
 const colliders = []; // {minX,maxX,minZ,maxZ,minY,maxY}
@@ -33,7 +34,7 @@ const ctx = {
   },
   addLight(light, bulb, shade) {
     light.castShadow = false;
-    luciArtificiali.push({ light, base: light.intensity, bulb, v: this.variante });
+    luciArtificiali.push({ light, base: light.intensity, bulb, v: this.variante, esterno: !!this.esterno });
     emissivi.push({ bulb, shade });
   },
   pareti: null, // gruppo per elementi appesi ai muri (boiserie, carta, quadri)
@@ -108,6 +109,16 @@ const arrediT = arredaPianoTerra(ctxT);
 for (const g of arrediT) terra.add(g);
 ctxT.risolvi();
 
+// ---------- giardino tutto intorno, al piano del terreno ----------
+const gGiardino = new THREE.Group();
+gGiardino.position.y = QUOTA_TERRA;
+scene.add(gGiardino);
+const ctxG = contestoDifferito(gGiardino, 3);
+ctx.esterno = true; // le sue luci restano accese di sera su entrambi i piani
+gGiardino.add(giardino(ctxG));
+ctx.esterno = false;
+ctxG.risolvi();
+
 // ---------- ottimizzazione: fonde le mesh statiche per materiale (meno draw call) ----------
 function ottimizza(root) {
   root.updateMatrixWorld(true);
@@ -119,12 +130,26 @@ function ottimizza(root) {
   root.traverse((o) => {
     if (!o.isMesh) return;
     if (!o.visible) { daRimuovere.push(o); return; }
-    if (Array.isArray(o.material)) return; // multi-materiale (muri esterni, solette): restano come sono
-    const key = `${o.material.uuid}|${o.castShadow ? 1 : 0}${o.receiveShadow ? 1 : 0}`;
-    if (!buckets.has(key)) buckets.set(key, { material: o.material, cast: o.castShadow, receive: o.receiveShadow, geoms: [] });
-    const g = o.geometry.clone().applyMatrix4(rel.multiplyMatrices(inv, o.matrixWorld));
-    for (const name of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
-    buckets.get(key).geoms.push(g);
+    const metti = (material, geom) => {
+      const key = `${material.uuid}|${o.castShadow ? 1 : 0}${o.receiveShadow ? 1 : 0}`;
+      if (!buckets.has(key)) buckets.set(key, { material, cast: o.castShadow, receive: o.receiveShadow, geoms: [] });
+      geom.applyMatrix4(rel.multiplyMatrices(inv, o.matrixWorld));
+      for (const name of Object.keys(geom.attributes)) if (!['position', 'normal', 'uv'].includes(name)) geom.deleteAttribute(name);
+      buckets.get(key).geoms.push(geom);
+    };
+    if (Array.isArray(o.material)) {
+      // multi-materiale (muri esterni, solette, falde): si divide per gruppo di facce
+      const geo = o.geometry;
+      if (!geo.index || !geo.groups.length) return;
+      for (const gr of geo.groups) {
+        const mat = o.material[gr.materialIndex];
+        if (!mat) continue;
+        const sub = geo.clone();
+        sub.setIndex(Array.from(geo.index.array.slice(gr.start, gr.start + gr.count)));
+        sub.clearGroups();
+        metti(mat, sub);
+      }
+    } else metti(o.material, o.geometry.clone());
     daRimuovere.push(o);
   });
   for (const o of daRimuovere) o.parent.remove(o);
@@ -137,7 +162,7 @@ function ottimizza(root) {
   }
 }
 for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, ...gruppiArredi, ...Object.values(varianti),
-  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT]) ottimizza(g);
+  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino]) ottimizza(g);
 
 // luci artificiali vicine tra loro (< 1.5 m) vengono fuse in una sola: meno luci nello shader
 {
@@ -147,7 +172,7 @@ for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.ext
   for (const l of luciArtificiali) l.piano = l.light.getWorldPosition(pa).y < -0.3 ? 'terra' : 'primo';
   for (const l of luciArtificiali) {
     l.light.getWorldPosition(pa);
-    const vicina = tenute.find((t) => t.v === l.v && t.piano === l.piano && t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
+    const vicina = tenute.find((t) => t.v === l.v && t.piano === l.piano && t.esterno === l.esterno && t.light.getWorldPosition(pb).distanceTo(pa) < 1.5);
     if (vicina) { vicina.base = Math.max(vicina.base, l.base) * 1.12; l.light.removeFromParent(); }
     else tenute.push(l);
   }
@@ -207,7 +232,7 @@ function applicaLuce() {
     riempimento.color.set('#2d3a52'); riempimento.intensity = 0.08;
     renderer.toneMappingExposure = 0.95;
     for (const l of luciArtificiali) {
-      l.light.visible = l.piano === piano;
+      l.light.visible = l.esterno || l.piano === piano;
       l.light.intensity = l.base * FATTORE_SERA;
     }
     for (const e of emissivi) {

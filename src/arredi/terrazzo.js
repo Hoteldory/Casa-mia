@@ -5,10 +5,10 @@ import plan from '../data/planimetria.json';
 import { box, cyl, sphere, place, pendente, lanterna, MAT, matColore } from './comune.js';
 
 const C = 0.01;
-const VERDI = ['#4a6b3a', '#3d5c32', '#5b7d45', '#38502c', '#6b8a4e'];
+export const VERDI = ['#4a6b3a', '#3d5c32', '#5b7d45', '#38502c', '#6b8a4e'];
 const VERDI_RAMP = ['#41623a', '#4f7340', '#37512e', '#5d7f48'];
 
-function rnd(seed) {
+export function rnd(seed) {
   let a = seed >>> 0;
   return () => {
     a += 0x6d2b79f5; let t = a;
@@ -19,7 +19,7 @@ function rnd(seed) {
 }
 
 // massa di fogliame: pochi poliedri sovrapposti, leggeri da disegnare
-function cespuglio(g, x, y, z, r, rand, colori = VERDI, n = 5) {
+export function cespuglio(g, x, y, z, r, rand, colori = VERDI, n = 5) {
   for (let i = 0; i < n; i++) {
     const m = new THREE.Mesh(
       new THREE.IcosahedronGeometry(r * (0.55 + rand() * 0.5), 1),
