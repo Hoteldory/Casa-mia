@@ -1,5 +1,5 @@
 // Cucina (zona nord del soggiorno). Dettaglio di carattere: maioliche blu cobalto/bianco
-// dietro il piano cottura e sul frontale dell'isola.
+// dietro il piano cottura e dietro il piano di appoggio sulla parete est.
 import * as THREE from 'three';
 import { box, cyl, sphere, plane, group, place, antaTelaio, manigliaOttone, pendente, libri, MAT } from './comune.js';
 
@@ -141,54 +141,6 @@ export function colonne(ctx, { x1, z0, z1 }) {
   return g;
 }
 
-// ---- isola: top in pietra a spessore, frontale e testate in maiolica, lato lavoro in noce ----
-export function isola(ctx, { x0, z0, z1, d = 0.8, sbalzo = 0.3 }) {
-  const M = MAT();
-  const g = new THREE.Group();
-  const L = z1 - z0, Hb = 0.86, cz = (z0 + z1) / 2, cx = x0 + d / 2;
-  g.add(box(d - 0.06, 0.1, L - 0.06, M.noceScuro, cx, 0.05, cz));
-  g.add(box(d, Hb - 0.1, L, M.noce, cx, 0.1 + (Hb - 0.1) / 2, cz));
-  // maiolica sul frontale (est) e sulle testate
-  g.add(plane(L, Hb - 0.1, M.maiolica, x0 + d + 0.012, 0.1 + (Hb - 0.1) / 2, cz, 'x+'));
-  g.add(plane(d, Hb - 0.1, M.maiolica, cx, 0.1 + (Hb - 0.1) / 2, z0 - 0.012, 'z-'));
-  g.add(plane(d, Hb - 0.1, M.maiolica, cx, 0.1 + (Hb - 0.1) / 2, z1 + 0.012, 'z+'));
-  // ante lato lavoro (ovest)
-  const n = Math.round(L / 0.55), aw = L / n;
-  for (let i = 0; i < n; i++) {
-    const a = antaTelaio(aw - 0.02, Hb - 0.16, M.noce);
-    a.rotation.y = -Math.PI / 2; a.position.set(x0 - 0.005, (Hb - 0.16) / 2 + 0.1, z0 + aw * (i + 0.5)); g.add(a);
-    const h = manigliaOttone(0.12, x0 - 0.02, 0.62, z0 + aw * (i + 0.5), true);
-    h.rotation.y = -Math.PI / 2; g.add(h);
-  }
-  // top in pietra spessore 6 cm, con sbalzo verso gli sgabelli
-  g.add(box(d + sbalzo + 0.04, 0.06, L + 0.06, M.pietra, x0 + (d + sbalzo + 0.04) / 2 - 0.02, Hb + 0.03, cz));
-  // oggetti: ciotola con frutta, tagliere, bottiglia (rientrano anche nell'isola corta)
-  const q1 = Math.min(0.4, L / 2 - 0.25), q2 = Math.min(0.7, L / 2 - 0.2);
-  g.add(cyl(0.16, 0.1, 0.07, M.ceramicaSalvia, cx + 0.05, Hb + 0.095, cz - q1, 20));
-  for (let i = 0; i < 6; i++) g.add(sphere(0.04, i % 2 ? M.cotto : M.senape || M.cotto, cx + 0.05 + Math.cos(i) * 0.06, Hb + 0.14, cz - q1 + Math.sin(i * 1.7) * 0.06, 10));
-  g.add(box(0.25, 0.025, 0.4, M.rovere, cx, Hb + 0.07, cz + q1));
-  g.add(cyl(0.035, 0.035, 0.26, M.verdeVetro || M.vetro, cx - 0.2, Hb + 0.19, cz + q2, 12));
-  ctx.solid(box(d + sbalzo, Hb, L, M.nero, x0 + (d + sbalzo) / 2, Hb / 2, cz, { cast: false })).visible = false;
-  return g;
-}
-
-// ---- sgabello: seduta tonda in noce, gambe in ferro con anello poggiapiedi ----
-export function sgabello(ctx, x, z, h = 0.68) {
-  const M = MAT();
-  const g = new THREE.Group();
-  g.add(cyl(0.17, 0.17, 0.035, M.noce, 0, h - 0.017, 0, 20));
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-    const leg = cyl(0.008, 0.008, h - 0.035, M.ferro, Math.cos(a) * 0.12, (h - 0.035) / 2, Math.sin(a) * 0.12, 8);
-    leg.rotation.z = Math.cos(a) * 0.08; leg.rotation.x = -Math.sin(a) * 0.08;
-    g.add(leg);
-  }
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.006, 6, 20), M.ferro);
-  ring.rotation.x = Math.PI / 2; ring.position.y = 0.25; g.add(ring);
-  place(g, x, z);
-  return g;
-}
-
 // ---- tavolo in noce massello, 8 posti, gambe tornite importanti ----
 export function tavolo(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.76, ry = 0, giunti = 0 }) {
   const M = MAT();
@@ -249,59 +201,95 @@ export function arredaCucina(ctx, stanze) {
   g.add(cappaMuratura(ctx, { x: xW, z: hobZ }));
   g.add(mensole(ctx, { x: xW, z0: 1.7, z1: 2.85 })); // si fermano prima della finestra sul lavello
   g.add(colonne(ctx, { x1: xE, z0: R.z + 0.05, z1: R.z + 1.35 }));
+  // piano di appoggio accanto alle colonne, fino alla fine del muro del bagno (z 2,99)
+  g.add(pianoAppoggio(ctx, { x1: xE, z0: R.z + 1.37, z1: 2.97 }));
+  // due campane in ceramica salvia sul tavolo, lungo il suo lato lungo (nord-sud)
+  for (const dz of [-TAVOLO.lampade, TAVOLO.lampade]) g.add(pendente(ctx, TAVOLO.cx, TAVOLO.cz + dz, { yTop: ctx.H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
   return g;
 }
 
-// ---- il tavolo allungabile, per versione: chiuso quattro posti, aperto otto ----
-export const TAVOLI = {
-  v1: { cx: 2.2, cz: 5.4, W: 1.0, chiuso: 1.4, aperto: 2.2, passo: 0.7, sporgenza: 0.3, lampade: 0.5 },
-  v2: { cx: 2.2, cz: 5.15, W: 1.1, chiuso: 1.6, aperto: 2.4, passo: 0.75, sporgenza: 0.28, lampade: 0.62 },
-};
+// ---- il tavolo allungabile, lato lungo nord-sud: chiuso quattro posti, aperto otto ----
+// Spostato verso est, lascia un corridoio di ~1 m davanti alla cucina; aperto entra nella zona cucina.
+export const TAVOLO = { cx: 2.8, cz: 4.5, W: 1.0, chiuso: 1.4, aperto: 2.2, passo: 0.7, sporgenza: 0.3, lampade: 0.5 };
 
-export function tavoloPranzo(ctx, v, aperto) {
-  const T = TAVOLI[v];
+export function tavoloPranzo(ctx, aperto) {
+  const T = TAVOLO;
   const g = new THREE.Group();
   const L = aperto ? T.aperto : T.chiuso;
-  const tx = T.cx, tz = T.cz, dz = T.W / 2 + 0.25;
-  // lato lungo est-ovest: le prolunghe crescono verso i due lati corti
-  g.add(tavolo(ctx, { cx: tx, cz: tz, L, W: T.W, ry: Math.PI / 2, giunti: aperto ? T.chiuso / 2 : 0 }));
-  const xs = aperto ? [tx - T.passo, tx, tx + T.passo] : [tx - 0.38, tx + 0.38];
-  for (const x of xs) {
-    g.add(sedia(ctx, x, tz - dz, 0));
-    g.add(sedia(ctx, x, tz + dz, Math.PI));
+  const tx = T.cx, tz = T.cz, dx = T.W / 2 + 0.25;
+  g.add(tavolo(ctx, { cx: tx, cz: tz, L, W: T.W, ry: 0, giunti: aperto ? T.chiuso / 2 : 0 }));
+  const zs = aperto ? [tz - T.passo, tz, tz + T.passo] : [tz - 0.38, tz + 0.38];
+  for (const z of zs) {
+    g.add(sedia(ctx, tx - dx, z, Math.PI / 2));
+    g.add(sedia(ctx, tx + dx, z, -Math.PI / 2));
   }
   if (aperto) {
-    g.add(sedia(ctx, tx - L / 2 - T.sporgenza, tz, Math.PI / 2));
-    g.add(sedia(ctx, tx + L / 2 + T.sporgenza, tz, -Math.PI / 2));
+    g.add(sedia(ctx, tx, tz - L / 2 - T.sporgenza, 0));
+    g.add(sedia(ctx, tx, tz + L / 2 + T.sporgenza, Math.PI));
   }
   return g;
 }
 
-// ---- isola e lampade, variante V1: isola da 2,10 m con tre sgabelli ----
-export function zonaCucinaV1(ctx) {
+// ---- piccoli elettrodomestici in stile, costruiti con il fronte verso -X (parete est) ----
+function planetaria(M, x, y, z) {
   const g = new THREE.Group();
-  const H = ctx.H, T = TAVOLI.v1;
-  const isoX0 = 1.75, isoZ0 = 1.8, isoZ1 = 3.9;
-  g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1 }));
-  for (let i = 0; i < 3; i++) g.add(sgabello(ctx, isoX0 + 0.8 + 0.3 + 0.12, isoZ0 + 0.4 + i * 0.65));
-  // lampade: due campane in ceramica sull'isola, due sul tavolo
-  g.add(pendente(ctx, isoX0 + 0.45, isoZ0 + 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  g.add(pendente(ctx, isoX0 + 0.45, isoZ1 - 0.6, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  for (const dx of [-T.lampade, T.lampade]) g.add(pendente(ctx, T.cx + dx, T.cz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  const c = M.ceramicaSalvia;
+  g.add(box(0.2, 0.05, 0.3, c, 0, 0.025, 0));                 // base
+  g.add(box(0.1, 0.24, 0.12, c, 0.05, 0.17, 0));              // colonna
+  const testa = cyl(0.075, 0.09, 0.3, c, -0.03, 0.34, 0, 16); testa.rotation.z = Math.PI / 2; g.add(testa);
+  g.add(cyl(0.11, 0.075, 0.14, M.ottone, -0.05, 0.12, 0, 18)); // ciotola
+  g.add(cyl(0.012, 0.012, 0.1, M.ferro, -0.05, 0.22, 0, 8));  // frusta
+  g.position.set(x, y, z);
+  return g;
+}
+function macchinaCaffe(M, x, y, z) {
+  const g = new THREE.Group();
+  g.add(box(0.32, 0.36, 0.28, M.crema, 0, 0.18, 0));
+  g.add(box(0.33, 0.03, 0.29, M.ottone, 0, 0.375, 0));
+  g.add(cyl(0.035, 0.035, 0.06, M.ottone, -0.17, 0.25, 0, 12).rotateZ(Math.PI / 2)); // gruppo
+  g.add(box(0.14, 0.02, 0.03, M.noceScuro, -0.24, 0.23, 0));                          // portafiltro
+  g.add(box(0.08, 0.015, 0.18, M.ferro, -0.13, 0.05, 0));                             // griglia
+  g.add(cyl(0.035, 0.03, 0.06, M.ceramica, -0.14, 0.09, 0, 12));                      // tazzina
+  g.add(cyl(0.02, 0.02, 0.012, M.ottone, -0.145, 0.32, 0.08, 10).rotateZ(Math.PI / 2)); // manometro
+  g.position.set(x, y, z);
+  return g;
+}
+function microonde(M, x, y, z) {
+  const g = new THREE.Group();
+  g.add(box(0.36, 0.28, 0.48, M.crema, 0, 0.14, 0));
+  g.add(box(0.01, 0.2, 0.3, M.nero, -0.18, 0.14, -0.05));      // oblo' scuro
+  g.add(box(0.012, 0.22, 0.012, M.ottone, -0.185, 0.14, 0.12)); // maniglia
+  for (const y2 of [0.19, 0.09]) g.add(cyl(0.018, 0.018, 0.015, M.ottone, -0.185, y2, 0.19, 12).rotateZ(Math.PI / 2));
+  g.position.set(x, y, z);
   return g;
 }
 
-// ---- isola e lampade, variante V2: isola ridotta a 1,30 m (piano di lavoro e appoggio,
-// due sgabelli), arretrata per lasciare spazio al tavolo ----
-export function zonaCucinaV2(ctx) {
+// ---- piano di lavoro sulla parete est, accanto alle colonne: planetaria, caffe', microonde ----
+export function pianoAppoggio(ctx, { x1, z0, z1 }) {
+  const M = MAT();
   const g = new THREE.Group();
-  const H = ctx.H, T = TAVOLI.v2;
-  const isoX0 = 1.8, isoD = 0.75, isoSb = 0.28, isoZ0 = 1.75, isoZ1 = 3.05;
-  g.add(isola(ctx, { x0: isoX0, z0: isoZ0, z1: isoZ1, d: isoD, sbalzo: isoSb }));
-  const sgX = isoX0 + isoD + isoSb + 0.12;
-  for (let i = 0; i < 2; i++) g.add(sgabello(ctx, sgX, isoZ0 + 0.33 + i * 0.64));
-  g.add(pendente(ctx, isoX0 + 0.42, isoZ0 + 0.35, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  g.add(pendente(ctx, isoX0 + 0.42, isoZ1 - 0.35, { yTop: H, calata: 0.95, raggio: 0.17 }));
-  for (const dx of [-T.lampade, T.lampade]) g.add(pendente(ctx, T.cx + dx, T.cz, { yTop: H, calata: 1.0, raggio: 0.2, paralume: 'salvia' }));
+  const D = 0.6, Hb = 0.86, L = z1 - z0, cx = x1 - D / 2, cz = (z0 + z1) / 2;
+  g.add(box(D - 0.05, 0.1, L, M.noceScuro, cx + 0.025, 0.05, cz));
+  g.add(box(D, Hb - 0.1, L, M.salvia, cx, 0.1 + (Hb - 0.1) / 2, cz));
+  g.add(box(D + 0.03, 0.04, L + 0.02, M.pietra, cx - 0.015, Hb + 0.02, cz));
+  const n = 2, aw = L / n;
+  for (let i = 0; i < n; i++) {
+    const z = z0 + aw * (i + 0.5);
+    const a = antaTelaio(aw - 0.02, Hb - 0.14, M.salvia);
+    a.rotation.y = -Math.PI / 2; a.position.set(x1 - D - 0.005, (Hb - 0.14) / 2 + 0.1, z); g.add(a);
+    const h = manigliaOttone(0.12, x1 - D - 0.02, 0.62, z + (i ? -0.16 : 0.16), true);
+    h.rotation.y = -Math.PI / 2; g.add(h);
+  }
+  const y = Hb + 0.04;
+  g.add(planetaria(M, x1 - 0.3, y, z0 + 0.18));
+  g.add(macchinaCaffe(M, x1 - 0.25, y, z0 + 0.55));
+  g.add(microonde(M, x1 - 0.28, y, z1 - 0.3));
+  // maiolica dietro il piano, come il paraspruzzi della cucina, e mensola in noce
+  g.add(plane(L, 0.6, M.maiolica, x1 - 0.02, Hb + 0.34, cz, 'x-'));
+  g.add(box(0.05, 0.04, L + 0.04, M.pietra, x1 - 0.025, Hb + 0.66, cz));
+  g.add(box(0.26, 0.035, L - 0.1, M.noce, x1 - 0.13, 1.62, cz));
+  for (const zz of [z0 + 0.2, z1 - 0.2]) g.add(box(0.22, 0.015, 0.015, M.ottone, x1 - 0.11, 1.595, zz));
+  for (let i = 0; i < 4; i++) g.add(cyl(0.055, 0.05, 0.16 + (i % 2) * 0.05, i % 2 ? M.ceramica : M.ceramicaSalvia, x1 - 0.13, 1.72 + (i % 2) * 0.025, z0 + 0.25 + i * 0.26, 14));
+  ctx.solid(box(D + 0.03, Hb + 0.04, L, M.nero, cx, (Hb + 0.04) / 2, cz, { cast: false })).visible = false;
   return g;
 }

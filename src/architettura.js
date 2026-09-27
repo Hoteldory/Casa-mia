@@ -274,7 +274,7 @@ function buildFinestra(f, seg, ctx) {
   // per lato, per le aperture larghe che altrimenti sporgerebbero oltre lo spigolo
   const libro = f.scuri === 'a libro';
   const sh = h + 0.06, sw = (w / 2 + 0.03) / (libro ? 2 : 1);
-  const matS = M.noceScuro;
+  const matS = M.scuri; // verniciati chiari su entrambi i piani
   for (const side of [-1, 1]) for (let k = 0; k < (libro ? 2 : 1); k++) {
     const sg = new THREE.Group();
     const leafB = box(sw, sh, 0.04, matS, side * sw / 2, 0, 0);

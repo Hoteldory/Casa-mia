@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { costruisciArchitettura, H } from './architettura.js';
-import { arredi, VERSIONI, TAVOLO_STATI } from './arredi/index.js';
+import { arredi, TAVOLO_STATI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
 import { costruisciPianoTerra, PIANO_TERRA, QUOTA_TERRA } from './pianoTerra.js';
 import { arredaPianoTerra } from './arredi/piano_terra.js';
@@ -16,7 +16,7 @@ const luciArtificiali = []; // punti luce accesi di sera
 const emissivi = [];        // lampadine e paralumi che si illuminano di sera
 const ctx = {
   H,
-  variante: null, // 'v1' | 'v2' mentre si costruisce un arredo specifico di una versione
+  variante: null, // 'chiuso' | 'aperto' mentre si costruisce il tavolo in una delle due forme
   addCollider(mesh) {
     mesh.updateMatrixWorld(true);
     const b = new THREE.Box3().setFromObject(mesh);
@@ -354,29 +354,19 @@ function vaiA(k) {
     camera.position.set(v.orbit[2], q + v.orbit[3], v.orbit[4]);
   }
 }
-// ---------- allestimento: versione (V1 / V2) e tavolo (chiuso / aperto) ----------
-let versione = 'v1', statoTavolo = 'aperto';
+// ---------- tavolo da pranzo: chiuso o aperto ----------
+let statoTavolo = 'aperto';
 const attivi = new Set(); // i tag dei gruppi accesi in questo momento
-const bottoniVersione = { v1: document.getElementById('btn-v1'), v2: document.getElementById('btn-v2') };
 const bottoniTavolo = { chiuso: document.getElementById('btn-t-chiuso'), aperto: document.getElementById('btn-t-aperto') };
-const notaVersione = document.getElementById('nota-versione');
 const notaTavolo = document.getElementById('nota-tavolo');
 function applicaAllestimento() {
   attivi.clear();
-  attivi.add(versione);
-  attivi.add(`${versione}-${statoTavolo}`);
+  attivi.add(statoTavolo);
   for (const [tag, g] of Object.entries(varianti)) g.visible = piano === 'primo' && attivi.has(tag);
-  for (const k of Object.keys(bottoniVersione)) bottoniVersione[k].classList.toggle('on', k === versione);
   for (const k of Object.keys(bottoniTavolo)) bottoniTavolo[k].classList.toggle('on', k === statoTavolo);
-  notaVersione.textContent = VERSIONI[versione].nota;
-  notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota(versione);
+  notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota;
 }
-function applicaVersione(v) { versione = v; applicaAllestimento(); }
 function applicaTavolo(t) { statoTavolo = t; applicaAllestimento(); }
-for (const k of Object.keys(bottoniVersione)) {
-  bottoniVersione[k].textContent = VERSIONI[k].nome;
-  bottoniVersione[k].onclick = () => applicaVersione(k);
-}
 for (const k of Object.keys(bottoniTavolo)) {
   bottoniTavolo[k].textContent = TAVOLO_STATI[k].nome;
   bottoniTavolo[k].onclick = () => applicaTavolo(k);
@@ -476,4 +466,4 @@ function loop() {
   requestAnimationFrame(loop);
 }
 loop();
-window.__casa = { scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaVersione, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+window.__casa = { scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

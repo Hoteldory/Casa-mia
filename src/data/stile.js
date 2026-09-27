@@ -568,6 +568,7 @@ export function getMateriali() {
     foglia: std({ color: '#3f6b3a', roughness: 0.8, side: THREE.DoubleSide }),
     lampadina: new THREE.MeshStandardMaterial({ color: '#ffe3b0', emissive: '#ffd08a', emissiveIntensity: 0 }),
     coppi: std({ map: texCoppi(), roughness: 0.85 }),
+    scuri: std({ map: texVernice('#b6bfad', 39), roughness: 0.85 }),
     rame: std({ color: '#a2603a', metalness: 0.75, roughness: 0.4 }),
     prato: std({ map: texPrato(), roughness: 1 }),
     ghiaia: std({ map: texGhiaia(), roughness: 1 }),
@@ -608,7 +609,7 @@ export function getMateriali() {
   _MAT.piastrelleCrema.map.repeat.set(1 / 0.4, 1 / 0.4);
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
-  for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine']) _MAT[k].map.repeat.set(3, 3);
+  for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);
   return _MAT;
 }
 

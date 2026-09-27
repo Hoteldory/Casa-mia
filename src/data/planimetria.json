@@ -13,7 +13,11 @@
       "aggiunta F-cucina-lavello sul muro ovest (124 cm, dal piano di lavoro a 90 cm fino a 220 cm) in asse con il lavello",
       "camera est: scala a chiocciola esistente (diametro 150 cm) addossata al muro nord vicino alla porta, con foro nel solaio; lavatrice in colonna con vano predisposto per l'asciugatrice",
       "aggiunto il terrazzo nord da 67,12 mq della piantina aggiornata, con recinzione a muro pieno",
-      "Porte soggiorno-disimpegno e disimpegno-camera est (scala) scorrevoli a scomparsa"
+      "Porte soggiorno-disimpegno e disimpegno-camera est (scala) scorrevoli a scomparsa",
+      "Tolta l'isola della cucina; tavolo da pranzo in verticale (lato lungo nord-sud) che entra nella zona cucina",
+      "Piano di appoggio sulla parete est della cucina accanto alle colonne (planetaria, macchina del caffe', microonde)",
+      "Finestra 124 x 130 sul muro est della camera nord",
+      "Scuri delle finestre in verde salvia chiaro invece che in noce scuro (entrambi i piani)"
     ],
     "sorgente_terrazzo": "piantina-terrazzo.jpg (PIANO PRIMO aggiornato)"
   },
@@ -458,6 +462,19 @@
       "nota": "modifica richiesta: finestra sopra il lavello, a filo del piano di lavoro. Larghezza come PF-soggiorno-nord, davanzale interno costituito dal top in pietra della cucina.",
       "modifica_richiesta": true,
       "davanzale": "esterno"
+    },
+    {
+      "id": "F-camera-nord-est",
+      "stanza": "camera_nord",
+      "muro": "E-est",
+      "y_da": 163,
+      "y_a": 287,
+      "larghezza_cm": 124,
+      "tipo": "finestra",
+      "davanzale_cm": 90,
+      "altezza_cm": 130,
+      "modifica_richiesta": true,
+      "nota": "modifica richiesta: finestra sul muro est della camera nord, grande come quella sopra il lavello (124 x 130, davanzale 90), fra l'armadio e il comodino"
     }
   ],
   "esterni": {
