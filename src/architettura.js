@@ -5,7 +5,7 @@ import plan from './data/planimetria.json';
 import { getMateriali, uvMetri, PALETTE, texVernice } from './data/stile.js';
 import { box, cyl, plane, group, lanterna, conSmusso } from './arredi/comune.js';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { vetrataTelescopica } from './arredi/vetrata.js';
+import { portaTelescopica } from './arredi/porta_telescopica.js';
 
 const C = 0.01; // cm -> m
 export const H = plan.altezze.soffitto_cm * C;
@@ -718,13 +718,13 @@ function tettoCapanna() {
   return g;
 }
 
-// ---------- versione 2: varco fra soggiorno e seconda camera, vetrata telescopica ----------
+// ---------- versione 2: varco fra soggiorno e seconda camera, porta telescopica ----------
 const SPINA = 'I-spina-camere';
 // varco largo 2,40 m e alto 2,50 nel muro di spina (cm, come la planimetria), soglia in rovere
 const VARCO = { id: 'P-varco-camera-sud', tipo: 'vano', muro: SPINA, da: 'soggiorno', a: 'camera_sud', y_da: 685, y_a: 925, h_cm: 250, soglia: 'legno' };
-// vetrata dal lato della camera: tre ante su tre binari; aperta, si impacchettano a sud del varco
+// porta dal lato della camera: tre ante su tre binari; aperta, si impacchettano a sud del varco
 // davanti al muro del vano scala, chiusa coprono tutto il varco
-export const VETRATA = { xMuro: 6.14, z0: 6.85, z1: 9.25, h: 2.5, ante: 3 };
+export const PORTA_TELESCOPICA = { xMuro: 6.14, z0: 6.85, z1: 9.25, h: 2.5, ante: 3 };
 
 // ---------- costruzione completa del piano primo ----------
 export function costruisciArchitettura(ctx) {
@@ -735,7 +735,7 @@ export function costruisciArchitettura(ctx) {
   const floors = new THREE.Group();
   const ceilings = new THREE.Group();
   // il muro di spina fra soggiorno e camere cambia con la versione: in V1 la seconda camera ha
-  // la sua porta, in V2 un varco di 2,40 m con la vetrata telescopica (open space)
+  // la sua porta, in V2 un varco di 2,40 m con la porta telescopica (open space)
   involucro(plan, st, ctx, walls, wallsLow, () => H, new Set([SPINA]));
   const porteSpina = plan.porte.filter((p) => p.muro === SPINA);
   const versioni = {};
@@ -743,9 +743,8 @@ export function costruisciArchitettura(ctx) {
     ctx.variante = tag; // gli ingombri del muro valgono solo nella sua versione
     versioni[tag] = muroVariabile(plan, st, ctx, SPINA, porte, H);
   }
-  ctx.variante = 'vetrata'; // la vetrata ferma il passo solo quando e' chiusa
-  versioni.v2.vetrata = conSmusso(() => vetrataTelescopica(ctx, VETRATA));
   ctx.variante = null;
+  versioni.v2.porta = conSmusso(() => portaTelescopica(ctx, PORTA_TELESCOPICA));
 
   // pavimenti e soffitti
   // rovere a listoni larghi in tutto il piano, ardesia nel bagno

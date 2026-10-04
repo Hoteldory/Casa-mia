@@ -752,19 +752,6 @@ export function texArdesia(seed = 83) {
   }, { seed });
 }
 
-// Vetro cannettato: canne verticali da 1,5 cm, luce e ombra alternate (texture = 30 cm)
-export function texCannettato(seed = 85) {
-  return canvasTexture(256, (ctx, s) => {
-    const n = 20, w = s / n;
-    for (let i = 0; i < n; i++) {
-      const gr = ctx.createLinearGradient(i * w, 0, (i + 1) * w, 0);
-      gr.addColorStop(0, '#b9c6c8'); gr.addColorStop(0.35, '#f4f8f8'); gr.addColorStop(0.7, '#dfe7e8'); gr.addColorStop(1, '#a9b7ba');
-      ctx.fillStyle = gr;
-      ctx.fillRect(i * w, 0, w, s);
-    }
-  }, { seed });
-}
-
 // Pavimento in gomma da palestra: grigio ardesia con granuli chiari (texture = 50 cm)
 export function texGomma(seed = 87) {
   return canvasTexture(256, (ctx, s, r) => {
@@ -789,7 +776,7 @@ const RILIEVO = {
   prato: 1.0, ghiaia: 1.4, terreno: 1.0, terraOrto: 1.0,
   rovereListoni: 0.8, rovereMiele: 0.5, marmo: 0.2, metro: 1.0, azzurroPolvere: 0.25, biancoLatte: 0.2,
   linoAvena: 0.8, linoAzzurro: 0.8, floreale: 0.3, righeAzzurre: 0.2, juta: 1.5, bambu: 1.2,
-  olivaPittura: 0.25, linoRuggine: 0.8, ardesia: 1.2, cartaRigheAzzurre: 0.15, gomma: 1.4,
+  olivaPittura: 0.25, linoRuggine: 0.8, ardesia: 1.2, cartaRigheAzzurre: 0.15, gomma: 1.4, cognac: 0.3,
 };
 function applicaRilievo(M) {
   for (const [k, f] of Object.entries(RILIEVO)) {
@@ -810,6 +797,8 @@ export function getMateriali() {
   legnoNoceV.rotation = Math.PI / 2; legnoNoceV.center.set(0.5, 0.5);
   const legnoRovere = texLegno({ base: PALETTE.rovere, scuro: '#7d5f3c', chiaro: '#cfae82', seed: 21 });
   const pietraTex = texPietra();
+  const legnoCognac = texLegno({ base: '#a9713f', scuro: '#8a5730', chiaro: '#c18c58', seed: 89 });
+  legnoCognac.rotation = Math.PI / 2; legnoCognac.center.set(0.5, 0.5);
 
   _MAT = {
     intonaco: std({ map: texIntonaco(), roughness: 0.95 }),
@@ -885,7 +874,7 @@ export function getMateriali() {
     cartaRigheAzzurre: std({ map: texRighe('#efe8da', '#a7bacb', 47), roughness: 0.9 }),
     vetroGlobo: new THREE.MeshPhysicalMaterial({ color: '#f4efe4', roughness: 0.15, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false }),
     // ---- versione 2: open space gaming e allenamento ----
-    vetroCannettato: std({ map: texCannettato(), color: '#ece9e2', roughness: 0.3, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }),
+    cognac: std({ map: legnoCognac, roughness: 0.55 }), // legno tinto caldo, venatura verticale (porte)
     gomma: std({ map: texGomma(), roughness: 0.95 }),
     tappetinoSalvia: std({ color: '#8c9c86', roughness: 0.9 }),
     plasticaBianca: std({ color: '#eef0f0', roughness: 0.35 }),
@@ -930,7 +919,7 @@ export function getMateriali() {
   _MAT.ardesia.map.repeat.set(1 / 0.8, 1 / 0.8);
   _MAT.cartaRigheAzzurre.map.repeat.set(1 / 0.5, 1 / 0.5);
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
-  _MAT.vetroCannettato.map.repeat.set(1 / 0.3, 1);
+  _MAT.cognac.map.repeat.set(1.4, 1.4);
   _MAT.gomma.map.repeat.set(2, 2);
   _MAT.tessutoGrafite.map.repeat.set(3, 3);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);

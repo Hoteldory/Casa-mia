@@ -32,8 +32,6 @@
     }
     #pannello button:hover { background: rgba(77,97,82,0.10); border-color: rgba(77,97,82,0.45); }
     #pannello button.on { background: var(--salvia); color: var(--calce); border-color: var(--salvia); }
-    #pannello button.evidente { background: var(--noce); color: var(--calce); border-color: var(--noce); text-align: center; font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: 0.03em; padding: 8px 11px; }
-    #pannello button.evidente:hover { background: #6b4930; }
     #pannello .row { display: flex; gap: 6px; }
     #pannello .row button { flex: 1; text-align: center; }
     #pannello button.largo { width: 100%; margin-top: 6px; text-align: center; }
@@ -44,9 +42,6 @@
     .cursore input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--ottone); border: 2px solid var(--calce); box-shadow: 0 1px 4px rgba(0,0,0,0.35); cursor: pointer; }
     .cursore input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--ottone); border: 2px solid var(--calce); cursor: pointer; }
     #fps { position: fixed; right: 12px; bottom: 10px; color: rgba(239,233,221,0.6); font-size: 11px; font-family: ui-monospace, monospace; }
-    #mirino { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgba(239,233,221,0.8); display: none; pointer-events: none; }
-    body.fp:not(.touch) #mirino { display: block; }
-    body.fp #pannello { opacity: 0.35; pointer-events: none; }
     /* ---- caricamento ---- */
     #caricamento {
       position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
@@ -58,41 +53,12 @@
     #caricamento .c-barra { width: min(280px, 70vw); height: 1px; background: rgba(239,233,221,0.18); position: relative; overflow: hidden; }
     #caricamento .c-barra::after { content: ''; position: absolute; inset: 0; background: var(--ottone); transform-origin: left; transform: scaleX(var(--avanzamento)); transition: transform .5s ease; }
     #caricamento .c-stato { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(239,233,221,0.55); margin-top: 6px; min-height: 1em; }
-    /* ---- tour ---- */
-    #velo { position: fixed; inset: 0; z-index: 20; background: #0d0b09; opacity: 0; pointer-events: none; transition: opacity .9s ease; }
-    #velo.nero { opacity: 1; }
-    #didascalia {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; padding: 90px 7vw calc(70px + env(safe-area-inset-bottom, 0px)); pointer-events: none; display: none;
-      background: linear-gradient(to top, rgba(10,8,6,0.62), rgba(10,8,6,0)); color: var(--calce);
-    }
-    body.in-tour #didascalia { display: block; }
-    #didascalia .d-titolo, #didascalia .d-testo { opacity: 0; transform: translateY(10px); transition: opacity 1.1s ease, transform 1.4s ease; }
-    #didascalia.vista .d-titolo, #didascalia.vista .d-testo { opacity: 1; transform: none; }
-    #didascalia.vista .d-testo { transition-delay: .35s; }
-    #didascalia .d-titolo { font-family: var(--serif); font-size: clamp(36px, 6vw, 64px); font-weight: 500; letter-spacing: 0.02em; line-height: 1.05; }
-    #didascalia .d-testo { font-family: var(--sans); font-size: clamp(14px, 1.6vw, 17px); letter-spacing: 0.06em; color: #e2d3b6; margin-top: 8px; }
-    #tour-barra { position: fixed; right: 18px; top: calc(16px + env(safe-area-inset-top, 0px)); z-index: 22; display: none; gap: 8px; }
-    body.in-tour #tour-barra { display: flex; }
-    body.in-tour #pannello, body.in-tour #apri-pannello, body.in-tour #fps { display: none !important; }
-    #tour-barra button, #esci-fp {
-      font-family: var(--sans); font-size: 13px; letter-spacing: 0.04em; padding: 8px 14px; cursor: pointer; border-radius: 20px;
-      background: rgba(20,17,14,0.55); color: var(--calce); border: 1px solid rgba(239,233,221,0.35); backdrop-filter: blur(4px);
-    }
-    #tour-barra button:hover { background: rgba(20,17,14,0.8); }
     /* ---- avviso ---- */
     #avviso {
       position: fixed; left: 50%; bottom: 28px; z-index: 25; transform: translate(-50%, 20px); opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none;
       background: rgba(20,17,14,0.85); color: var(--calce); padding: 10px 18px; border-radius: 20px; font-size: 13px; letter-spacing: 0.02em; border: 1px solid rgba(176,141,87,0.6);
     }
     #avviso.vista { opacity: 1; transform: translate(-50%, 0); }
-    /* ---- joystick (prima persona su telefono) ---- */
-    #joy { position: fixed; left: 28px; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 124px; height: 124px; border-radius: 50%; z-index: 6; display: none;
-      background: rgba(239,233,221,0.14); border: 1px solid rgba(239,233,221,0.45); backdrop-filter: blur(3px); touch-action: none; }
-    #joy.attivo { display: block; }
-    #joy .pomello { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px; border-radius: 50%; background: rgba(239,233,221,0.85); box-shadow: 0 2px 10px rgba(0,0,0,0.35); }
-    #esci-fp { position: fixed; right: 16px; top: calc(14px + env(safe-area-inset-top, 0px)); z-index: 6; display: none; }
-    body.fp.touch #esci-fp { display: block; }
-    body.fp.touch #apri-pannello { display: none !important; }
     /* ---- piantina quotata ---- */
     #piantina { position: fixed; inset: 0; z-index: 10; background: #fff; overflow: auto; display: none; color: #111; }
     body.piantina #piantina { display: block; }
@@ -195,9 +161,8 @@
       body.pannello-aperto #pannello { display: block; }
       #pannello button { padding: 9px 10px; font-size: 14px; }
     }
-    body.touch .hint:not(.touch-hint):not(#nota-sole):not(#nota-tavolo) { display: none; }
+    body.touch .hint:not(.touch-hint):not(#nota-sole):not(#nota-tavolo):not(#nota-versione) { display: none; }
     .touch-hint { display: none; } body.touch .touch-hint { display: block; }
-    body.touch #btn-orbit { flex: 1; }
   </style>
 </head>
 <body>
@@ -212,7 +177,6 @@
   <div id="pannello">
     <h1>Casa mia</h1>
     <div class="sub">antico in chiave moderna</div>
-    <button id="btn-tour" class="evidente">Tour guidato</button>
     <h2>Piano</h2>
     <div class="row">
       <button id="btn-primo" class="on">Piano primo</button>
@@ -224,7 +188,7 @@
       <button id="btn-v1" class="on">Versione 1</button>
       <button id="btn-v2">Versione 2</button>
     </div>
-    <button id="btn-vetrata" class="largo" style="display:none">Chiudi la vetrata</button>
+    <button id="btn-porta" class="largo" style="display:none">Chiudi la porta</button>
     <div class="hint" id="nota-versione"></div>
     <h2>Tavolo</h2>
     <div class="row">
@@ -232,11 +196,6 @@
       <button id="btn-t-aperto" class="on">Aperto</button>
     </div>
     <div class="hint" id="nota-tavolo"></div>
-    </div>
-    <h2>Vista</h2>
-    <div class="row">
-      <button id="btn-orbit" class="on">Orbita</button>
-      <button id="btn-fp">Prima persona</button>
     </div>
     <h2>Sole</h2>
     <label class="cursore"><span>Ora</span><input id="sl-ora" type="range" min="5" max="22" step="0.25" /><output id="out-ora"></output></label>
@@ -250,16 +209,10 @@
     <h2>Strumenti</h2>
     <button id="btn-piantina">Piantina quotata</button>
     <button id="btn-link">Copia il link di questa vista</button>
-    <div class="hint">Prima persona: clic sulla scena per catturare il mouse, WASD o frecce per muoversi, Shift per correre, Esc per uscire.</div>
-    <div class="hint touch-hint">Un dito per ruotare, due dita per zoom e spostamento. In prima persona: joystick per camminare, un dito per guardarsi intorno.</div>
+    <div class="hint">Trascina per ruotare, rotella per lo zoom, tasto destro per spostarti.</div>
+    <div class="hint touch-hint">Un dito per ruotare, due dita per zoom e spostamento.</div>
   </div>
-  <div id="velo"></div>
-  <div id="didascalia"><div class="d-titolo"></div><div class="d-testo"></div></div>
-  <div id="tour-barra"><button id="tour-musica" type="button">Musica: sì</button><button id="tour-esci" type="button">Esci dal tour</button></div>
   <div id="avviso"></div>
-  <div id="joy"><div class="pomello"></div></div>
-  <button id="esci-fp" type="button">Esci dalla prima persona</button>
-  <div id="mirino"></div>
   <div id="fps"></div>
   <script type="module" src="/src/main.js"></script>
 </body>

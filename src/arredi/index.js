@@ -21,7 +21,7 @@ export const TAVOLO_STATI = {
 // Le due versioni del piano primo: V1 con la seconda camera, V2 con l'open space gaming e allenamento
 export const VERSIONI = {
   v1: { nome: 'Versione 1 · camera', nota: 'La seconda camera da letto, con la sua porta.' },
-  v2: { nome: 'Versione 2 · open space', nota: 'Varco di 2,40 m sul soggiorno: angolo gaming e zona allenamento, chiudibili con la vetrata telescopica.' },
+  v2: { nome: 'Versione 2 · open space', nota: 'Varco di 2,40 m sul soggiorno: angolo gaming e zona allenamento, chiudibili con la porta telescopica in legno.' },
 };
 
 // ogni gruppo marcato e i pezzi che contiene: il tavolo chiuso o aperto, la seconda camera nelle due versioni

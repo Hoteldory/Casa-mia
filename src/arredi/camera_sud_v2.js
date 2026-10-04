@@ -1,4 +1,4 @@
-// Versione 2 della seconda camera: open space verso il soggiorno, chiudibile con la vetrata.
+// Versione 2 della seconda camera: open space verso il soggiorno, chiudibile con la porta telescopica.
 // Angolo gaming a nord-est (scrivania in rovere, schermo, PS5, poltroncina), zona allenamento
 // a corpo libero al centro (pavimento in gomma, tappetino, spalliera, specchio), cyclette in
 // rovere a sud-est, attrezzi a portata di mano. Parete dello schermo in azzurro polvere.

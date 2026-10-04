@@ -19,12 +19,12 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 
 ## Comandi
 
-- **Orbita** (default): trascina per ruotare, rotella per zoom, tasto destro per traslare.
-- **Prima persona**: clic sulla scena per catturare il mouse; `W A S D` o frecce per muoversi,
-  `Shift` per correre, `Esc` per uscire. Altezza occhio 165 cm, collisioni con muri, ringhiere e arredi.
-- **Pannello laterale**: piano primo o piano terra, tavolo chiuso o aperto per il piano primo, orbita o prima persona, toggle tetto/soffitti, toggle pareti intere
-  (pareti a 45 cm per la vista dall'alto), toggle luce del giorno / luce della sera, piantina
-  quotata. La prima persona parte dal soggiorno del piano in vista.
+- **Orbita**: trascina per ruotare, rotella per zoom, tasto destro per traslare (su telefono:
+  un dito per ruotare, due dita per zoom e spostamento).
+- **Pannello laterale**: piano primo o piano terra, versione 1 o 2 del piano primo (con la porta
+  telescopica), tavolo chiuso o aperto, sole, toggle tetto/soffitti, toggle pareti intere
+  (pareti a 45 cm per la vista dall'alto), toggle luce del giorno / luce della sera, qualità,
+  piantina quotata, link alla vista.
 
 ## Piano terra (casa della cognata)
 
@@ -42,7 +42,7 @@ portoncino e stanze vere.
   80 x 210, porte scorrevoli a scomparsa per ripostiglio e disimpegno, doccia 80 x 80 nel
   rettangolo disegnato nell'angolo del bagno, armadio a muro nel rettangolo 60 x 109.
 - In vista del piano terra il piano primo sparisce (restano scala, pianerottolo e balconi; il
-  terrazzo, che e' il tetto dei suoceri, solo con il tetto acceso), "Tetto e soffitti" mette o toglie il solaio, la prima persona cammina a quota -3,40,
+  terrazzo, che e' il tetto dei suoceri, solo con il tetto acceso), "Tetto e soffitti" mette o toglie il solaio,
   la piantina quotata disegna il piano terra.
 
 | Ambiente | Dettaglio di carattere |
@@ -118,8 +118,7 @@ Il foro della scala a chiocciola porta al sottotetto. "Tetto e soffitti" lo most
   fagiolini, erbe e fragole) e la casetta degli attrezzi con la botte per l'acqua piovana;
 - staccionata in castagno a doghe sui lati e dietro.
 
-Le luci del giardino restano accese di sera qualunque piano sia in vista; recinzioni, alberi,
-cassoni e casetta sono ostacoli per la prima persona.
+Le luci del giardino restano accese di sera qualunque piano sia in vista.
 
 ## Nuovo stile del piano primo: country chiaro (dalle foto di riferimento)
 
@@ -165,7 +164,7 @@ Nel menu, sezione "Versione", si sceglie fra:
 
 - **Versione 1 · camera**: la configurazione attuale, con la seconda camera da letto e la sua porta.
 - **Versione 2 · open space**: la seconda camera si apre sul soggiorno. Ci sono l'angolo gaming
-  e lo spazio per allenarsi, e una vetrata la chiude quando serve.
+  e lo spazio per allenarsi, e una porta telescopica in legno la chiude quando serve.
 
 Il varco:
 
@@ -175,16 +174,16 @@ Il varco:
 - **Il muro di spina potrebbe essere portante.** Prima di aprire va sentito un ingegnere: può
   servire una cerchiatura, con le relative pratiche.
 
-La vetrata telescopica:
+La porta telescopica:
 
-- Ha tre ante bianco latte con zoccolo pieno e vetro cannettato, che fa passare la luce e non
-  gli sguardi, e un maniglione in ottone.
+- Ha tre ante piene in legno tinto cognac, un colore caldo da porta modern farmhouse americana.
+  Ogni anta ha telaio, traverso a metà e riempimento a doghe verticali; quella che apre ha un
+  maniglione in ottone.
 - Le ante corrono su tre binari nascosti in un cassonetto di rovere al soffitto, dal lato
   della camera.
 - Aperta, le ante stanno impacchettate a sud del varco, davanti al muro del vano scala.
   Chiusa, coprono tutto il varco.
-- Il pulsante "Chiudi/Apri la vetrata" le fa scorrere insieme.
-- In prima persona la vetrata chiusa ferma il passo, quella aperta no.
+- Il pulsante "Chiudi/Apri la porta" le fa scorrere insieme.
 
 Gli arredi della versione 2:
 
@@ -208,10 +207,9 @@ Come funziona nel codice:
 
 - Il muro di spina è escluso dall'involucro comune. Ogni versione ha il suo, con porte e
   battiscopa (`muroVariabile` in `architettura.js`).
-- Muri, arredi, ingombri e lampade di ogni versione sono marcati `v1` o `v2` e si accendono
-  solo con la loro versione. Gli ingombri della vetrata sono marcati `vetrata`.
-- La versione e lo stato della vetrata finiscono nel link alla vista (`versione=2&vetrata=chiusa`).
-- Il tour ha un'inquadratura dedicata alla versione 2, in cui la vetrata si chiude.
+- Muri, arredi e lampade di ogni versione sono marcati `v1` o `v2` e si accendono solo con
+  la loro versione.
+- La versione e lo stato della porta finiscono nel link alla vista (`versione=2&porta=chiusa`).
 
 ## Zona pranzo e cucina del piano primo
 
@@ -223,7 +221,7 @@ Sulla parete est, accanto alle colonne dispensa, un piano di appoggio da 130 cm 
 planetaria, macchina del caffe' e microonde, maiolica alle spalle e mensola in noce.
 
 I due stati del tavolo sono gruppi marcati ('chiuso', 'aperto'): si accende solo quello
-scelto, e i suoi ingombri contano per la prima persona solo quando e' acceso.
+scelto.
 
 ## Struttura
 
@@ -238,7 +236,7 @@ src/arredi/comune.js         helper geometrici e oggetti ricorrenti (lampade, te
 src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Group
 src/arredi/index.js          registro delle stanze, del tavolo chiuso/aperto e delle due versioni
 src/arredi/camera_sud_v2.js  versione 2: angolo gaming e allenamento
-src/arredi/vetrata.js        versione 2: vetrata telescopica a tre ante
+src/arredi/porta_telescopica.js  versione 2: porta telescopica a tre ante
 piantina-terra.jpg           piantina del piano terra
 src/data/piano-terra.json    misure del piano terra in cm
 src/pianoTerra.js            involucro del piano terra (cognata e suoceri), solaio, lanterne
@@ -249,8 +247,6 @@ src/arredi/suoceri.js        arredi della casa dei suoceri
 src/arredi/giardino.js       giardino, recinzioni e orto
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
 src/sole.js                  posizione del sole, alba e tramonto (luogo in src/data/luogo.json)
-src/tour.js                  inquadrature e motore del tour guidato
-src/musica.js                musica soft generata per il tour
 ```
 
 ## Misure
@@ -300,21 +296,16 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 
 ## Esperienza di visita
 
-- **Tour guidato** (pulsante in cima al menu): undici inquadrature lente legate da dissolvenze
-  (giardino, soggiorno, cucina, bagno, camera, terrazzo, piano terra della cognata, casa dei
-  suoceri, la casa di sera), con didascalie e una musica soft generata al momento (Web Audio,
-  nessun file). Pulsanti per togliere la musica e per uscire; anche Esc esce. Alla fine tutto
-  torna com'era (piano, luce, camera).
 - **Sole vero**: cursori Ora e Giorno (il 21 di ogni mese). La posizione del sole e' calcolata
   per luogo, data e ora italiana (con l'ora legale), con alba e tramonto; il sole basso e' caldo
   e fa ombre lunghe, dopo il tramonto si passa da soli alla luce della sera. Il luogo e
   l'orientamento stanno in `src/data/luogo.json` (per ora Riccione, provvisorio, con il nord in
   alto nella piantina).
-- **Voli di camera** al posto dei salti: cambio di piano e uscita dalla prima persona.
+- **Voli di camera** al posto dei salti nel cambio di piano.
 - **Schermata di caricamento** con le tappe della costruzione; tipografia Cormorant Garamond e
   Jost, menu rifinito.
-- **Copia il link di questa vista**: il link riapre piano, camera, ora, giorno, luce e tavolo.
-- **Telefono**: prima persona con joystick a sinistra e un dito per guardarsi intorno.
+- **Copia il link di questa vista**: il link riapre piano, camera, ora, giorno, luce, tavolo,
+  versione e porta.
 
 ## Prestazioni
 
