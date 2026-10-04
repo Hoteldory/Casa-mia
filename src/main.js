@@ -115,9 +115,9 @@ arch.wallsLow.visible = false;
 const versioni = arch.versioni;
 const paretiVersione = {};
 for (const [tag, v] of Object.entries(versioni)) { paretiVersione[tag] = new THREE.Group(); v.walls.add(paretiVersione[tag]); }
-const { comuni: gruppiArredi, varianti } = conSmusso(() => arredi(ctx, arch.stanze, paretiVersione));
+const { comuni: gruppiArredi, varianti, veranda } = conSmusso(() => arredi(ctx, arch.stanze, paretiVersione));
 for (const g of gruppiArredi) scene.add(g);
-for (const g of Object.values(varianti)) scene.add(g);
+for (const g of varianti) scene.add(g);
 
 // ---------- piano terra: stesso edificio, un interpiano piu' sotto ----------
 await passo('Il piano terra e la casa dei suoceri', 0.45);
@@ -160,8 +160,8 @@ function ottimizza(root) {
   const rel = new THREE.Matrix4();
   const buckets = new Map();
   const daRimuovere = [];
-  // i pezzi mobili (le ante della porta telescopica) restano fuori: si fondono a parte, uno per uno
-  const visita = (o, fn) => { if (o !== root && o.userData.mobile) return; fn(o); for (const c of o.children) visita(c, fn); };
+  // i pezzi da comandare a parte (ante che si muovono, tetto della veranda) restano fuori: si fondono a parte, uno per uno
+  const visita = (o, fn) => { if (o !== root && o.userData.aParte) return; fn(o); for (const c of o.children) visita(c, fn); };
   visita(root, (o) => {
     if (!o.isMesh) return;
     if (!o.visible) { daRimuovere.push(o); return; }
@@ -196,7 +196,7 @@ function ottimizza(root) {
     root.add(m);
   }
 }
-for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
+for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...varianti,
   archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino,
   ...Object.values(versioni).flatMap((v) => [v.walls, v.low])]) ottimizza(g);
 for (const v of Object.values(versioni)) { arch.walls.add(v.walls); arch.wallsLow.add(v.low); }
@@ -205,6 +205,8 @@ const porta = versioni.v2.porta;
 for (const a of porta.userData.ante) ottimizza(a);
 ottimizza(porta);
 versioni.v2.walls.add(porta);
+// la veranda: ante a libro e tetto si fondono per conto loro
+for (const a of [...veranda.userData.ante, veranda.userData.tetto]) ottimizza(a);
 
 // materiali lucidi o metallici: riflettono l'ambiente per intero
 scene.traverse((o) => {
@@ -331,31 +333,43 @@ let statoTavolo = 'aperto';
 let versione = 'v1';          // 'v1' seconda camera | 'v2' open space gaming e allenamento
 let portaChiusa = false;    // solo in V2
 let portaK = 0;             // posizione delle ante: 0 aperta, 1 chiusa (scorre verso portaChiusa)
+let verandaAperta = false;  // solo in V2: porte a libro della veranda
+let verandaK = 0;           // 0 chiusa, 1 aperta (si ripiega verso verandaAperta)
+let tettoOn = true, paretiIntere = true;
 const attivi = new Set(); // i tag dei gruppi accesi in questo momento
 const bottoniTavolo = { chiuso: document.getElementById('btn-t-chiuso'), aperto: document.getElementById('btn-t-aperto') };
 const notaTavolo = document.getElementById('nota-tavolo');
 const bottoniVersione = { v1: document.getElementById('btn-v1'), v2: document.getElementById('btn-v2') };
 const btnPorta = document.getElementById('btn-porta');
+const btnVeranda = document.getElementById('btn-veranda');
 const notaVersione = document.getElementById('nota-versione');
 function applicaAllestimento() {
   attivi.clear();
   attivi.add(statoTavolo);
   attivi.add(versione);
-  for (const [tag, g] of Object.entries(varianti)) g.visible = piano === 'primo' && attivi.has(tag);
+  // i gruppi sul terrazzo restano in vista dal piano terra, con il tetto acceso, come il terrazzo
+  for (const g of varianti) g.visible = (piano === 'primo' || (g.userData.esterno && tettoOn)) && attivi.has(g.userData.variante);
+  veranda.userData.tetto.visible = tettoOn;
   for (const [tag, v] of Object.entries(versioni)) v.walls.visible = v.low.visible = attivi.has(tag);
   for (const k of Object.keys(bottoniTavolo)) bottoniTavolo[k].classList.toggle('on', k === statoTavolo);
   for (const k of Object.keys(bottoniVersione)) bottoniVersione[k].classList.toggle('on', k === versione);
   btnPorta.style.display = versione === 'v2' ? '' : 'none';
   btnPorta.textContent = portaChiusa ? 'Apri la porta' : 'Chiudi la porta';
   btnPorta.classList.toggle('on', portaChiusa);
+  btnVeranda.style.display = versione === 'v2' ? '' : 'none';
+  btnVeranda.textContent = verandaAperta ? 'Chiudi la veranda' : 'Apri la veranda';
+  btnVeranda.classList.toggle('on', verandaAperta);
   notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota;
   notaVersione.textContent = VERSIONI[versione].nota;
 }
 function applicaTavolo(t) { statoTavolo = t; applicaAllestimento(); }
 // subito: le ante vanno in posizione senza scorrere (link alla vista)
-function applicaVersione(v, { chiusa = portaChiusa, subito = false } = {}) {
-  versione = v; portaChiusa = chiusa;
-  if (subito) { portaK = chiusa ? 1 : 0; porta.userData.imposta(portaK); }
+function applicaVersione(v, { chiusa = portaChiusa, aperta = verandaAperta, subito = false } = {}) {
+  versione = v; portaChiusa = chiusa; verandaAperta = aperta;
+  if (subito) {
+    portaK = chiusa ? 1 : 0; porta.userData.imposta(portaK);
+    verandaK = aperta ? 1 : 0; veranda.userData.imposta(verandaK);
+  }
   applicaAllestimento();
   applicaLuce(); // di sera si accendono le lampade della versione in vista
 }
@@ -368,6 +382,7 @@ for (const k of Object.keys(bottoniVersione)) {
   bottoniVersione[k].onclick = () => applicaVersione(k);
 }
 btnPorta.onclick = () => { portaChiusa = !portaChiusa; applicaAllestimento(); };
+btnVeranda.onclick = () => { verandaAperta = !verandaAperta; applicaAllestimento(); };
 // le ante scorrono insieme in circa un secondo e mezzo
 function aggiornaPorta(dt) {
   const meta = portaChiusa ? 1 : 0;
@@ -376,13 +391,19 @@ function aggiornaPorta(dt) {
   const k = portaK * portaK * (3 - 2 * portaK);
   porta.userData.imposta(k);
 }
+// le porte a libro della veranda si ripiegano tutte insieme in due secondi
+function aggiornaVeranda(dt) {
+  const meta = verandaAperta ? 1 : 0;
+  if (verandaK === meta) return;
+  verandaK = meta > verandaK ? Math.min(meta, verandaK + dt / 2) : Math.max(meta, verandaK - dt / 2);
+  veranda.userData.imposta(verandaK * verandaK * (3 - 2 * verandaK));
+}
 applicaAllestimento();
 
 const apri = document.getElementById('apri-pannello');
 apri.onclick = () => { const on = document.body.classList.toggle('pannello-aperto'); apri.textContent = on ? 'Chiudi' : 'Menu'; };
 const bt = document.getElementById('btn-tetto');
 const bp = document.getElementById('btn-pareti');
-let tettoOn = true, paretiIntere = true;
 // Visibilita' dei due piani. In vista del piano primo il piano terra resta intero sotto
 // (e' la facciata); in vista del piano terra il piano primo sparisce, restano gli esterni.
 function applicaVisibilita() {
@@ -495,7 +516,7 @@ function linkVista() {
   const f = (v) => v.toArray().map((x) => x.toFixed(2)).join(',');
   const m = orbit.target;
   const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), ora: statoSole.ora, mese: statoSole.mese0 + 1, luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo, versione: versione.slice(1) });
-  if (versione === 'v2') q.set('porta', portaChiusa ? 'chiusa' : 'aperta');
+  if (versione === 'v2') { q.set('porta', portaChiusa ? 'chiusa' : 'aperta'); q.set('veranda', verandaAperta ? 'aperta' : 'chiusa'); }
   return `${location.origin}${location.pathname}#${q}`;
 }
 document.getElementById('btn-link').onclick = () => {
@@ -512,7 +533,7 @@ function leggiLink() {
   const vec = (k) => { const a = (q.get(k) || '').split(',').map(Number); return a.length === 3 && a.every(Number.isFinite) ? new THREE.Vector3(...a) : null; };
   if (q.get('piano') === 'terra' || q.get('piano') === 'primo') cambiaPiano(q.get('piano'), true);
   if (TAVOLO_STATI[q.get('tavolo')]) applicaTavolo(q.get('tavolo'));
-  if (VERSIONI['v' + q.get('versione')]) applicaVersione('v' + q.get('versione'), { chiusa: q.get('porta') === 'chiusa', subito: true });
+  if (VERSIONI['v' + q.get('versione')]) applicaVersione('v' + q.get('versione'), { chiusa: q.get('porta') === 'chiusa', aperta: q.get('veranda') === 'aperta', subito: true });
   const ora = +q.get('ora'), mese = +q.get('mese');
   if (ora >= 5 && ora <= 22) statoSole.ora = ora;
   if (mese >= 1 && mese <= 12) statoSole.mese0 = mese - 1;
@@ -561,6 +582,7 @@ function loop() {
   if (volo) aggiornaVolo(dt);
   else orbit.update();
   aggiornaPorta(dt);
+  aggiornaVeranda(dt);
   if (qualita === 'alta') composer.render(dt);
   else renderer.render(scene, camera);
   frames++; acc += dt;
@@ -571,4 +593,4 @@ leggiLink();
 loop();
 caricamento.style.setProperty('--avanzamento', 1);
 requestAnimationFrame(() => { caricamento.classList.add('fatto'); setTimeout(() => caricamento.remove(), 1400); });
-window.__casa = { applicaVersione, porta, vola, impostaSole, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, arch, archT, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+window.__casa = { applicaVersione, porta, veranda, vola, impostaSole, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, arch, archT, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

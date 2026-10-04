@@ -225,7 +225,7 @@ export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
 }
 
 // ---- tavolino tondo in rovere con gamba a tre piedi (accanto alla poltrona) ----
-function tavolinoTondo(ctx, x, z) {
+export function tavolinoTondo(ctx, x, z) {
   const M = MAT();
   const g = new THREE.Group();
   g.add(cyl(0.24, 0.24, 0.03, M.rovereMiele, 0, 0.55, 0, 28));
