@@ -185,6 +185,22 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 - **Camera est** (studio e lavanderia): parete in terracotta bruciata con lavanderia in noce.
 - **Disimpegno**: soffitto in verde salvia.
 
+## Resa: luce, materiali, spigoli
+
+- **Riflessi**: uno studio luminoso (RoomEnvironment) fa da ambiente riflesso. I materiali lucidi
+  o metallici (ottone, ferro, vetri, ceramiche, smalti, pietra lucida, carrozzerie) lo riflettono
+  pieno; su intonaci, legni e tessuti arriva appena, per non sbiancarli. Di sera si abbassa.
+- **Rilievo**: ogni texture fa anche da mappa di rilievo (bump map) calcolata dalla scheda
+  grafica: fughe del cotto e delle piastrelle, venature, coppi, trama di lino e velluto,
+  grana degli intonaci. Le piastrelle smaltate con fuga chiara hanno il rilievo invertito.
+- **Ombre di contatto** (GTAO): angoli, piedi dei mobili, sotto mensole e pensili.
+- **Ombre del sole** con i bordi morbidi.
+- **Di sera** un bagliore leggero (bloom) solo su lampadine, brace e lanterne.
+- **Spigoli arrotondati** (raggio 1,2 cm) su arredi, porte, finestre, scuri e giardino; i muri
+  restano a spigolo vivo perche' si accostano fra loro.
+- Pulsante **Qualità** nel pannello: "alta" con ombre di contatto e bagliore, "leggera" senza.
+  Su telefono si parte leggeri e senza spigoli arrotondati.
+
 ## Prestazioni
 
 Le mesh statiche vengono fuse per materiale dopo la costruzione; quelle con un materiale per

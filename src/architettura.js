@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import plan from './data/planimetria.json';
 import { getMateriali, uvMetri, PALETTE, texVernice } from './data/stile.js';
-import { box, cyl, plane, group, lanterna } from './arredi/comune.js';
+import { box, cyl, plane, group, lanterna, conSmusso } from './arredi/comune.js';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const C = 0.01; // cm -> m
@@ -578,11 +578,14 @@ function involucro(P, st, ctx, walls, wallsLow, hMuro) {
     wallsLow.add(buildMuro(seg, aper[seg.id] || [], 0.45, { addCollider() {} }, true, precedenti));
     precedenti.push(seg);
   }
-  for (const p of P.porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
-  for (const f of P.finestre) {
-    const o = aper[f.muro].find((x) => x.id === f.id);
-    walls.add(buildFinestra(o, segById[f.muro], ctx));
-  }
+  // porte e finestre con gli spigoli arrotondati (telai, ante, scuri), come gli arredi
+  conSmusso(() => {
+    for (const p of P.porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
+    for (const f of P.finestre) {
+      const o = aper[f.muro].find((x) => x.id === f.id);
+      walls.add(buildFinestra(o, segById[f.muro], ctx));
+    }
+  });
   walls.add(battiscopa(st, ctx, P));
 }
 

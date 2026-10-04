@@ -3,6 +3,12 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { costruisciArchitettura, H } from './architettura.js';
 import { arredi, TAVOLO_STATI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
@@ -10,6 +16,7 @@ import { costruisciPianoTerra, PIANO_TERRA, PIANO_SUOCERI, QUOTA_TERRA, ORIGINE_
 import { arredaPianoTerra } from './arredi/piano_terra.js';
 import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
+import { conSmusso, raggioSmusso } from './arredi/comune.js';
 
 // ---------- contesto condiviso ----------
 const colliders = []; // {minX,maxX,minZ,maxZ,minY,maxY}
@@ -73,6 +80,7 @@ function contestoDifferito(radice, H) {
 const app = document.getElementById('app');
 const MOBILE = window.matchMedia('(pointer: coarse)').matches || Math.min(window.innerWidth, window.innerHeight) < 600;
 if (window.matchMedia('(pointer: coarse)').matches) document.body.classList.add('touch');
+raggioSmusso(MOBILE ? 0 : 0.012); // spigoli arrotondati: solo dove la scheda grafica regge i triangoli in piu'
 const renderer = new THREE.WebGLRenderer({ antialias: !MOBILE, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.25 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -84,6 +92,36 @@ app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.15, 120);
+// luce d'ambiente riflessa: uno studio luminoso. Su tutto arriva appena (scene.environment
+// tenue, se no gli intonaci sbiancano); ottone, ferro, vetri, ceramiche, smalti e pietra lucida
+// lo riflettono pieno (envMap propria, assegnata dopo la costruzione: vedi lucidi).
+const ambienteRiflesso = (() => {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const t = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmrem.dispose();
+  return t;
+})();
+scene.environment = ambienteRiflesso;
+const lucidi = new Set();
+
+// ---------- qualita': alta (ombre di contatto, bagliore delle lampade di sera) o leggera ----------
+// Su telefono si parte leggeri; il pulsante nel pannello cambia al volo.
+let qualita = MOBILE ? 'leggera' : 'alta';
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+composer.setPixelRatio(renderer.getPixelRatio());
+composer.setSize(window.innerWidth, window.innerHeight);
+composer.addPass(new RenderPass(scene, camera));
+// ombre di contatto (ambient occlusion): angoli, piedi dei mobili, fughe
+const gtao = new GTAOPass(scene, camera, window.innerWidth, window.innerHeight);
+gtao.output = GTAOPass.OUTPUT.Default;
+gtao.blendIntensity = 1.0;
+gtao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.6, thickness: 1.2, distanceFallOff: 1, scale: 1, samples: 16 });
+gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+composer.addPass(gtao);
+// bagliore di lampadine e paralumi, solo di sera
+const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.25, 0.2, 2.2);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
 
 // ---------- architettura + arredi ----------
 const arch = costruisciArchitettura(ctx);
@@ -91,7 +129,7 @@ ctx.pareti = new THREE.Group();
 arch.walls.add(ctx.pareti);
 scene.add(arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo);
 arch.wallsLow.visible = false;
-const { comuni: gruppiArredi, varianti } = arredi(ctx, arch.stanze);
+const { comuni: gruppiArredi, varianti } = conSmusso(() => arredi(ctx, arch.stanze));
 for (const g of gruppiArredi) scene.add(g);
 for (const g of Object.values(varianti)) scene.add(g);
 
@@ -106,13 +144,13 @@ archT.walls.add(ctxT.pareti);
 terra.add(archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno);
 archT.wallsLow.visible = false;
 archT.soletta.visible = false;
-const arrediT = arredaPianoTerra(ctxT);
+const arrediT = conSmusso(() => arredaPianoTerra(ctxT));
 // appartamento dei suoceri: arredi nel riferimento del loro edificio
 {
   const radice = new THREE.Group(), pareti = new THREE.Group();
   for (const g of [radice, pareti]) g.position.set(ORIGINE_SUOCERI[0], 0, ORIGINE_SUOCERI[1]);
   ctxT.pareti.add(pareti);
-  arrediT.push(arredaSuoceri(ctxT, radice, pareti));
+  arrediT.push(conSmusso(() => arredaSuoceri(ctxT, radice, pareti)));
 }
 for (const g of arrediT) terra.add(g);
 ctxT.risolvi();
@@ -123,7 +161,7 @@ gGiardino.position.y = QUOTA_TERRA;
 scene.add(gGiardino);
 const ctxG = contestoDifferito(gGiardino, 3);
 ctx.esterno = true; // le sue luci restano accese di sera su entrambi i piani
-gGiardino.add(giardino(ctxG));
+gGiardino.add(conSmusso(() => giardino(ctxG)));
 ctx.esterno = false;
 ctxG.risolvi();
 
@@ -172,6 +210,14 @@ function ottimizza(root) {
 for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
   archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino]) ottimizza(g);
 
+// materiali lucidi o metallici: riflettono l'ambiente per intero
+scene.traverse((o) => {
+  if (!o.isMesh) return;
+  for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+    if (m.isMeshStandardMaterial && !m.envMap && (m.metalness > 0.3 || m.roughness < 0.5)) { m.envMap = ambienteRiflesso; lucidi.add(m); }
+  }
+});
+
 // luci artificiali vicine tra loro (< 1.5 m) vengono fuse in una sola: meno luci nello shader
 {
   const tenute = [];
@@ -201,6 +247,7 @@ sole.shadow.camera.top = 12; sole.shadow.camera.bottom = -12;
 sole.shadow.camera.near = 1; sole.shadow.camera.far = 50;
 sole.shadow.bias = -0.0004;
 sole.shadow.normalBias = 0.05;
+sole.shadow.radius = 4; // bordi delle ombre morbidi
 scene.add(sole, sole.target);
 const cielo = new THREE.HemisphereLight('#dfe8f0', '#6b6350', 1.1);
 scene.add(cielo);
@@ -221,10 +268,14 @@ function applicaLuce() {
     sole.color.set('#fff1d6');
     sole.position.set(-9, 12, 14);
     sole.intensity = 3.2;
-    cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); cielo.intensity = 1.1;
-    ambiente.color.set('#ffffff'); ambiente.intensity = 0.35;
+    // parte della luce diffusa ora arriva dall'ambiente riflesso: emisfero e ambiente calano
+    cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); cielo.intensity = 0.95;
+    ambiente.color.set('#ffffff'); ambiente.intensity = 0.22;
     riempimento.color.set('#f4ecdf'); riempimento.intensity = 0.8;
     renderer.toneMappingExposure = 1.0;
+    scene.environmentIntensity = 0.15;
+    for (const m of lucidi) m.envMapIntensity = 1.0;
+    bloom.enabled = false;
     for (const l of luciArtificiali) l.light.visible = false;
     for (const e of emissivi) {
       e.bulb.material.emissiveIntensity = 0.12;
@@ -241,12 +292,15 @@ function applicaLuce() {
     ambiente.color.set('#4a3a26'); ambiente.intensity = 0.06;
     riempimento.color.set('#2d3a52'); riempimento.intensity = 0.08;
     renderer.toneMappingExposure = 0.95;
+    scene.environmentIntensity = 0.02;
+    for (const m of lucidi) m.envMapIntensity = 0.12;
+    bloom.enabled = true;
     for (const l of luciArtificiali) {
       l.light.visible = l.esterno || l.piano === piano;
       l.light.intensity = l.base * FATTORE_SERA;
     }
     for (const e of emissivi) {
-      e.bulb.material.emissiveIntensity = 1.5;
+      e.bulb.material.emissiveIntensity = 4.0; // solo lampadine e brace superano la soglia del bagliore
       if (e.shade) e.shade.emissiveIntensity = 0.3;
     }
   }
@@ -433,6 +487,13 @@ function cambiaPiano(p) {
 }
 for (const k of Object.keys(bottoniPiano)) bottoniPiano[k].onclick = () => cambiaPiano(k);
 const bg = document.getElementById('btn-giorno');
+const bq = document.getElementById('btn-qualita');
+function applicaQualita() {
+  bq.classList.toggle('on', qualita === 'alta');
+  bq.textContent = qualita === 'alta' ? 'Qualità alta' : 'Qualità leggera';
+}
+bq.onclick = () => { qualita = qualita === 'alta' ? 'leggera' : 'alta'; applicaQualita(); };
+applicaQualita();
 bg.onclick = () => { giorno = !giorno; applicaLuce(); bg.classList.toggle('on', giorno); bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera'; };
 
 // ---------- piantina quotata: pannello 2D separato, il modello resta intatto ----------
@@ -460,6 +521,7 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
 });
 
 // ---------- loop ----------
@@ -472,10 +534,11 @@ function loop() {
   const dt = Math.min((tNow - tPrev) / 1000, 0.05);
   tPrev = tNow;
   if (modoFP) aggiornaFP(dt); else orbit.update();
-  renderer.render(scene, camera);
+  if (qualita === 'alta') composer.render(dt);
+  else renderer.render(scene, camera);
   frames++; acc += dt;
   if (acc > 0.5) { fpsEl.textContent = `${Math.round(frames / acc)} fps`; frames = 0; acc = 0; }
   requestAnimationFrame(loop);
 }
 loop();
-window.__casa = { scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+window.__casa = { composer, gtao, bloom, scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

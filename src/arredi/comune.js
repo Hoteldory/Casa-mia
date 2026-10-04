@@ -1,6 +1,8 @@
 // Helper geometrici e oggetti ricorrenti condivisi da tutte le stanze.
 // Tutte le misure in metri. Ogni funzione ritorna una Mesh o un THREE.Group.
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { getMateriali, uvMetri } from '../data/stile.js';
 
 export const MAT = () => getMateriali();
@@ -13,8 +15,40 @@ export function matColore(color, roughness = 0.85) {
   return _matCache.get(k);
 }
 
+// Spigoli arrotondati: dentro conSmusso(fn) ogni box ha gli spigoli raggiati (raggio RAGGIO, mai
+// piu' di un terzo del lato corto; sotto 1,5 cm di spessore resta vivo). Si usa per arredi,
+// infissi e giardino; i muri restano a spigolo vivo, perche' si accostano fra loro.
+// Il raggio lo sceglie main.js prima di costruire (0 su telefono: meno triangoli).
+let SMUSSO = 0, RAGGIO = 0.012;
+export function raggioSmusso(r) { RAGGIO = r; }
+export function conSmusso(fn) {
+  const prima = SMUSSO;
+  SMUSSO = RAGGIO;
+  try { return fn(); } finally { SMUSSO = prima; }
+}
+const _smussate = new Map();
+function geomSmussata(w, h, d, r) {
+  const key = [w, h, d, r].map((v) => v.toFixed(4)).join('|');
+  let g = _smussate.get(key);
+  if (!g) {
+    // un segmento per arco: smusso morbido con normali raccordate, 108 triangoli
+    const rb = new RoundedBoxGeometry(w, h, d, 1, r);
+    // UV in metri, faccia per faccia come uvMetri (gruppi nell'ordine +x -x +y -y +z -z)
+    const dims = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
+    const uv = rb.attributes.uv;
+    rb.groups.forEach((gr, f) => {
+      for (let i = gr.start; i < gr.start + gr.count; i++) uv.setXY(i, uv.getX(i) * dims[f][0], uv.getY(i) * dims[f][1]);
+    });
+    g = mergeVertices(rb); // indicizzata come le box normali: si fonde con loro in ottimizza()
+    rb.dispose();
+    _smussate.set(key, g);
+  }
+  return g;
+}
+
 export function box(w, h, d, mat, x = 0, y = 0, z = 0, opts = {}) {
-  const g = uvMetri(new THREE.BoxGeometry(w, h, d), w, h, d);
+  const m0 = Math.min(w, h, d);
+  const g = SMUSSO && m0 >= 0.015 ? geomSmussata(w, h, d, Math.min(SMUSSO, m0 / 3)) : uvMetri(new THREE.BoxGeometry(w, h, d), w, h, d);
   const m = new THREE.Mesh(g, mat);
   m.position.set(x, y, z);
   m.castShadow = opts.cast ?? true;

@@ -518,6 +518,29 @@ export function texTerreno(seed = 37) {
   }, { seed });
 }
 
+// ---------- rilievo: la texture stessa fa da mappa di rilievo (bump map) ----------
+// L'altezza e' la tinta della texture: fughe, venature, trame e bordi dei coppi, piu' scuri,
+// stanno piu' in basso. Lo calcola la scheda grafica pixel per pixel, nessuna texture in piu'.
+// Forza < 0 inverte, per le piastrelle smaltate con la fuga chiara.
+// materiale -> forza del rilievo
+const RILIEVO = {
+  intonaco: 0.35, intonacoSoffitto: 0.2, intonacoEsterno: 0.5,
+  noce: 0.5, noceVerticale: 0.5, noceScuro: 0.5, rovere: 0.5, parquet: 0.7,
+  cotto: 0.6, cementine: 0.5, maiolica: 0.5, lastre: 0.9, pietra: 0.35, pietraScura: 0.35,
+  piastrelleVerdi: -1.0, piastrelleCrema: 0.9, piastrelleOcra: -1.0, coppi: 1.6,
+  lino: 0.8, linoBianco: 0.8, linoTortora: 0.8, velluto: 0.4, vellutoSalvia: 0.4, vellutoRuggine: 0.4,
+  salvia: 0.25, salviaChiaro: 0.25, terracottaPittura: 0.25, tortora: 0.25, bluPetrolio: 0.25, bluPolvere: 0.25, crema: 0.25, scuri: 0.3,
+  prato: 1.0, ghiaia: 1.4, terreno: 1.0, terraOrto: 1.0,
+};
+function applicaRilievo(M) {
+  for (const [k, f] of Object.entries(RILIEVO)) {
+    const m = M[k];
+    if (!m?.map) continue;
+    m.bumpMap = m.map;
+    m.bumpScale = f;
+  }
+}
+
 // ---------- materiali condivisi ----------
 let _MAT = null;
 export function getMateriali() {
@@ -612,6 +635,7 @@ export function getMateriali() {
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);
+  applicaRilievo(_MAT);
   return _MAT;
 }
 
