@@ -167,7 +167,8 @@ function buildPorta(p, seg, ctx, P = plan) {
     const dopo = !p.tasca || p.tasca === 'sud' || p.tasca === 'est';
     const hl = h - 0.02, sporge = 0.07;
     const pos = dopo ? p.b * C - s + 0.02 - sporge / 2 : p.a * C + s - 0.02 + sporge / 2;
-    const bordo = horiz ? box(sporge, hl, 0.04, M.salvia, pos, hl / 2 + 0.01, cross) : box(0.04, hl, sporge, M.salvia, cross, hl / 2 + 0.01, pos);
+    const matS = P === plan ? M.biancoLatte : M.salvia;
+    const bordo = horiz ? box(sporge, hl, 0.04, matS, pos, hl / 2 + 0.01, cross) : box(0.04, hl, sporge, matS, cross, hl / 2 + 0.01, pos);
     g.add(bordo);
     const bpos = dopo ? pos - sporge / 2 + 0.004 : pos + sporge / 2 - 0.004;
     g.add(horiz ? box(0.008, 0.16, 0.05, M.ottone, bpos, 1.05, cross) : box(0.05, 0.16, 0.008, M.ottone, cross, 1.05, bpos));
@@ -178,7 +179,8 @@ function buildPorta(p, seg, ctx, P = plan) {
   const cern = /cerniera a (nord|sud|est|ovest)/.exec(p.battente || '')?.[1];
   const leafW = w - 0.07, leafH = h - 0.02;
   const leaf = new THREE.Group();
-  const matL = p.tipo === 'portoncino' ? M.noceScuro : M.salvia;
+  // piano primo: porte crema (bianco latte) a riquadri; altri piani: verde salvia
+  const matL = p.tipo === 'portoncino' ? M.noceScuro : (P === plan ? M.biancoLatte : M.salvia);
   const body = box(leafW, leafH, 0.045, matL, leafW / 2, leafH / 2, 0);
   leaf.add(body);
   // due pannelli a rilievo
@@ -559,10 +561,10 @@ function travi(st) {
   const n = 7;
   for (let i = 0; i < n; i++) {
     const z = main.z + main.d * (i + 0.5) / n;
-    g.add(box(main.w + 0.02, 0.2, 0.15, M.noceScuro, main.cx, H - 0.1, z));
+    g.add(box(main.w + 0.02, 0.2, 0.15, M.rovereMiele, main.cx, H - 0.1, z));
   }
   // trave di colmo longitudinale
-  g.add(box(0.18, 0.24, main.d, M.noceScuro, main.cx, H - 0.12, main.cz));
+  g.add(box(0.18, 0.24, main.d, M.rovereMiele, main.cx, H - 0.12, main.cz));
   return g;
 }
 
@@ -704,7 +706,9 @@ export function costruisciArchitettura(ctx) {
   involucro(plan, st, ctx, walls, wallsLow, () => H);
 
   // pavimenti e soffitti
-  const floorMat = { soggiorno: M.cotto, bagno: M.cementine, disimpegno: M.cotto, camera_nord: M.parquet, camera_est: M.parquet, camera_sud: M.parquet };
+  // rovere a listoni larghi in tutto il piano, tranne il bagno
+  const R = M.rovereListoni;
+  const floorMat = { soggiorno: R, bagno: M.cementine, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
   const ceilMat = { disimpegno: M.salvia };
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {

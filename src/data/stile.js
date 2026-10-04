@@ -518,6 +518,215 @@ export function texTerreno(seed = 37) {
   }, { seed });
 }
 
+// ================= piano primo, stile country chiaro (foto di riferimento) =================
+
+// Rovere a listoni larghi (texture = 1,20 m): 6 listoni da 20 cm, ognuno con il suo tono,
+// venatura, qualche nodo e i giunti di testa sfalsati
+export function texListoni(seed = 71) {
+  return canvasTexture(1024, (ctx, s, r) => {
+    const n = 6, h = s / n;
+    for (let i = 0; i < n; i++) {
+      // giunti di testa: ogni listone ha uno o due tagli, sfalsati
+      const tagli = [0, (0.25 + r() * 0.5) * s, s];
+      const tratti = [[tagli[0], tagli[1]], [tagli[1], tagli[2]]];
+      for (const [x0, x1] of tratti) {
+        const hue = 31 + r() * 3, sat = 30 + r() * 6, lum = 53 + r() * 5;
+        ctx.fillStyle = `hsl(${hue}, ${sat}%, ${lum}%)`;
+        ctx.fillRect(x0, i * h, x1 - x0, h);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(x0, i * h, x1 - x0, h); ctx.clip();
+        for (let k = 0; k < 26; k++) {
+          ctx.strokeStyle = r() < 0.65 ? `hsla(${hue - 4}, 38%, ${lum - 20}%, 0.55)` : `hsla(${hue + 3}, 42%, ${lum + 10}%, 0.4)`;
+          ctx.globalAlpha = 0.15 + r() * 0.35;
+          ctx.lineWidth = 0.6 + r() * 2;
+          const y = i * h + r() * h, amp = 1 + r() * 5, f = 0.004 + r() * 0.012, ph = r() * 9;
+          ctx.beginPath();
+          for (let x = x0; x <= x1 + 8; x += 8) {
+            const yy = y + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.7) * amp * 0.25;
+            x === x0 ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy);
+          }
+          ctx.stroke();
+        }
+        if (r() < 0.45) {
+          const nx = x0 + r() * (x1 - x0), ny = i * h + h * (0.3 + r() * 0.4);
+          for (let k = 5; k > 0; k--) {
+            ctx.globalAlpha = 0.12;
+            ctx.strokeStyle = `hsl(${hue - 6}, 45%, ${lum - 28}%)`;
+            ctx.beginPath(); ctx.ellipse(nx, ny, k * 4.5, k * 2, 0, 0, Math.PI * 2); ctx.stroke();
+          }
+        }
+        ctx.restore();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(40,24,10,0.55)';
+        ctx.fillRect(x1 - 1, i * h, 2, h); // giunto di testa
+      }
+      ctx.fillStyle = 'rgba(40,24,10,0.6)';
+      ctx.fillRect(0, i * h, s, 2);           // fuga fra i listoni
+      ctx.fillStyle = 'rgba(255,240,215,0.10)';
+      ctx.fillRect(0, i * h + 2, s, 2);        // smusso illuminato
+    }
+    noiseOver(ctx, s, r, { n: 9000, alpha: 0.05, colors: ['#3b2412', '#f2d6a8'], rmin: 0.5, rmax: 1.6 });
+  }, { seed });
+}
+
+// Piastrelle "metro" bianche 7,5 x 15 a correre (texture = 60 cm), smalto con bordo stondato
+export function texMetro(seed = 73) {
+  return canvasTexture(512, (ctx, s, r) => {
+    const tw = s / 4, th = s / 8, f = 3;
+    ctx.fillStyle = '#cdc8be';
+    ctx.fillRect(0, 0, s, s);
+    for (let j = 0; j < 8; j++) for (let i = -1; i < 4; i++) {
+      const x = i * tw + (j % 2 ? tw / 2 : 0), y = j * th;
+      const l = 93 + r() * 3;
+      const gr = ctx.createLinearGradient(0, y + f, 0, y + th - f);
+      gr.addColorStop(0, `hsl(40, 18%, ${l - 3}%)`);
+      gr.addColorStop(0.2, `hsl(40, 18%, ${l}%)`);
+      gr.addColorStop(0.85, `hsl(40, 16%, ${l - 1}%)`);
+      gr.addColorStop(1, `hsl(40, 14%, ${l - 6}%)`);
+      ctx.fillStyle = gr;
+      ctx.fillRect(x + f / 2, y + f / 2, tw - f, th - f);
+    }
+    noiseOver(ctx, s, r, { n: 2500, alpha: 0.04, colors: ['#000', '#fff'], rmin: 0.5, rmax: 1.5 });
+  }, { seed });
+}
+
+// Juta intrecciata (texture = 40 cm): trama a canestro in fili grossi
+export function texJuta(seed = 75) {
+  return canvasTexture(256, (ctx, s, r) => {
+    ctx.fillStyle = '#b39467';
+    ctx.fillRect(0, 0, s, s);
+    const p = s / 16;
+    for (let j = 0; j < 16; j++) for (let i = 0; i < 16; i++) {
+      const orizz = (i + j) % 2 === 0;
+      ctx.fillStyle = `hsl(${34 + r() * 6}, ${32 + r() * 10}%, ${52 + r() * 12}%)`;
+      if (orizz) for (let k = 0; k < 3; k++) ctx.fillRect(i * p, j * p + k * p / 3 + 1, p, p / 3 - 2);
+      else for (let k = 0; k < 3; k++) ctx.fillRect(i * p + k * p / 3 + 1, j * p, p / 3 - 2, p);
+    }
+    noiseOver(ctx, s, r, { n: 3000, alpha: 0.08, colors: ['#3a2a14', '#f0dcb0'], rmin: 0.4, rmax: 1.2 });
+  }, { seed });
+}
+
+// Tessuto a fiorellini azzurri su fondo panna (texture = 25 cm)
+export function texFloreale(fondo = '#efe8da', fiore = '#5f7f9c', seed = 77) {
+  return canvasTexture(256, (ctx, s, r) => {
+    ctx.fillStyle = fondo;
+    ctx.fillRect(0, 0, s, s);
+    const fiorellino = (x, y, rr) => {
+      for (const [dx, dy] of [[0, 0], [s, 0], [-s, 0], [0, s], [0, -s]]) {
+        ctx.fillStyle = fiore;
+        for (let k = 0; k < 5; k++) {
+          const a = (k / 5) * Math.PI * 2;
+          ctx.beginPath(); ctx.ellipse(x + dx + Math.cos(a) * rr, y + dy + Math.sin(a) * rr, rr * 0.75, rr * 0.45, a, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = '#d9b46a';
+        ctx.beginPath(); ctx.arc(x + dx, y + dy, rr * 0.35, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#7d9474'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(x + dx + rr, y + dy + rr); ctx.quadraticCurveTo(x + dx + rr * 2.5, y + dy + rr * 1.2, x + dx + rr * 3, y + dy + rr * 2.6); ctx.stroke();
+      }
+    };
+    for (let i = 0; i < 22; i++) fiorellino(r() * s, r() * s, 4 + r() * 4);
+    noiseOver(ctx, s, r, { n: 2000, alpha: 0.05, colors: ['#000', '#fff'], rmin: 0.4, rmax: 1.2 });
+  }, { seed });
+}
+
+// Tenda a pacchetto in bambu' (texture = 30 cm): stecche orizzontali e due fili di cucitura
+export function texBambu(seed = 79) {
+  return canvasTexture(256, (ctx, s, r) => {
+    ctx.fillStyle = '#a07d4c';
+    ctx.fillRect(0, 0, s, s);
+    const n = 24, h = s / n;
+    for (let j = 0; j < n; j++) {
+      ctx.fillStyle = `hsl(${33 + r() * 6}, ${38 + r() * 10}%, ${50 + r() * 14}%)`;
+      ctx.fillRect(0, j * h + 1, s, h - 2);
+      ctx.fillStyle = 'rgba(80,50,20,0.35)';
+      for (let k = 0; k < 3; k++) ctx.fillRect(r() * s, j * h + 1, 2, h - 2); // nodi della canna
+    }
+    ctx.fillStyle = 'rgba(70,45,20,0.6)';
+    for (const x of [s * 0.25, s * 0.75]) ctx.fillRect(x, 0, 2, s);
+  }, { seed });
+}
+
+// Tappeto persiano (una texture per tutto il tappeto): campo panna a rosette su reticolo,
+// medaglione a losanga, cornice blu polvere con rosette, filetti ruggine; tinte sbiadite
+export function texPersiano({ campo = '#e7dbc3', blu = '#6d84a0', bluScuro = '#4d6280', ruggine = '#b0704f', seed = 81 } = {}) {
+  return canvasTexture(1024, (ctx, s, r) => {
+    ctx.fillStyle = campo;
+    ctx.fillRect(0, 0, s, s);
+    // abrash: fasce di tono leggermente diverse, come la lana tinta a mano
+    for (let y = 0; y < s; y += 32) { ctx.fillStyle = `rgba(120,90,50,${r() * 0.05})`; ctx.fillRect(0, y, s, 32); }
+    const rosetta = (x, y, k, petali, centro) => {
+      ctx.fillStyle = petali;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        ctx.beginPath(); ctx.ellipse(x + Math.cos(a) * k * 0.55, y + Math.sin(a) * k * 0.55, k * 0.42, k * 0.22, a, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = centro; ctx.beginPath(); ctx.arc(x, y, k * 0.25, 0, Math.PI * 2); ctx.fill();
+    };
+    const losanga = (x, y, rx, ry, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x, y - ry); ctx.lineTo(x + rx, y); ctx.lineTo(x, y + ry); ctx.lineTo(x - rx, y); ctx.closePath(); ctx.fill(); };
+    // campo: reticolo di tralci e rosette
+    const passo = 56;
+    ctx.strokeStyle = 'rgba(109,132,160,0.45)'; ctx.lineWidth = 2;
+    for (let k = -s; k < 2 * s; k += passo) {
+      ctx.beginPath(); ctx.moveTo(k, 0); ctx.lineTo(k + s, s); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(k, s); ctx.lineTo(k + s, 0); ctx.stroke();
+    }
+    for (let y = 0; y <= s; y += passo) for (let x = (y / passo) % 2 ? passo / 2 : 0; x <= s; x += passo) {
+      rosetta(x, y, 13, r() < 0.5 ? blu : ruggine, '#d8c59c');
+    }
+    // medaglione a losanga con cornice e rosette
+    const c = s / 2;
+    losanga(c, c, 250, 200, bluScuro);
+    losanga(c, c, 234, 186, campo);
+    losanga(c, c, 200, 158, blu);
+    losanga(c, c, 150, 118, '#e2d2b2');
+    losanga(c, c, 70, 56, ruggine);
+    losanga(c, c, 40, 32, '#e2d2b2');
+    for (let a = 0; a < 8; a++) { const t = (a / 8) * Math.PI * 2; rosetta(c + Math.cos(t) * 110, c + Math.sin(t) * 86, 16, a % 2 ? ruggine : bluScuro, '#efe3c8'); }
+    // pennacchi negli angoli del campo
+    for (const [x, y] of [[150, 150], [s - 150, 150], [150, s - 150], [s - 150, s - 150]]) { losanga(x, y, 70, 56, blu); rosetta(x, y, 22, ruggine, campo); }
+    // cornice: banda blu polvere con rosette, filetti ruggine e blu scuro
+    const banda = (m, w, col) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.strokeRect(m, m, s - 2 * m, s - 2 * m); };
+    banda(52, 64, blu);
+    banda(16, 10, ruggine);
+    banda(90, 6, ruggine);
+    banda(104, 4, bluScuro);
+    for (let i = 0; i < 22; i++) {
+      const t = 52 + (i + 0.5) / 22 * (s - 104);
+      for (const [x, y] of [[t, 52], [t, s - 52], [52, t], [s - 52, t]]) rosetta(x, y, 17, i % 2 ? '#e8d9b8' : ruggine, bluScuro);
+    }
+    noiseOver(ctx, s, r, { n: 40000, alpha: 0.06, colors: ['#000', '#fff'], rmin: 0.5, rmax: 1.4 });
+  }, { seed });
+}
+
+// Stampa botanica incorniciata: carta panna, un rametto di foglie e qualche fiore azzurro
+export function texStampaBotanica(seed = 91) {
+  return canvasTexture(256, (ctx, s, r) => {
+    ctx.fillStyle = '#efe6d2';
+    ctx.fillRect(0, 0, s, s);
+    ctx.strokeStyle = 'rgba(120,100,70,0.25)'; ctx.lineWidth = 2; ctx.strokeRect(22, 22, s - 44, s - 44);
+    const verdi = ['#6f7f5a', '#8a9a72', '#5e6b47'];
+    ctx.strokeStyle = '#6a5a3e'; ctx.lineWidth = 2.5;
+    const x0 = s * (0.4 + r() * 0.2), y0 = s * 0.86, x1 = s * (0.35 + r() * 0.3), y1 = s * 0.16;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(s * (0.3 + r() * 0.4), s * 0.5, x1, y1); ctx.stroke();
+    for (let i = 0; i < 11; i++) {
+      const t = 0.12 + i * 0.075, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t, lato = i % 2 ? 1 : -1;
+      ctx.fillStyle = verdi[i % 3];
+      ctx.save(); ctx.translate(x, y); ctx.rotate(lato * (0.7 + r() * 0.4) - 0.2);
+      ctx.beginPath(); ctx.ellipse(lato * 20, 0, 22 - i, 8 - i * 0.3, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    for (let i = 0; i < 3; i++) {
+      const x = x1 + (r() - 0.5) * 40, y = y1 + 10 + r() * 30;
+      ctx.fillStyle = '#7f98b4';
+      for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 5, y + Math.sin(a) * 5, 4, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = '#d9b46a'; ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(90,70,50,0.6)'; ctx.font = 'italic 12px Georgia';
+    ctx.fillText(['Olea europaea', 'Salvia officinalis', 'Laurus nobilis', 'Rosmarinus'][Math.floor(r() * 4)], 40, s - 34);
+    noiseOver(ctx, s, r, { n: 2500, alpha: 0.05, colors: ['#5a4a30', '#fff'], rmin: 0.4, rmax: 1.2 });
+  }, { seed });
+}
+
 // ---------- rilievo: la texture stessa fa da mappa di rilievo (bump map) ----------
 // L'altezza e' la tinta della texture: fughe, venature, trame e bordi dei coppi, piu' scuri,
 // stanno piu' in basso. Lo calcola la scheda grafica pixel per pixel, nessuna texture in piu'.
@@ -531,6 +740,8 @@ const RILIEVO = {
   lino: 0.8, linoBianco: 0.8, linoTortora: 0.8, velluto: 0.4, vellutoSalvia: 0.4, vellutoRuggine: 0.4,
   salvia: 0.25, salviaChiaro: 0.25, terracottaPittura: 0.25, tortora: 0.25, bluPetrolio: 0.25, bluPolvere: 0.25, crema: 0.25, scuri: 0.3,
   prato: 1.0, ghiaia: 1.4, terreno: 1.0, terraOrto: 1.0,
+  rovereListoni: 0.8, rovereMiele: 0.5, marmo: 0.2, metro: 1.0, azzurroPolvere: 0.25, biancoLatte: 0.2,
+  linoAvena: 0.8, linoAzzurro: 0.8, floreale: 0.3, righeAzzurre: 0.2, juta: 1.5, bambu: 1.2,
 };
 function applicaRilievo(M) {
   for (const [k, f] of Object.entries(RILIEVO)) {
@@ -606,9 +817,24 @@ export function getMateriali() {
     bluPolvere: std({ map: texVernice('#7f98a4', 36), roughness: 0.85 }),
     crema: std({ map: texVernice(PALETTE.crema, 37), roughness: 0.85 }),
     vellutoRuggine: new THREE.MeshPhysicalMaterial({ map: texVelluto('#8a4124', 38), roughness: 0.92, sheen: 0.7, sheenColor: new THREE.Color('#d9895f') }),
+    // ---- piano primo, country chiaro ----
+    rovereListoni: std({ map: texListoni(), roughness: 0.62 }),
+    rovereMiele: std({ map: texLegno({ base: '#b98a55', scuro: '#7a5530', chiaro: '#dab27e', seed: 63 }), roughness: 0.6 }),
+    marmo: std({ map: texPietra(23, '#ebe8e1'), roughness: 0.28 }),
+    metro: std({ map: texMetro(), roughness: 0.16 }),
+    azzurroPolvere: std({ map: texVernice('#8ea5b6', 40), roughness: 0.8 }),
+    biancoLatte: std({ map: texVernice('#f1ece2', 41), roughness: 0.85 }),
+    linoAvena: std({ map: texLino('#ddd3c0', 42), roughness: 0.95 }),
+    linoAzzurro: std({ map: texLino('#a3b6c6', 43), roughness: 0.95 }),
+    floreale: std({ map: texFloreale(), roughness: 0.9 }),
+    righeAzzurre: std({ map: texRighe('#efe8da', '#93a9bb', 44), roughness: 0.9 }),
+    juta: std({ map: texJuta(), roughness: 1 }),
+    bambu: std({ map: texBambu(), roughness: 0.8 }),
+    neroWindsor: std({ color: '#1f1c19', roughness: 0.45 }),
+    vetroGlobo: new THREE.MeshPhysicalMaterial({ color: '#f4efe4', roughness: 0.15, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false }),
   };
   // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
-  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio']) {
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio', 'rovereListoni', 'metro', 'azzurroPolvere', 'biancoLatte']) {
     _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
   }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
@@ -632,6 +858,14 @@ export function getMateriali() {
   _MAT.piastrelleVerdi.map.repeat.set(1 / 0.4, 1 / 0.4);
   _MAT.piastrelleCrema.map.repeat.set(1 / 0.4, 1 / 0.4);
   _MAT.piastrelleOcra.map.repeat.set(1 / 0.3, 1 / 0.3);
+  _MAT.rovereListoni.map.repeat.set(1 / 2.4, 1 / 1.2); // listoni da 20 cm, lunghi fino a 2,4 m
+  _MAT.rovereMiele.map.repeat.set(0.6, 0.6);
+  _MAT.marmo.map.repeat.set(0.7, 0.7);
+  _MAT.metro.map.repeat.set(1 / 0.6, 1 / 0.6);
+  _MAT.juta.map.repeat.set(1 / 0.4, 1 / 0.4);
+  _MAT.bambu.map.repeat.set(1 / 0.3, 1 / 0.3);
+  for (const k of ['azzurroPolvere', 'biancoLatte', 'linoAvena', 'linoAzzurro', 'righeAzzurre']) _MAT[k].map.repeat.set(3, 3);
+  _MAT.floreale.map.repeat.set(4, 4);
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);

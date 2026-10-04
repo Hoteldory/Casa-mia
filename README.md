@@ -121,6 +121,30 @@ Il foro della scala a chiocciola porta al sottotetto. "Tetto e soffitti" lo most
 Le luci del giardino restano accese di sera qualunque piano sia in vista; recinzioni, alberi,
 cassoni e casetta sono ostacoli per la prima persona.
 
+## Nuovo stile del piano primo: country chiaro (dalle foto di riferimento)
+
+Dalle foto scelte: pareti chiare, travi e pavimenti in legno naturale, cucina a riquadri
+colorata con piastrelle metro e mensole aperte, tavolo da fattoria con sedie Windsor, lino,
+juta, tappeto persiano, ottone e vetro. Scelte confermate: cucina **azzurro polvere**,
+pavimento in **rovere a listoni**, **ottone** protagonista.
+
+Tappa 1 (fatta): base comune e zona giorno.
+- Pavimento in rovere a listoni larghi (20 cm, fino a 2,40 m) in tutto il piano tranne il bagno;
+  travi del soggiorno in rovere miele; porte interne bianco latte a riquadri.
+- Cucina: ante a riquadro azzurro polvere con maniglie in ottone, piano in marmo bianco,
+  piastrelle metro bianche, cappa intonacata con trave in rovere, mensole in rovere su staffe
+  d'ottone, lavello in ceramica con rubinetto in ottone, due globi di vetro; colonne e piano
+  d'appoggio azzurri, con top in rovere massello.
+- Pranzo: tavolo da fattoria in rovere a tre assi con gambe tornite (sempre 4 o 8 posti),
+  sedie Windsor nere e due in rovere a capotavola, lampadario a tamburo in lino e ottone,
+  tappeto in juta.
+- Salotto: boiserie bianco latte, divano profondo in lino avena con cuscini azzurri, a
+  fiorellini e a righe, tappeto persiano panna e blu, mobile TV in rovere con top in marmo,
+  stampe botaniche in cornici di rovere, tende in lino azzurro e a pacchetto in bambu',
+  angolo lettura con poltrona azzurra, libreria in rovere e ottone, tavolino tondo.
+
+Tappa 2 (da fare): camere, bagno, disimpegno, terrazzo.
+
 ## Zona pranzo e cucina del piano primo
 
 Niente isola: il tavolo da pranzo sta in verticale (lato lungo nord-sud), spostato verso est

@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import { getMateriali, uvMetri } from '../data/stile.js';
+import { getMateriali, uvMetri, texPersiano, texStampaBotanica } from '../data/stile.js';
 
 export const MAT = () => getMateriali();
 
@@ -157,6 +157,93 @@ export function pendente(ctx, x, z, { yTop, calata = 0.6, raggio = 0.18, intensi
   return g;
 }
 
+// Sospensione a globo di vetro con calotta e stelo in ottone (cucina country)
+export function pendenteGlobo(ctx, x, z, { yTop, calata = 0.75, raggio = 0.13, intensita = 12 } = {}) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const y = yTop - calata;
+  g.add(cyl(0.05, 0.05, 0.02, M.ottone, x, yTop - 0.01, z, 16));
+  g.add(cyl(0.005, 0.005, calata - raggio, M.ottone, x, yTop - (calata - raggio) / 2, z, 8));
+  g.add(cyl(0.035, 0.05, 0.05, M.ottone, x, y + raggio * 0.95, z, 16)); // calotta
+  const vetro = M.vetroGlobo.clone();
+  vetro.emissive = new THREE.Color('#ffd9a8'); vetro.emissiveIntensity = 0;
+  g.add(sphere(raggio, vetro, x, y, z, 24));
+  const bulb = sphere(0.028, M.lampadina, x, y, z, 12);
+  g.add(bulb);
+  const light = new THREE.PointLight('#ffd9a8', intensita, 7, 2);
+  light.position.set(x, y - 0.05, z);
+  g.add(light);
+  ctx.addLight(light, bulb, vetro);
+  return g;
+}
+
+// Lampadario a tamburo: stelo e bracci in ottone con candele, paralume in lino avena
+export function lampadarioTamburo(ctx, x, z, { yTop, calata = 0.95, raggio = 0.33, intensita = 22 } = {}) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const y = yTop - calata;
+  g.add(cyl(0.06, 0.06, 0.02, M.ottone, x, yTop - 0.01, z, 16));
+  g.add(cyl(0.006, 0.006, calata - 0.1, M.ottone, x, yTop - (calata - 0.1) / 2, z, 8));
+  g.add(sphere(0.03, M.ottone, x, y + 0.08, z, 12));
+  // bracci e candele
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2, cx = x + Math.cos(a) * raggio * 0.6, cz = z + Math.sin(a) * raggio * 0.6;
+    const br = cyl(0.006, 0.006, raggio * 0.6, M.ottone, (x + cx) / 2, y, (z + cz) / 2, 6);
+    br.rotation.z = Math.PI / 2; br.rotation.y = -a; g.add(br);
+    g.add(cyl(0.025, 0.02, 0.025, M.ottone, cx, y + 0.012, cz, 10));
+    g.add(cyl(0.012, 0.012, 0.08, M.carta, cx, y + 0.065, cz, 8));
+  }
+  // paralume a tamburo, aperto sopra e sotto
+  const tela = M.linoAvena.clone();
+  tela.side = THREE.DoubleSide;
+  tela.emissive = new THREE.Color('#ffd9a8'); tela.emissiveIntensity = 0;
+  g.add(cyl(raggio, raggio, 0.3, tela, x, y + 0.08, z, 32, { open: true }));
+  for (const yy of [y - 0.07, y + 0.23]) {
+    const anello = new THREE.Mesh(new THREE.TorusGeometry(raggio, 0.005, 6, 40), M.ottone);
+    anello.rotation.x = Math.PI / 2; anello.position.set(x, yy, z); g.add(anello);
+  }
+  const bulb = sphere(0.03, M.lampadina, x, y + 0.1, z, 12);
+  g.add(bulb);
+  const light = new THREE.PointLight('#ffd9a8', intensita, 8, 2);
+  light.position.set(x, y, z);
+  g.add(light);
+  ctx.addLight(light, bulb, tela);
+  return g;
+}
+
+// Tappeto persiano: una texture per tutto il tappeto (campo panna, medaglione, cornici)
+export function tappetoPersiano(w, d, x, z, opzioni = {}) {
+  const tex = texPersiano(opzioni);
+  tex.repeat.set(1 / w, 1 / d);
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, bumpMap: tex, bumpScale: 0.6 });
+  return box(w, 0.012, d, mat, x, 0.006, z, { cast: false });
+}
+
+// Stampa botanica incorniciata (una texture per quadro, adattata alla sua misura)
+export function stampaBotanica(w, h, x, y, z, normal = 'z+', seed = 91, matCornice) {
+  const tex = texStampaBotanica(seed);
+  tex.repeat.set(1 / w, 1 / h);
+  const tela = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.9 });
+  return quadro(w, h, tela, x, y, z, normal, matCornice);
+}
+
+// Tenda a pacchetto in bambu', raccolta in alto sopra una finestra (piano XY, normale +Z)
+export function tendaBambu(w, x, yTop, z, normal = 'z+', { aperta = 0.42 } = {}) {
+  const M = MAT();
+  const g = new THREE.Group();
+  g.add(box(w + 0.06, 0.04, 0.05, M.rovereMiele, 0, -0.02, 0.04));      // cassonetto
+  const pieghe = 4, hp = aperta / pieghe;
+  for (let i = 0; i < pieghe; i++) {
+    const p = box(w, hp + 0.01, 0.035 + (i % 2) * 0.012, M.bambu, 0, -0.04 - hp * (i + 0.5), 0.05 + (i % 2) * 0.006);
+    p.rotation.x = (i % 2 ? -1 : 1) * 0.08;
+    g.add(p);
+  }
+  for (const sx of [-1, 1]) g.add(box(0.012, aperta + 0.04, 0.006, M.linoAvena, sx * w * 0.3, -0.04 - aperta / 2, 0.075));
+  g.position.set(x, yTop, z);
+  g.rotation.y = { 'z+': 0, 'z-': Math.PI, 'x+': Math.PI / 2, 'x-': -Math.PI / 2 }[normal];
+  return g;
+}
+
 // Applique in ottone con paralume in tessuto
 export function applique(ctx, x, y, z, normal = 'z+', { intensita = 6 } = {}) {
   const M = MAT();
@@ -242,11 +329,12 @@ export function quadro(w, h, matTela, x, y, z, normal = 'z+', matCornice) {
 }
 
 // Pianta in vaso di cotto
-export function pianta(x, z, { h = 0.9, vaso = 0.16 } = {}) {
+export function pianta(x, z, { h = 0.9, vaso = 0.16, matVaso } = {}) {
   const M = MAT();
+  const mv = matVaso || M.cotto;
   const g = new THREE.Group();
-  g.add(cyl(vaso, vaso * 0.8, vaso * 1.2, M.cotto, 0, vaso * 0.6, 0, 20));
-  g.add(cyl(vaso * 1.05, vaso * 1.05, 0.03, M.cotto, 0, vaso * 1.2, 0, 20));
+  g.add(cyl(vaso, vaso * 0.8, vaso * 1.2, mv, 0, vaso * 0.6, 0, 20));
+  g.add(cyl(vaso * 1.05, vaso * 1.05, 0.03, mv, 0, vaso * 1.2, 0, 20));
   g.add(cyl(0.012, 0.015, h * 0.5, M.noceScuro, 0, vaso * 1.2 + h * 0.25, 0, 8));
   for (let i = 0; i < 9; i++) {
     const a = (i / 9) * Math.PI * 2;

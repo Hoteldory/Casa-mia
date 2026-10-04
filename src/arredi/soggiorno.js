@@ -1,7 +1,8 @@
-// Soggiorno (zona sud del soggiorno-pranzo-cucina e appendice est).
-// Dettaglio di carattere: parete sud in verde salvia profondo con boiserie a riquadri.
+// Soggiorno (zona sud del soggiorno-pranzo-cucina e appendice est), stile country chiaro:
+// boiserie bianco latte, divano in lino avena con cuscini azzurri e a fiorellini, tappeto
+// persiano panna e blu, rovere e ottone, tende in lino azzurro e a pacchetto in bambu'.
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, group, place, pomolo, cuscino, tappeto, quadro, pianta, libri, lampadaTerra, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
+import { box, cyl, sphere, plane, group, place, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, quadro, pianta, libri, lampadaTerra, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
 
 // ---- boiserie a riquadri su una parete (piano XY locale, normale +Z verso la stanza) ----
 export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, mat }) {
@@ -48,20 +49,26 @@ export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, m
 }
 
 // ---- divano 3 posti in lino tortora con cuscini in velluto ----
-export function divano(ctx, x, z, ry = 0, L = 2.3) {
+// opz.mat: tessuto; opz.cuscini: materiali dei cuscini decorativi; opz.plaid: materiale del plaid
+export function divano(ctx, x, z, ry = 0, L = 2.3, opz = {}) {
   const M = MAT();
   const g = new THREE.Group();
-  const D = 0.95;
-  g.add(box(L, 0.12, D - 0.1, M.linoTortora, 0, 0.26, 0.05)); // telaio
-  g.add(box(L - 0.4, 0.16, D - 0.3, M.linoTortora, 0, 0.4, 0.1)); // cuscini seduta
-  g.add(box(L, 0.5, 0.18, M.linoTortora, 0, 0.57, -D / 2 + 0.1)); // schienale
-  for (const s of [-1, 1]) g.add(box(0.2, 0.42, D - 0.1, M.linoTortora, s * (L / 2 - 0.1), 0.53, 0.05)); // braccioli
+  const D = opz.profondo ? 1.02 : 0.95;
+  const T = opz.mat || M.linoTortora;
+  g.add(box(L, 0.12, D - 0.1, T, 0, 0.26, 0.05)); // telaio
+  g.add(box(L - 0.4, 0.16, D - 0.3, T, 0, 0.4, 0.1)); // cuscini seduta
+  g.add(box(L, 0.5, 0.18, T, 0, 0.57, -D / 2 + 0.1)); // schienale
+  for (const s of [-1, 1]) g.add(box(0.2, 0.42, D - 0.1, T, s * (L / 2 - 0.1), 0.53, 0.05)); // braccioli
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(cyl(0.025, 0.035, 0.2, M.noce, sx * (L / 2 - 0.15), 0.1, sz * (D / 2 - 0.15), 10));
   const n = Math.floor(L / 0.7);
-  for (let i = 0; i < n; i++) g.add(box(0.55, 0.42, 0.14, M.linoTortora, -L / 2 + 0.25 + 0.05 + i * ((L - 0.6) / (n - 1 || 1)) + 0.0 - 0.0, 0.63, -D / 2 + 0.24));
-  g.add(cuscino(0.45, 0.42, 0.16, M.velluto, -L / 2 + 0.5, 0.68, -D / 2 + 0.36, 0.3));
-  g.add(cuscino(0.45, 0.42, 0.16, M.vellutoSalvia, L / 2 - 0.5, 0.68, -D / 2 + 0.36, -0.3));
-  g.add(box(0.5, 0.06, 0.6, M.vellutoSalvia, L / 2 - 0.7, 0.51, 0.15)); // plaid piegato
+  for (let i = 0; i < n; i++) g.add(box(0.55, 0.42, 0.14, T, -L / 2 + 0.25 + 0.05 + i * ((L - 0.6) / (n - 1 || 1)) + 0.0 - 0.0, 0.63, -D / 2 + 0.24));
+  const cuscini = opz.cuscini || [M.velluto, M.vellutoSalvia];
+  cuscini.forEach((c, i) => {
+    const t = cuscini.length === 1 ? 0.5 : i / (cuscini.length - 1);
+    const xx = -L / 2 + 0.45 + t * (L - 0.9), ang = (0.5 - t) * 0.6;
+    g.add(cuscino(i % 2 ? 0.42 : 0.47, i % 2 ? 0.4 : 0.44, 0.16, c, xx, 0.68 - (i % 2) * 0.02, -D / 2 + 0.36 + (i % 2) * 0.05, ang));
+  });
+  g.add(box(0.5, 0.06, 0.6, opz.plaid || M.vellutoSalvia, L / 2 - 0.7, 0.51, 0.15)); // plaid piegato
   place(g, x, z, ry);
   ctx.solid(g);
   return g;
@@ -102,12 +109,13 @@ export function tavolino(ctx, x, z) {
 }
 
 // ---- libreria a giorno in ferro e noce ----
-export function libreria(ctx, { w = 1.4, h = 2.3, d = 0.35, x, z, ry = 0 }) {
+export function libreria(ctx, { w = 1.4, h = 2.3, d = 0.35, x, z, ry = 0, legno, metallo }) {
   const M = MAT();
+  const Lg = legno || M.noce, Me = metallo || M.ferro;
   const g = new THREE.Group();
   const n = 5;
-  for (let i = 0; i <= n; i++) g.add(box(w, 0.035, d, M.noce, 0, 0.1 + i * ((h - 0.1) / n), 0));
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.add(box(0.02, h, 0.02, M.ferro, sx * (w / 2 - 0.01), h / 2, sz * (d / 2 - 0.01)));
+  for (let i = 0; i <= n; i++) g.add(box(w, 0.035, d, Lg, 0, 0.1 + i * ((h - 0.1) / n), 0));
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.add(box(0.02, h, 0.02, Me, sx * (w / 2 - 0.01), h / 2, sz * (d / 2 - 0.01)));
   for (let i = 0; i < n; i++) {
     const y = 0.1 + i * ((h - 0.1) / n) + 0.018;
     if (i % 2 === 0) g.add(libri(w * 0.8, -w * 0.05, y, 0, i * 3 + 1));
@@ -142,12 +150,13 @@ export function credenza(ctx, { w = 1.3, x, z, ry = 0 }) {
 }
 
 // ---- consolle sottile in noce e ferro ----
-export function consolle(ctx, { w = 0.9, x, z, ry = 0 }) {
+export function consolle(ctx, { w = 0.9, x, z, ry = 0, legno, metallo }) {
   const M = MAT();
+  const Lg = legno || M.noce, Me = metallo || M.ferro;
   const g = new THREE.Group();
-  g.add(box(w, 0.035, 0.32, M.noce, 0, 0.8, 0));
-  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.02, 0.8, 0.02, M.ferro, sx * (w / 2 - 0.02), 0.4, sz * 0.13));
-  g.add(box(w - 0.04, 0.02, 0.28, M.ferro, 0, 0.15, 0));
+  g.add(box(w, 0.035, 0.32, Lg, 0, 0.8, 0));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.02, 0.8, 0.02, Me, sx * (w / 2 - 0.02), 0.4, sz * 0.13));
+  g.add(box(w - 0.04, 0.02, 0.28, Me, 0, 0.15, 0));
   place(g, x, z, ry);
   ctx.solid(g);
   return g;
@@ -155,8 +164,9 @@ export function consolle(ctx, { w = 0.9, x, z, ry = 0 }) {
 
 // ---- mobile TV: bassa credenza in noce con ante a rete d'ottone, vano a giorno
 // centrale, top in pietra e gambe in ferro battuto ----
-export function mobileTv(ctx, { x, z, w = 1.6, d = 0.46, h = 0.46, ry = 0 }) {
+export function mobileTv(ctx, { x, z, w = 1.6, d = 0.46, h = 0.46, ry = 0, legno, top }) {
   const M = MAT();
+  const Lg = legno || M.noce;
   const g = new THREE.Group();
   const hG = 0.16, hC = h - hG, yC = hG + hC / 2, sp = 0.022;
   // gambe in ferro leggermente svasate, con traversine
@@ -168,26 +178,26 @@ export function mobileTv(ctx, { x, z, w = 1.6, d = 0.46, h = 0.46, ry = 0 }) {
   for (const sz of [-1, 1]) g.add(box(w - 0.18, 0.012, 0.012, M.ferro, 0, 0.055, sz * (d / 2 - 0.08)));
   // cassa: cielo, fondo, fianchi, schienale e due setti che delimitano il vano a giorno
   const vano = 0.5;
-  g.add(box(w, sp, d, M.noce, 0, hG + hC - sp / 2, 0));
-  g.add(box(w, sp, d, M.noce, 0, hG + sp / 2, 0));
-  for (const sx of [-1, 1]) g.add(box(sp, hC, d, M.noce, sx * (w / 2 - sp / 2), yC, 0));
-  for (const sx of [-1, 1]) g.add(box(0.02, hC, d - 0.02, M.noce, sx * vano / 2, yC, 0.01));
+  g.add(box(w, sp, d, Lg, 0, hG + hC - sp / 2, 0));
+  g.add(box(w, sp, d, Lg, 0, hG + sp / 2, 0));
+  for (const sx of [-1, 1]) g.add(box(sp, hC, d, Lg, sx * (w / 2 - sp / 2), yC, 0));
+  for (const sx of [-1, 1]) g.add(box(0.02, hC, d - 0.02, Lg, sx * vano / 2, yC, 0.01));
   g.add(box(w, hC, 0.014, M.noceScuro, 0, yC, -d / 2 + 0.007));
   // top in pietra con leggero aggetto
-  g.add(box(w + 0.05, 0.035, d + 0.04, M.pietra, 0, h + 0.0175, 0));
+  g.add(box(w + 0.05, 0.035, d + 0.04, top || M.pietra, 0, h + 0.0175, 0));
   // ante laterali: cornice in noce e pannello a rete d'ottone
   const aw = (w - vano) / 2 - 0.02, dh = hC - 0.04, ft = 0.055, fd = 0.022;
   for (const s of [-1, 1]) {
     const cx = s * (vano / 2 + (w - vano) / 4);
-    g.add(box(aw, ft, fd, M.noce, cx, yC + dh / 2 - ft / 2, d / 2 + fd / 2));
-    g.add(box(aw, ft, fd, M.noce, cx, yC - dh / 2 + ft / 2, d / 2 + fd / 2));
-    g.add(box(ft, dh - 2 * ft, fd, M.noce, cx - aw / 2 + ft / 2, yC, d / 2 + fd / 2));
-    g.add(box(ft, dh - 2 * ft, fd, M.noce, cx + aw / 2 - ft / 2, yC, d / 2 + fd / 2));
+    g.add(box(aw, ft, fd, Lg, cx, yC + dh / 2 - ft / 2, d / 2 + fd / 2));
+    g.add(box(aw, ft, fd, Lg, cx, yC - dh / 2 + ft / 2, d / 2 + fd / 2));
+    g.add(box(ft, dh - 2 * ft, fd, Lg, cx - aw / 2 + ft / 2, yC, d / 2 + fd / 2));
+    g.add(box(ft, dh - 2 * ft, fd, Lg, cx + aw / 2 - ft / 2, yC, d / 2 + fd / 2));
     g.add(plane(aw - 2 * ft, dh - 2 * ft, M.reteOttone, cx, yC, d / 2 + 0.008, 'z+'));
     g.add(pomolo(cx + s * (aw / 2 - 0.05), yC, d / 2 + fd));
   }
   // vano a giorno: ripiano e oggetti (libri coricati, scatola in ceramica)
-  g.add(box(vano - 0.02, 0.018, d - 0.06, M.noce, 0, yC, 0.01));
+  g.add(box(vano - 0.02, 0.018, d - 0.06, Lg, 0, yC, 0.01));
   for (let i = 0; i < 3; i++) g.add(box(0.24, 0.028, 0.17, i % 2 ? M.linoTortora : M.cuoio, -0.11, yC + 0.024 + i * 0.03, 0.02));
   g.add(box(0.15, 0.1, 0.12, M.ceramicaSalvia, 0.13, yC + 0.06, 0.02));
   g.add(box(0.15, 0.012, 0.12, M.ottone, 0.13, yC + 0.116, 0.02));
@@ -214,38 +224,67 @@ export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
   return g;
 }
 
+// ---- tavolino tondo in rovere con gamba a tre piedi (accanto alla poltrona) ----
+function tavolinoTondo(ctx, x, z) {
+  const M = MAT();
+  const g = new THREE.Group();
+  g.add(cyl(0.24, 0.24, 0.03, M.rovereMiele, 0, 0.55, 0, 28));
+  g.add(cyl(0.2, 0.2, 0.02, M.rovereMiele, 0, 0.18, 0, 24));
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2;
+    g.add(cyl(0.014, 0.014, 0.55, M.ottone, Math.cos(a) * 0.19, 0.275, Math.sin(a) * 0.19, 8));
+  }
+  g.add(libri(0.18, 0.02, 0.565, 0.02, 9).rotateY(0.4));
+  g.add(cyl(0.035, 0.03, 0.09, M.ceramica, -0.1, 0.61, -0.08, 12));
+  place(g, x, z);
+  ctx.solid(g);
+  return g;
+}
+
 export function arredaSoggiorno(ctx, stanze) {
   const M = MAT();
   const g = new THREE.Group();
   const [R, A, B] = stanze.soggiorno.rects; // R x 0.25-4.16 z 0.28-9.40 | B x 4.52-5.99 z 5.38-9.40
   const zS = R.z + R.d; // parete sud
-  // parete sud in salvia con boiserie (finestra F-soggiorno-sud x 1.45-2.87, y 0.9-2.3)
+  // parete sud con boiserie bianco latte (finestra F-soggiorno-sud x 1.45-2.87, y 0.9-2.3)
   const bw = R.w;
-  const bo = boiserie(ctx, { w: bw, h: ctx.H, colonne: 4, finestra: [1.45 - R.cx, 2.87 - R.cx, 0.9, 2.3] });
+  const bo = boiserie(ctx, { w: bw, h: ctx.H, colonne: 4, finestra: [1.45 - R.cx, 2.87 - R.cx, 0.9, 2.3], mat: M.biancoLatte });
   bo.position.set(R.cx, 0, zS); bo.rotation.y = Math.PI;
   ctx.pareti.add(bo);
-  // divano sotto la finestra sud, tappeto, tavolino, poltrone
-  g.add(divano(ctx, 2.16, zS - 0.5, Math.PI));
-  g.add(tappeto(3.0, 1.8, M.lino, 2.16, zS - 1.2, M.linoTortora));
-  // mobile TV davanti al divano: fa anche da separazione con la zona pranzo
+  // divano profondo in lino avena sotto la finestra sud, cuscini azzurri, a fiorellini e a righe
+  g.add(divano(ctx, 2.16, zS - 0.52, Math.PI, 2.3, {
+    mat: M.linoAvena, profondo: true, plaid: M.linoAzzurro,
+    cuscini: [M.floreale, M.linoAzzurro, M.righeAzzurre, M.linoBianco, M.floreale],
+  }));
+  g.add(tappetoPersiano(3.0, 2.0, 2.16, zS - 1.25));
+  // mobile TV in rovere davanti al divano: fa anche da separazione con la zona pranzo
   const tvZ = 6.95;
-  g.add(mobileTv(ctx, { x: 2.16, z: tvZ, w: 1.6, d: 0.46, h: 0.46 }));
+  g.add(mobileTv(ctx, { x: 2.16, z: tvZ, w: 1.6, d: 0.46, h: 0.46, legno: M.rovereMiele, top: M.marmo }));
   g.add(tvOled(ctx, { x: 2.16, y: 0.495, z: tvZ - 0.03 }));
-  // consolle sulla parete ovest tra portafinestra e angolo, con lampada e pianta
-  g.add(consolle(ctx, { w: 0.9, x: R.x + 0.17, z: 8.4, ry: Math.PI / 2 }));
-  g.add(lampadaTavolo(ctx, R.x + 0.17, 0.82, 8.1, { colore: 'salvia', intensita: 5 }));
-  g.add(pianta(R.x + 0.35, 7.75, { h: 1.1, vaso: 0.18 }));
-  // applique ai lati della finestra sud, quadri sulla boiserie
+  g.add(pianta(3.35, tvZ + 0.05, { h: 1.0, vaso: 0.16, matVaso: M.ceramica }));
+  // consolle in rovere e ottone sulla parete ovest, lampada in ceramica, piccola galleria botanica sopra
+  g.add(consolle(ctx, { w: 0.9, x: R.x + 0.17, z: 8.4, ry: Math.PI / 2, legno: M.rovereMiele, metallo: M.ottone }));
+  g.add(lampadaTavolo(ctx, R.x + 0.17, 0.82, 8.15, { colore: 'bianca', intensita: 5 }));
+  g.add(pianta(R.x + 0.35, 7.75, { h: 1.1, vaso: 0.18, matVaso: M.ceramica }));
+  [[1.6, 8.2, 0.32, 0.42], [1.62, 8.66, 0.32, 0.42], [2.12, 8.2, 0.32, 0.42], [2.14, 8.66, 0.32, 0.42]].forEach(([y, z, w, h], i) => {
+    ctx.pareti.add(stampaBotanica(w, h, R.x + 0.03, y, z, 'x+', 91 + i, M.rovereMiele));
+  });
+  // applique in ottone ai lati della finestra sud, quadri sulla boiserie
   ctx.pareti.add(applique(ctx, 1.0, 1.9, zS - 0.02, 'z-'));
   ctx.pareti.add(applique(ctx, 3.3, 1.9, zS - 0.02, 'z-'));
-  ctx.pareti.add(quadro(0.5, 0.65, M.cartaBotanica, 0.8, 1.75, zS - 0.03, 'z-'));
-  ctx.pareti.add(quadro(0.5, 0.65, M.cotto, 3.5, 1.75, zS - 0.03, 'z-'));
-  // angolo lettura nell'appendice est: libreria contro il muro nord, poltrona, lampada da terra
-  g.add(libreria(ctx, { w: 1.35, x: B.cx, z: B.z + 0.2 }));
-  g.add(lampadaTerra(ctx, B.x + 0.3, B.z + 0.9));
-  g.add(tappeto(1.2, 1.4, M.linoTortora, B.cx, B.z + 1.5));
-  // tenda alla portafinestra ovest e alla finestra sud
-  ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+'));
-  ctx.pareti.add(tende(1.42, 1.5, 2.16, 1.62, zS - 0.03, 'z-'));
+  ctx.pareti.add(stampaBotanica(0.5, 0.65, 0.8, 1.75, zS - 0.03, 'z-', 97, M.rovereMiele));
+  ctx.pareti.add(stampaBotanica(0.5, 0.65, 3.5, 1.75, zS - 0.03, 'z-', 98, M.rovereMiele));
+  // angolo lettura nell'appendice est: libreria in rovere e ottone, poltrona azzurra, tavolino tondo
+  g.add(libreria(ctx, { w: 1.35, x: B.cx, z: B.z + 0.2, legno: M.rovereMiele, metallo: M.ottone }));
+  g.add(poltrona(ctx, B.cx + 0.15, B.z + 1.55, -Math.PI / 4, M.linoAzzurro));
+  g.add(tavolinoTondo(ctx, B.x + 0.35, B.z + 1.05));
+  g.add(lampadaTerra(ctx, B.x + 0.3, B.z + 2.2));
+  g.add(tappeto(1.3, 1.5, M.juta, B.cx, B.z + 1.5));
+  g.add(pianta(B.x + B.w - 0.3, B.z + B.d - 0.35, { h: 1.4, vaso: 0.2, matVaso: M.ceramica }));
+  // tende in lino azzurro; tende a pacchetto in bambu' sulla finestra sud e su quella del lavello
+  ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+', M.linoAzzurro));
+  ctx.pareti.add(tende(1.42, 1.5, 2.16, 1.62, zS - 0.03, 'z-', M.linoAzzurro));
+  ctx.pareti.add(tendaBambu(1.42, 2.16, 2.32, zS - 0.04, 'z-'));
+  ctx.pareti.add(tendaBambu(1.24, R.x + 0.04, 2.22, 3.55, 'x+'));
   return g;
 }
