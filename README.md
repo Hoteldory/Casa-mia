@@ -140,7 +140,12 @@ Tappa 1 (fatta): base comune e zona giorno.
 - Salotto: boiserie bianco latte, divano profondo in lino avena con cuscini azzurri, a
   fiorellini e a righe, tappeto persiano panna e blu, mobile TV in rovere con top in marmo,
   stampe botaniche in cornici di rovere, tende in lino azzurro e a pacchetto in bambu',
-  angolo lettura con poltrona azzurra, libreria in rovere e ottone, tavolino tondo.
+  tavolino tondo.
+- Stufa a legna nell'appendice est del soggiorno, in tutte e due le versioni:
+  - ghisa nera su lastra di ardesia, appoggiata alla parete est;
+  - piastrelle metro alle spalle, canna fumaria nera fino al soffitto, cesta di ciocchi accanto;
+  - di sera il fuoco si accende e scalda la stanza di arancio.
+  Dove c'era la libreria c'è uno specchio lungo con cornice in ottone; la poltrona è stata tolta.
 
 Tappa 2 (fatta): il resto del piano.
 - Camera matrimoniale: parete a doghe verde oliva con mensola in rovere e stampe botaniche,
