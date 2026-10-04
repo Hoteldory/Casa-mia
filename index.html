@@ -3,34 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Casa mia — piano primo in 3D</title>
+  <title>Casa mia in 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    :root { --calce: #efe9dd; --salvia: #4d6152; --noce: #5a3b25; --ottone: #b08d57; --tortora: #8c7f70; }
+    :root {
+      --calce: #efe9dd; --carta: rgba(244, 239, 229, 0.95); --salvia: #4d6152; --noce: #5a3b25; --ottone: #b08d57; --tortora: #8c7f70; --inchiostro: #2b241d;
+      --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; --sans: 'Jost', 'Helvetica Neue', Arial, sans-serif;
+    }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; overflow: hidden; font-family: Georgia, 'Times New Roman', serif; background: #1b1917; }
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--sans); background: #1b1917; -webkit-font-smoothing: antialiased; }
     #app { position: fixed; inset: 0; }
-    canvas { display: block; }
+    canvas { display: block; touch-action: none; }
     #pannello {
-      position: fixed; top: 16px; left: 16px; width: 250px; max-height: calc(100% - 32px); overflow: auto;
-      background: rgba(239, 233, 221, 0.94); color: #2b241d; border: 1px solid var(--ottone);
-      border-radius: 4px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.35); font-size: 14px;
+      position: fixed; top: 16px; left: 16px; width: 262px; max-height: calc(100% - 32px); overflow: auto; z-index: 2;
+      background: var(--carta); color: var(--inchiostro); border: 1px solid rgba(176,141,87,0.55);
+      border-radius: 6px; padding: 18px 18px 14px; box-shadow: 0 10px 34px rgba(0,0,0,0.32); font-size: 13px;
+      backdrop-filter: blur(6px); scrollbar-width: thin;
     }
-    #pannello h1 { font-size: 17px; margin: 0 0 2px; font-weight: normal; letter-spacing: 0.04em; color: var(--noce); }
-    #pannello .sub { font-size: 11px; color: var(--tortora); margin-bottom: 10px; font-style: italic; }
-    #pannello h2 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--salvia); margin: 12px 0 6px; font-weight: normal; border-bottom: 1px solid rgba(176,141,87,0.5); padding-bottom: 3px; }
+    #pannello h1 { font-family: var(--serif); font-size: 27px; margin: 0; font-weight: 600; letter-spacing: 0.02em; color: var(--noce); line-height: 1; }
+    #pannello .sub { font-family: var(--serif); font-size: 15px; color: var(--tortora); margin: 4px 0 6px; font-style: italic; }
+    #pannello h2 { font-family: var(--sans); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.2em; color: var(--salvia); margin: 16px 0 7px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    #pannello h2::after { content: ''; flex: 1; height: 1px; background: rgba(176,141,87,0.45); }
     #pannello button {
-      display: block; width: 100%; text-align: left; margin: 3px 0; padding: 6px 9px; cursor: pointer; font-family: inherit; font-size: 13px;
-      background: transparent; border: 1px solid rgba(90,59,37,0.35); border-radius: 3px; color: #2b241d;
+      display: block; width: 100%; text-align: left; margin: 4px 0; padding: 7px 11px; cursor: pointer; font-family: var(--sans); font-size: 13px; letter-spacing: 0.01em;
+      background: rgba(255,255,255,0.35); border: 1px solid rgba(90,59,37,0.22); border-radius: 4px; color: var(--inchiostro); transition: background .2s, border-color .2s, color .2s;
     }
-    #pannello button:hover { background: rgba(77,97,82,0.12); }
+    #pannello button:hover { background: rgba(77,97,82,0.10); border-color: rgba(77,97,82,0.45); }
     #pannello button.on { background: var(--salvia); color: var(--calce); border-color: var(--salvia); }
+    #pannello button.evidente { background: var(--noce); color: var(--calce); border-color: var(--noce); text-align: center; font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: 0.03em; padding: 8px 11px; }
+    #pannello button.evidente:hover { background: #6b4930; }
     #pannello .row { display: flex; gap: 6px; }
     #pannello .row button { flex: 1; text-align: center; }
-    #pannello .hint { font-size: 11px; color: var(--tortora); margin-top: 8px; line-height: 1.4; }
-    #fps { position: fixed; right: 12px; bottom: 10px; color: rgba(239,233,221,0.7); font-size: 11px; font-family: monospace; }
+    #pannello .hint { font-size: 11.5px; color: var(--tortora); margin-top: 8px; line-height: 1.45; }
+    .cursore { display: grid; grid-template-columns: 42px 1fr 76px; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; color: var(--inchiostro); }
+    .cursore output { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--noce); text-align: right; white-space: nowrap; }
+    .cursore input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: rgba(90,59,37,0.3); outline: none; margin: 8px 0; }
+    .cursore input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--ottone); border: 2px solid var(--calce); box-shadow: 0 1px 4px rgba(0,0,0,0.35); cursor: pointer; }
+    .cursore input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--ottone); border: 2px solid var(--calce); cursor: pointer; }
+    #fps { position: fixed; right: 12px; bottom: 10px; color: rgba(239,233,221,0.6); font-size: 11px; font-family: ui-monospace, monospace; }
     #mirino { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgba(239,233,221,0.8); display: none; pointer-events: none; }
-    body.fp #mirino { display: block; }
+    body.fp:not(.touch) #mirino { display: block; }
     body.fp #pannello { opacity: 0.35; pointer-events: none; }
+    /* ---- caricamento ---- */
+    #caricamento {
+      position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      background: radial-gradient(ellipse at 50% 40%, #2c2620 0%, #171411 70%); color: var(--calce); transition: opacity 1.1s ease; --avanzamento: 0.03;
+    }
+    #caricamento.fatto { opacity: 0; pointer-events: none; }
+    #caricamento .c-titolo { font-family: var(--serif); font-size: clamp(44px, 8vw, 76px); font-weight: 500; letter-spacing: 0.04em; line-height: 1; }
+    #caricamento .c-sub { font-family: var(--serif); font-style: italic; font-size: clamp(17px, 2.4vw, 22px); color: #c9b28a; margin-bottom: 26px; }
+    #caricamento .c-barra { width: min(280px, 70vw); height: 1px; background: rgba(239,233,221,0.18); position: relative; overflow: hidden; }
+    #caricamento .c-barra::after { content: ''; position: absolute; inset: 0; background: var(--ottone); transform-origin: left; transform: scaleX(var(--avanzamento)); transition: transform .5s ease; }
+    #caricamento .c-stato { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(239,233,221,0.55); margin-top: 6px; min-height: 1em; }
+    /* ---- tour ---- */
+    #velo { position: fixed; inset: 0; z-index: 20; background: #0d0b09; opacity: 0; pointer-events: none; transition: opacity .9s ease; }
+    #velo.nero { opacity: 1; }
+    #didascalia {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; padding: 90px 7vw calc(70px + env(safe-area-inset-bottom, 0px)); pointer-events: none; display: none;
+      background: linear-gradient(to top, rgba(10,8,6,0.62), rgba(10,8,6,0)); color: var(--calce);
+    }
+    body.in-tour #didascalia { display: block; }
+    #didascalia .d-titolo, #didascalia .d-testo { opacity: 0; transform: translateY(10px); transition: opacity 1.1s ease, transform 1.4s ease; }
+    #didascalia.vista .d-titolo, #didascalia.vista .d-testo { opacity: 1; transform: none; }
+    #didascalia.vista .d-testo { transition-delay: .35s; }
+    #didascalia .d-titolo { font-family: var(--serif); font-size: clamp(36px, 6vw, 64px); font-weight: 500; letter-spacing: 0.02em; line-height: 1.05; }
+    #didascalia .d-testo { font-family: var(--sans); font-size: clamp(14px, 1.6vw, 17px); letter-spacing: 0.06em; color: #e2d3b6; margin-top: 8px; }
+    #tour-barra { position: fixed; right: 18px; top: calc(16px + env(safe-area-inset-top, 0px)); z-index: 22; display: none; gap: 8px; }
+    body.in-tour #tour-barra { display: flex; }
+    body.in-tour #pannello, body.in-tour #apri-pannello, body.in-tour #fps { display: none !important; }
+    #tour-barra button, #esci-fp {
+      font-family: var(--sans); font-size: 13px; letter-spacing: 0.04em; padding: 8px 14px; cursor: pointer; border-radius: 20px;
+      background: rgba(20,17,14,0.55); color: var(--calce); border: 1px solid rgba(239,233,221,0.35); backdrop-filter: blur(4px);
+    }
+    #tour-barra button:hover { background: rgba(20,17,14,0.8); }
+    /* ---- avviso ---- */
+    #avviso {
+      position: fixed; left: 50%; bottom: 28px; z-index: 25; transform: translate(-50%, 20px); opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none;
+      background: rgba(20,17,14,0.85); color: var(--calce); padding: 10px 18px; border-radius: 20px; font-size: 13px; letter-spacing: 0.02em; border: 1px solid rgba(176,141,87,0.6);
+    }
+    #avviso.vista { opacity: 1; transform: translate(-50%, 0); }
+    /* ---- joystick (prima persona su telefono) ---- */
+    #joy { position: fixed; left: 28px; bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 124px; height: 124px; border-radius: 50%; z-index: 6; display: none;
+      background: rgba(239,233,221,0.14); border: 1px solid rgba(239,233,221,0.45); backdrop-filter: blur(3px); touch-action: none; }
+    #joy.attivo { display: block; }
+    #joy .pomello { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px; border-radius: 50%; background: rgba(239,233,221,0.85); box-shadow: 0 2px 10px rgba(0,0,0,0.35); }
+    #esci-fp { position: fixed; right: 16px; top: calc(14px + env(safe-area-inset-top, 0px)); z-index: 6; display: none; }
+    body.fp.touch #esci-fp { display: block; }
+    body.fp.touch #apri-pannello { display: none !important; }
     /* ---- piantina quotata ---- */
     #piantina { position: fixed; inset: 0; z-index: 10; background: #fff; overflow: auto; display: none; color: #111; }
     body.piantina #piantina { display: block; }
@@ -133,17 +194,24 @@
       body.pannello-aperto #pannello { display: block; }
       #pannello button { padding: 9px 10px; font-size: 14px; }
     }
-    body.touch #btn-fp, body.touch .hint:not(.touch-hint) { display: none; }
+    body.touch .hint:not(.touch-hint):not(#nota-sole):not(#nota-tavolo) { display: none; }
     .touch-hint { display: none; } body.touch .touch-hint { display: block; }
     body.touch #btn-orbit { flex: 1; }
   </style>
 </head>
 <body>
+  <div id="caricamento">
+    <div class="c-titolo">Casa mia</div>
+    <div class="c-sub">antico in chiave moderna</div>
+    <div class="c-barra"></div>
+    <div class="c-stato">Materiali e luce</div>
+  </div>
   <div id="app"></div>
   <button id="apri-pannello" type="button">Menu</button>
   <div id="pannello">
     <h1>Casa mia</h1>
     <div class="sub">antico in chiave moderna</div>
+    <button id="btn-tour" class="evidente">Tour guidato</button>
     <h2>Piano</h2>
     <div class="row">
       <button id="btn-primo" class="on">Piano primo</button>
@@ -162,16 +230,27 @@
       <button id="btn-orbit" class="on">Orbita</button>
       <button id="btn-fp">Prima persona</button>
     </div>
+    <h2>Sole</h2>
+    <label class="cursore"><span>Ora</span><input id="sl-ora" type="range" min="5" max="22" step="0.25" /><output id="out-ora"></output></label>
+    <label class="cursore"><span>Giorno</span><input id="sl-mese" type="range" min="0" max="11" step="1" /><output id="out-mese"></output></label>
+    <div class="hint" id="nota-sole"></div>
     <h2>Scena</h2>
     <button id="btn-tetto" class="on">Tetto e soffitti</button>
     <button id="btn-pareti" class="on">Pareti intere</button>
     <button id="btn-giorno" class="on">Luce del giorno</button>
     <button id="btn-qualita" class="on">Qualità alta</button>
-    <h2>Verifica</h2>
+    <h2>Strumenti</h2>
     <button id="btn-piantina">Piantina quotata</button>
+    <button id="btn-link">Copia il link di questa vista</button>
     <div class="hint">Prima persona: clic sulla scena per catturare il mouse, WASD o frecce per muoversi, Shift per correre, Esc per uscire.</div>
-    <div class="hint touch-hint">Un dito per ruotare, due dita per zoom e spostamento.</div>
+    <div class="hint touch-hint">Un dito per ruotare, due dita per zoom e spostamento. In prima persona: joystick per camminare, un dito per guardarsi intorno.</div>
   </div>
+  <div id="velo"></div>
+  <div id="didascalia"><div class="d-titolo"></div><div class="d-testo"></div></div>
+  <div id="tour-barra"><button id="tour-musica" type="button">Musica: sì</button><button id="tour-esci" type="button">Esci dal tour</button></div>
+  <div id="avviso"></div>
+  <div id="joy"><div class="pomello"></div></div>
+  <button id="esci-fp" type="button">Esci dalla prima persona</button>
   <div id="mirino"></div>
   <div id="fps"></div>
   <script type="module" src="/src/main.js"></script>

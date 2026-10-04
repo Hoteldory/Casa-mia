@@ -154,6 +154,9 @@ src/data/piano-suoceri.json  misure della casa dei suoceri in cm
 src/arredi/suoceri.js        arredi della casa dei suoceri
 src/arredi/giardino.js       giardino, recinzioni e orto
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
+src/sole.js                  posizione del sole, alba e tramonto (luogo in src/data/luogo.json)
+src/tour.js                  inquadrature e motore del tour guidato
+src/musica.js                musica soft generata per il tour
 ```
 
 ## Misure
@@ -200,6 +203,24 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
   restano a spigolo vivo perche' si accostano fra loro.
 - Pulsante **Qualità** nel pannello: "alta" con ombre di contatto e bagliore, "leggera" senza.
   Su telefono si parte leggeri e senza spigoli arrotondati.
+
+## Esperienza di visita
+
+- **Tour guidato** (pulsante in cima al menu): undici inquadrature lente legate da dissolvenze
+  (giardino, soggiorno, cucina, bagno, camera, terrazzo, piano terra della cognata, casa dei
+  suoceri, la casa di sera), con didascalie e una musica soft generata al momento (Web Audio,
+  nessun file). Pulsanti per togliere la musica e per uscire; anche Esc esce. Alla fine tutto
+  torna com'era (piano, luce, camera).
+- **Sole vero**: cursori Ora e Giorno (il 21 di ogni mese). La posizione del sole e' calcolata
+  per luogo, data e ora italiana (con l'ora legale), con alba e tramonto; il sole basso e' caldo
+  e fa ombre lunghe, dopo il tramonto si passa da soli alla luce della sera. Il luogo e
+  l'orientamento stanno in `src/data/luogo.json` (per ora Riccione, provvisorio, con il nord in
+  alto nella piantina).
+- **Voli di camera** al posto dei salti: cambio di piano e uscita dalla prima persona.
+- **Schermata di caricamento** con le tappe della costruzione; tipografia Cormorant Garamond e
+  Jost, menu rifinito.
+- **Copia il link di questa vista**: il link riapre piano, camera, ora, giorno, luce e tavolo.
+- **Telefono**: prima persona con joystick a sinistra e un dito per guardarsi intorno.
 
 ## Prestazioni
 

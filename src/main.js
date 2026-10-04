@@ -17,6 +17,17 @@ import { arredaPianoTerra } from './arredi/piano_terra.js';
 import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
 import { conSmusso, raggioSmusso } from './arredi/comune.js';
+import { posizioneSole, direzioneSole, albaTramonto, puntoCardinale, hhmm, MESI, LUOGO } from './sole.js';
+import { creaTour } from './tour.js';
+import { creaMusica } from './musica.js';
+
+// ---------- schermata di caricamento: la costruzione procede a tappe, la barra avanza ----------
+const caricamento = document.getElementById('caricamento');
+async function passo(testo, frazione) {
+  caricamento.querySelector('.c-stato').textContent = testo;
+  caricamento.style.setProperty('--avanzamento', frazione);
+  await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+}
 
 // ---------- contesto condiviso ----------
 const colliders = []; // {minX,maxX,minZ,maxZ,minY,maxY}
@@ -124,6 +135,7 @@ composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
 // ---------- architettura + arredi ----------
+await passo('Il piano primo', 0.15);
 const arch = costruisciArchitettura(ctx);
 ctx.pareti = new THREE.Group();
 arch.walls.add(ctx.pareti);
@@ -134,6 +146,7 @@ for (const g of gruppiArredi) scene.add(g);
 for (const g of Object.values(varianti)) scene.add(g);
 
 // ---------- piano terra: stesso edificio, un interpiano piu' sotto ----------
+await passo('Il piano terra e la casa dei suoceri', 0.45);
 const terra = new THREE.Group();
 terra.position.y = QUOTA_TERRA;
 scene.add(terra);
@@ -156,6 +169,7 @@ for (const g of arrediT) terra.add(g);
 ctxT.risolvi();
 
 // ---------- giardino tutto intorno, al piano del terreno ----------
+await passo('Il giardino', 0.65);
 const gGiardino = new THREE.Group();
 gGiardino.position.y = QUOTA_TERRA;
 scene.add(gGiardino);
@@ -166,6 +180,7 @@ ctx.esterno = false;
 ctxG.risolvi();
 
 // ---------- ottimizzazione: fonde le mesh statiche per materiale (meno draw call) ----------
+await passo('Gli ultimi ritocchi', 0.82);
 function ottimizza(root) {
   root.updateMatrixWorld(true);
   // le geometrie fuse restano figlie di root: si portano nelle sue coordinate (root puo' essere spostato)
@@ -237,14 +252,16 @@ scene.traverse((o) => {
 }
 
 // ---------- luci ----------
+// il sole: posizione vera per luogo, mese e ora (sole.js); le ombre coprono casa, suoceri e giardino
+const CENTRO = new THREE.Vector3(5.2, 0, -2.5);
 const sole = new THREE.DirectionalLight('#fff1d6', 3.2);
 sole.position.set(-9, 12, 14);
-sole.target.position.set(5.2, 0, 5.5);
+sole.target.position.copy(CENTRO);
 sole.castShadow = true;
 sole.shadow.mapSize.set(MOBILE ? 1024 : 2048, MOBILE ? 1024 : 2048);
-sole.shadow.camera.left = -12; sole.shadow.camera.right = 12;
-sole.shadow.camera.top = 12; sole.shadow.camera.bottom = -12;
-sole.shadow.camera.near = 1; sole.shadow.camera.far = 50;
+sole.shadow.camera.left = -22; sole.shadow.camera.right = 22;
+sole.shadow.camera.top = 22; sole.shadow.camera.bottom = -22;
+sole.shadow.camera.near = 1; sole.shadow.camera.far = 70;
 sole.shadow.bias = -0.0004;
 sole.shadow.normalBias = 0.05;
 sole.shadow.radius = 4; // bordi delle ombre morbidi
@@ -259,17 +276,26 @@ riempimento.position.set(12, 8, -6);
 scene.add(riempimento);
 
 let giorno = true;
+// giorno dell'anno e ora del sole: di partenza il mese corrente, alle 11
+const statoSole = { mese0: new Date().getMonth(), ora: 11 };
+const soleAdesso = () => posizioneSole(statoSole);
+const C_TRAMONTO = new THREE.Color('#ffa75e'), C_MEZZODI = new THREE.Color('#fff1d6');
+const CIELO_TRAMONTO = new THREE.Color('#e7c3a2'), CIELO_GIORNO = new THREE.Color('#c9d6df');
 const FATTORE_SERA = 0.85; // di sera le lampade restano sotto la nominale: pozze di luce, non luce piatta
 
 function applicaLuce() {
   if (giorno) {
-    scene.background = new THREE.Color('#c9d6df');
-    scene.fog = new THREE.Fog('#c9d6df', 40, 80);
-    sole.color.set('#fff1d6');
-    sole.position.set(-9, 12, 14);
-    sole.intensity = 3.2;
+    // sole vero: basso e caldo all'alba e al tramonto, alto e bianco a mezzogiorno
+    const s = soleAdesso(), d = direzioneSole(s);
+    const f = THREE.MathUtils.smoothstep(s.altezza, -1, 28);
+    const sfondo = CIELO_TRAMONTO.clone().lerp(CIELO_GIORNO, f);
+    scene.background = sfondo;
+    scene.fog = new THREE.Fog(sfondo, 45, 90);
+    sole.color.copy(C_TRAMONTO).lerp(C_MEZZODI, f);
+    sole.position.set(CENTRO.x + d.x * 35, CENTRO.y + Math.max(d.y, 0.03) * 35, CENTRO.z + d.z * 35);
+    sole.intensity = 3.2 * (0.3 + 0.7 * f);
     // parte della luce diffusa ora arriva dall'ambiente riflesso: emisfero e ambiente calano
-    cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); cielo.intensity = 0.95;
+    cielo.color.set('#dfe8f0'); cielo.groundColor.set('#6b6350'); cielo.intensity = 0.95 * (0.5 + 0.5 * f);
     ambiente.color.set('#ffffff'); ambiente.intensity = 0.22;
     riempimento.color.set('#f4ecdf'); riempimento.intensity = 0.8;
     renderer.toneMappingExposure = 1.0;
@@ -347,8 +373,11 @@ function aggiornaFP(dt) {
   if (keys.KeyS || keys.ArrowDown) mv.sub(fwd);
   if (keys.KeyD || keys.ArrowRight) mv.add(right);
   if (keys.KeyA || keys.ArrowLeft) mv.sub(right);
-  if (mv.lengthSq() === 0) return;
-  mv.normalize().multiplyScalar(speed * dt);
+  if (mv.lengthSq() > 0) mv.normalize();
+  mv.addScaledVector(fwd, -joy.y).addScaledVector(right, joy.x); // joystick: anche piano piano
+  if (mv.lengthSq() < 0.0004) return;
+  if (mv.length() > 1) mv.normalize();
+  mv.multiplyScalar(speed * dt);
   const nx = pos.x + mv.x, nz = pos.z + mv.z;
   if (!blocca(nx, pos.z)) pos.x = nx;
   if (!blocca(pos.x, nz)) pos.z = nz;
@@ -368,7 +397,11 @@ function entraFP() {
   document.body.classList.add('fp');
   document.getElementById('btn-fp').classList.add('on');
   document.getElementById('btn-orbit').classList.remove('on');
-  fp.lock();
+  if (TOCCO) {
+    // su telefono: niente puntatore catturato; joystick per camminare, dito sullo schermo per guardare
+    sguardo.setFromQuaternion(camera.quaternion, 'YXZ');
+    joy.base.classList.add('attivo');
+  } else fp.lock();
 }
 function esciFP() {
   modoFP = false;
@@ -377,11 +410,52 @@ function esciFP() {
   document.body.classList.remove('fp');
   document.getElementById('btn-fp').classList.remove('on');
   document.getElementById('btn-orbit').classList.add('on');
-  orbit.target.copy(pos).add(new THREE.Vector3(0, -0.6, 0));
-  camera.position.copy(pos).add(new THREE.Vector3(2, 2.5, 2));
+  joy.base.classList.remove('attivo');
+  // la camera si alza e arretra con un volo, guardando dove si era
+  orbit.target.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()));
+  vola(pos.clone().add(new THREE.Vector3(2, 2.5, 2)), pos.clone().add(new THREE.Vector3(0, -0.6, 0)), 1.0);
 }
-fp.addEventListener('unlock', () => { if (modoFP) esciFP(); });
-renderer.domElement.addEventListener('click', () => { if (modoFP && !fp.isLocked) fp.lock(); });
+fp.addEventListener('unlock', () => { if (modoFP && !TOCCO) esciFP(); });
+renderer.domElement.addEventListener('click', () => { if (modoFP && !TOCCO && !fp.isLocked) fp.lock(); });
+
+// ---------- prima persona al tocco: joystick a sinistra, sguardo trascinando altrove ----------
+const TOCCO = window.matchMedia('(pointer: coarse)').matches;
+const sguardo = new THREE.Euler(0, 0, 0, 'YXZ');
+const joy = { base: document.getElementById('joy'), pomello: document.querySelector('#joy .pomello'), x: 0, y: 0, id: null };
+{
+  const R = 46;
+  const muovi = (t) => {
+    const r = joy.base.getBoundingClientRect();
+    let dx = t.clientX - (r.left + r.width / 2), dy = t.clientY - (r.top + r.height / 2);
+    const l = Math.hypot(dx, dy);
+    if (l > R) { dx *= R / l; dy *= R / l; }
+    joy.x = dx / R; joy.y = dy / R;
+    joy.pomello.style.transform = `translate(${dx}px, ${dy}px)`;
+  };
+  const rilascia = () => { joy.id = null; joy.x = joy.y = 0; joy.pomello.style.transform = ''; };
+  joy.base.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.changedTouches[0]; joy.id = t.identifier; muovi(t); }, { passive: false });
+  joy.base.addEventListener('touchmove', (e) => { e.preventDefault(); for (const t of e.changedTouches) if (t.identifier === joy.id) muovi(t); }, { passive: false });
+  joy.base.addEventListener('touchend', (e) => { for (const t of e.changedTouches) if (t.identifier === joy.id) rilascia(); });
+  joy.base.addEventListener('touchcancel', rilascia);
+  // sguardo: un dito che trascina sulla scena gira la testa
+  let idS = null, ux = 0, uy = 0;
+  const tela = renderer.domElement;
+  tela.addEventListener('touchstart', (e) => {
+    if (!modoFP || idS !== null) return;
+    const t = e.changedTouches[0]; idS = t.identifier; ux = t.clientX; uy = t.clientY;
+  }, { passive: true });
+  tela.addEventListener('touchmove', (e) => {
+    if (!modoFP) return;
+    for (const t of e.changedTouches) if (t.identifier === idS) {
+      sguardo.y -= (t.clientX - ux) * 0.005;
+      sguardo.x = THREE.MathUtils.clamp(sguardo.x - (t.clientY - uy) * 0.004, -1.2, 1.2);
+      ux = t.clientX; uy = t.clientY;
+      camera.quaternion.setFromEuler(sguardo);
+    }
+  }, { passive: true });
+  tela.addEventListener('touchend', (e) => { for (const t of e.changedTouches) if (t.identifier === idS) idS = null; });
+  document.getElementById('esci-fp').onclick = () => esciFP();
+}
 
 // ---------- pannello ----------
 const vistePrimo = {
@@ -473,7 +547,7 @@ bp.onclick = () => {
 
 // ---------- piano in vista ----------
 const bottoniPiano = { primo: document.getElementById('btn-primo'), terra: document.getElementById('btn-terra') };
-function cambiaPiano(p) {
+function cambiaPiano(p, subito = false) {
   if (p === piano) return;
   const dq = (p === 'terra' ? QUOTA_TERRA : 0) - quotaPiano();
   piano = p;
@@ -482,8 +556,12 @@ function cambiaPiano(p) {
   if (piantinaEl) { piantinaEl.remove(); piantinaEl = null; }
   applicaVisibilita();
   // la vista scende (o sale) di un piano; in prima persona si entra nella prima stanza del piano
+  if (subito) return;
   if (modoFP) vaiA('soggiorno');
-  else { orbit.target.y += dq; camera.position.y += dq; }
+  else {
+    const su = new THREE.Vector3(0, dq, 0);
+    vola(camera.position.clone().add(su), orbit.target.clone().add(su), 1.1);
+  }
 }
 for (const k of Object.keys(bottoniPiano)) bottoniPiano[k].onclick = () => cambiaPiano(k);
 const bg = document.getElementById('btn-giorno');
@@ -494,7 +572,141 @@ function applicaQualita() {
 }
 bq.onclick = () => { qualita = qualita === 'alta' ? 'leggera' : 'alta'; applicaQualita(); };
 applicaQualita();
-bg.onclick = () => { giorno = !giorno; applicaLuce(); bg.classList.toggle('on', giorno); bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera'; };
+function impostaGiorno(g) {
+  giorno = g;
+  bg.classList.toggle('on', giorno);
+  bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera';
+  applicaLuce();
+}
+// tornando al giorno con il sole gia' tramontato si riparte dalle 11
+bg.onclick = () => {
+  if (!giorno && soleAdesso().altezza <= -1) statoSole.ora = 11;
+  impostaGiorno(!giorno);
+  aggiornaSoleUI();
+};
+
+// ---------- sole: ora e mese, sul luogo della casa ----------
+const slOra = document.getElementById('sl-ora'), slMese = document.getElementById('sl-mese');
+const outOra = document.getElementById('out-ora'), outMese = document.getElementById('out-mese');
+const notaSole = document.getElementById('nota-sole');
+function aggiornaSoleUI() {
+  slOra.value = statoSole.ora; slMese.value = statoSole.mese0;
+  outOra.textContent = hhmm(statoSole.ora);
+  outMese.textContent = `21 ${MESI[statoSole.mese0]}`;
+  const s = soleAdesso();
+  const { alba, tramonto } = albaTramonto(statoSole.mese0);
+  const dove = s.altezza > -0.83 ? `Sole a ${puntoCardinale(s.azimut)}, ${Math.round(s.altezza)}° sull'orizzonte.` : 'Il sole è tramontato: luce della sera.';
+  notaSole.textContent = `${dove} Alba ${hhmm(alba)}, tramonto ${hhmm(tramonto)}. ${LUOGO.comune}${LUOGO.provvisorio ? ' (luogo provvisorio)' : ''}.`;
+}
+function impostaSole(ora, mese0) {
+  statoSole.ora = ora; statoSole.mese0 = mese0;
+  impostaGiorno(soleAdesso().altezza > -1); // dopo il tramonto si passa da soli alla sera
+  aggiornaSoleUI();
+}
+slOra.oninput = () => impostaSole(+slOra.value, statoSole.mese0);
+slMese.oninput = () => impostaSole(statoSole.ora, +slMese.value);
+aggiornaSoleUI();
+
+// ---------- voli di camera: niente salti fra un punto e l'altro ----------
+let volo = null;
+function vola(p, mira, durata = 1.2) {
+  volo = { p0: camera.position.clone(), m0: orbit.target.clone(), p1: p, m1: mira, t: 0, d: durata };
+}
+function aggiornaVolo(dt) {
+  volo.t = Math.min(1, volo.t + dt / volo.d);
+  const k = volo.t * volo.t * (3 - 2 * volo.t);
+  camera.position.lerpVectors(volo.p0, volo.p1, k);
+  orbit.target.lerpVectors(volo.m0, volo.m1, k);
+  camera.lookAt(orbit.target);
+  if (volo.t >= 1) { volo = null; orbit.update(); }
+}
+
+// ---------- tour guidato con musica ----------
+const musica = creaMusica();
+let musicaVoluta = true;
+const didascalia = document.getElementById('didascalia');
+const btnMusica = document.getElementById('tour-musica');
+let primaDelTour = null;
+const tour = creaTour({
+  camera, orbit, velo: document.getElementById('velo'), didascalia,
+  titolo: didascalia.querySelector('.d-titolo'), testo: didascalia.querySelector('.d-testo'),
+  prepara(sc) {
+    cambiaPiano(sc.piano, true);
+    volo = null;
+    if (sc.sera) impostaGiorno(false);
+    else { statoSole.ora = sc.ora; impostaGiorno(true); }
+    aggiornaSoleUI();
+  },
+  fine() {
+    const p = primaDelTour;
+    cambiaPiano(p.piano, true);
+    tettoOn = p.tettoOn; paretiIntere = p.paretiIntere;
+    applicaVisibilita();
+    statoSole.ora = p.ora; statoSole.mese0 = p.mese0;
+    impostaGiorno(p.giorno);
+    aggiornaSoleUI();
+    camera.position.copy(p.p); orbit.target.copy(p.m);
+    orbit.enabled = true; orbit.update();
+    document.body.classList.remove('in-tour');
+    musica.ferma();
+  },
+});
+function avviaTour() {
+  if (modoFP) esciFP();
+  if (piantinaAperta) mostraPiantina(false);
+  primaDelTour = { piano, giorno, ora: statoSole.ora, mese0: statoSole.mese0, tettoOn, paretiIntere, p: camera.position.clone(), m: orbit.target.clone() };
+  tettoOn = true; paretiIntere = true;
+  applicaVisibilita();
+  volo = null; orbit.enabled = false;
+  document.body.classList.add('in-tour');
+  document.body.classList.remove('pannello-aperto');
+  apri.textContent = 'Menu';
+  if (musicaVoluta) musica.avvia();
+  tour.avvia();
+}
+const aggiornaBtnMusica = () => { btnMusica.textContent = musicaVoluta ? 'Musica: sì' : 'Musica: no'; };
+btnMusica.onclick = () => { musicaVoluta = !musicaVoluta; aggiornaBtnMusica(); if (musicaVoluta) musica.avvia(); else musica.ferma(); };
+aggiornaBtnMusica();
+document.getElementById('btn-tour').onclick = avviaTour;
+document.getElementById('tour-esci').onclick = () => tour.ferma();
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && tour.attivo) tour.ferma(); });
+
+// ---------- link a questa vista: piano, camera, sole, tavolo ----------
+const avviso = document.getElementById('avviso');
+function mostraAvviso(testo) {
+  avviso.textContent = testo;
+  avviso.classList.add('vista');
+  clearTimeout(mostraAvviso.t);
+  mostraAvviso.t = setTimeout(() => avviso.classList.remove('vista'), 2600);
+}
+function linkVista() {
+  const f = (v) => v.toArray().map((x) => x.toFixed(2)).join(',');
+  const m = modoFP ? camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3())) : orbit.target;
+  const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), ora: statoSole.ora, mese: statoSole.mese0 + 1, luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo });
+  return `${location.origin}${location.pathname}#${q}`;
+}
+document.getElementById('btn-link').onclick = () => {
+  const url = linkVista();
+  history.replaceState(null, '', url);
+  const ok = () => mostraAvviso('Link copiato: riapre esattamente questa vista');
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok, () => window.prompt('Copia il link di questa vista', url));
+  else window.prompt('Copia il link di questa vista', url);
+};
+function leggiLink() {
+  const h = location.hash.slice(1);
+  if (!h) return;
+  const q = new URLSearchParams(h);
+  const vec = (k) => { const a = (q.get(k) || '').split(',').map(Number); return a.length === 3 && a.every(Number.isFinite) ? new THREE.Vector3(...a) : null; };
+  if (q.get('piano') === 'terra' || q.get('piano') === 'primo') cambiaPiano(q.get('piano'), true);
+  if (TAVOLO_STATI[q.get('tavolo')]) applicaTavolo(q.get('tavolo'));
+  const ora = +q.get('ora'), mese = +q.get('mese');
+  if (ora >= 5 && ora <= 22) statoSole.ora = ora;
+  if (mese >= 1 && mese <= 12) statoSole.mese0 = mese - 1;
+  impostaGiorno(q.get('luce') === 'sera' ? false : soleAdesso().altezza > -1);
+  aggiornaSoleUI();
+  const c = vec('c'), t = vec('t');
+  if (c && t) { camera.position.copy(c); orbit.target.copy(t); orbit.update(); }
+}
 
 // ---------- piantina quotata: pannello 2D separato, il modello resta intatto ----------
 let piantinaEl = null;
@@ -531,14 +743,22 @@ let frames = 0, acc = 0;
 function loop() {
   if (piantinaAperta) return; // niente rendering mentre si guarda la piantina
   const tNow = performance.now();
-  const dt = Math.min((tNow - tPrev) / 1000, 0.05);
+  const dtVero = (tNow - tPrev) / 1000;
+  const dt = Math.min(dtVero, 0.05);
   tPrev = tNow;
-  if (modoFP) aggiornaFP(dt); else orbit.update();
+  // il tour va a tempo vero anche se i fotogrammi sono pochi: la musica non aspetta
+  if (tour.aggiorna(Math.min(dtVero, 0.25))) { /* il tour muove la camera */ }
+  else if (modoFP) aggiornaFP(dt);
+  else if (volo) aggiornaVolo(dt);
+  else orbit.update();
   if (qualita === 'alta') composer.render(dt);
   else renderer.render(scene, camera);
   frames++; acc += dt;
   if (acc > 0.5) { fpsEl.textContent = `${Math.round(frames / acc)} fps`; frames = 0; acc = 0; }
   requestAnimationFrame(loop);
 }
+leggiLink();
 loop();
-window.__casa = { composer, gtao, bloom, scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+caricamento.style.setProperty('--avanzamento', 1);
+requestAnimationFrame(() => { caricamento.classList.add('fatto'); setTimeout(() => caricamento.remove(), 1400); });
+window.__casa = { tour, vola, impostaSole, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

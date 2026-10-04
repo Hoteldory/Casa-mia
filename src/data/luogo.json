@@ -1,0 +1,9 @@
+{
+  "comune": "Riccione",
+  "provvisorio": true,
+  "nota": "Posizione e orientamento da confermare: servono il comune (o le coordinate) e da che parte e' il nord rispetto alla piantina.",
+  "lat": 44.0,
+  "lon": 12.65,
+  "nord_gradi": 0,
+  "nord_nota": "angolo, in senso orario, fra l'alto della piantina (la freccia N disegnata) e il nord vero: 0 = la freccia della piantina punta al nord vero"
+}
