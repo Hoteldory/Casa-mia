@@ -11,8 +11,7 @@ import { arredaCameraSud } from './camera_sud.js';
 import { arredaCameraSudV2 } from './camera_sud_v2.js';
 import { piantaAppendice } from './soggiorno.js';
 import { arredaCameraEst } from './camera_est.js';
-import { arredaTerrazzo, terrazzoV1, terrazzoV2 } from './terrazzo.js';
-import { veranda, VERANDA } from './veranda.js';
+import { arredaTerrazzo } from './terrazzo.js';
 
 export const TAVOLO_STATI = {
   chiuso: { nome: 'Chiuso · 4 posti', nota: 'Tavolo 140 x 100 cm, quattro posti.' },
@@ -22,19 +21,16 @@ export const TAVOLO_STATI = {
 // Le due versioni del piano primo: V1 con la seconda camera, V2 con l'open space gaming e allenamento
 export const VERSIONI = {
   v1: { nome: 'Versione 1 · camera', nota: 'La seconda camera da letto, con la sua porta.' },
-  v2: { nome: 'Versione 2 · open space', nota: 'Varco di 2,40 m sul soggiorno: angolo gaming e zona allenamento, chiudibili con la porta telescopica in legno. Sul terrazzo, al posto del gazebo, una veranda per mangiare fuori anche d\'inverno.' },
+  v2: { nome: 'Versione 2 · open space', nota: 'Varco di 2,40 m sul soggiorno: angolo gaming e zona allenamento, chiudibili con la porta telescopica in legno.' },
 };
 
-// ogni gruppo marcato e i pezzi che contiene: il tavolo chiuso o aperto, la seconda camera e il
-// terrazzo nelle due versioni. "esterno": sul terrazzo, che resta in vista anche dal piano terra
-const PARTI = [
-  { tag: 'chiuso', build: (ctx) => [tavoloPranzo(ctx, false)] },
-  { tag: 'aperto', build: (ctx) => [tavoloPranzo(ctx, true)] },
-  { tag: 'v1', build: (ctx, stanze) => [arredaCameraSud(ctx, stanze), piantaAppendice(stanze, 'v1')] },
-  { tag: 'v2', build: (ctx, stanze) => [arredaCameraSudV2(ctx, stanze), piantaAppendice(stanze, 'v2')] },
-  { tag: 'v1', esterno: true, build: (ctx) => [terrazzoV1(ctx)] },
-  { tag: 'v2', esterno: true, build: (ctx) => [veranda(ctx), terrazzoV2(ctx, VERANDA.zFronte)] },
-];
+// ogni gruppo marcato e i pezzi che contiene: il tavolo chiuso o aperto, la seconda camera nelle due versioni
+const PARTI = {
+  chiuso: (ctx) => [tavoloPranzo(ctx, false)],
+  aperto: (ctx) => [tavoloPranzo(ctx, true)],
+  v1: (ctx, stanze) => [arredaCameraSud(ctx, stanze), piantaAppendice(stanze, 'v1')],
+  v2: (ctx, stanze) => [arredaCameraSudV2(ctx, stanze), piantaAppendice(stanze, 'v2')],
+};
 
 // paretiVersione: per ogni tag, il gruppo dove appendere ai muri (pitture, quadri, tende) i pezzi
 // di quella versione; sta con i muri e si accende con loro
@@ -50,20 +46,16 @@ export function arredi(ctx, stanze, paretiVersione = {}) {
     arredaTerrazzo(ctx),
   ];
   comuni[comuni.length - 1].userData.esterno = true; // il terrazzo e' il tetto dei suoceri: resta in vista del piano terra (con il tetto acceso)
-  const varianti = [];
-  for (const { tag, esterno, build } of PARTI) {
+  const varianti = {};
+  for (const [tag, build] of Object.entries(PARTI)) {
     ctx.variante = tag; // ingombri e punti luce nascono marchiati con l'allestimento
     ctx.pareti = paretiVersione[tag] || paretiComuni;
     const g = new THREE.Group();
     for (const parte of build(ctx, stanze)) g.add(parte);
     g.userData.variante = tag;
-    g.userData.esterno = !!esterno;
-    varianti.push(g);
+    varianti[tag] = g;
   }
   ctx.variante = null;
   ctx.pareti = paretiComuni;
-  // la veranda ha ante e tetto da comandare a parte
-  let verandaG = null;
-  for (const g of varianti) g.traverse((o) => { if (o.userData.imposta && o.userData.tetto) verandaG = o; });
-  return { comuni, varianti, veranda: verandaG };
+  return { comuni, varianti };
 }

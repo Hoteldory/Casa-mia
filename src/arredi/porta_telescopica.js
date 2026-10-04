@@ -65,7 +65,7 @@ export function portaTelescopica(ctx, { xMuro, z0, z1, h, ante = 3 }) {
     const a = anta(W, Hp, i === ante - 1);
     a.position.x = xMuro + 0.012 + PASSO * (i + 0.5);
     a.position.y = 0.012;
-    a.userData.aParte = true;
+    a.userData.mobile = true;
     const chiusa = z1 + 0.02 - W / 2 - i * (W - SOV);
     const aperta = z1 + 0.04 + W / 2;
     pezzi.push({ a, chiusa, aperta });

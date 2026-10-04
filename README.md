@@ -203,45 +203,13 @@ Gli arredi della versione 2:
 
 Nel soggiorno la pianta grande dell'appendice passa dall'altra parte, così il varco resta libero.
 
-### La veranda sul terrazzo (solo versione 2)
-
-Al posto del gazebo c'è una veranda per mangiare fuori anche d'inverno.
-
-- **Dimensioni**: attaccata alla casa per tutta la larghezza del terrazzo (6,34 m fra i muretti),
-  profonda 4 m. Dentro ci sono la portafinestra della cucina, la finestra del bagno (nella
-  realtà le serve un aspiratore) e la portafinestra della camera matrimoniale.
-- **Fronte**: otto porte a libro in alluminio a taglio termico color salvia, come gli infissi,
-  con vetrocamera. Si ripiegano verso l'esterno, quattro per parte, e lasciano libero il fronte.
-- **Fianchi**: sul muretto, cinque ante a libro per lato che si ripiegano verso l'interno,
-  contro i pilastri d'angolo.
-- **Pulsante "Apri/Chiudi la veranda"** nel menu: le ante si ripiegano tutte insieme.
-- **Tetto coibentato** poco inclinato:
-  - sopra, lamiera aggraffata;
-  - sotto, perlinato bianco latte con travi in rovere a vista;
-  - due lucernari sopra il tavolo e due pannelli radianti a infrarossi.
-  Si spegne con "Tetto e soffitti" per guardare dentro dall'alto.
-- **Dentro**:
-  - tavolo da fattoria da otto con sedie Windsor davanti alla cucina, lampadario lineare in
-    rovere e ottone, tappeto in juta;
-  - angolo divano in lino davanti alla camera, con poltrona azzurra e tavolino tondo.
-- **Fuori**: le fioriere ripartono oltre le ante aperte; ulivi, lanterne e un festone di
-  lampadine accompagnano il fronte.
-- **Nella realtà**: il terrazzo è il tetto della casa dei suoceri. Un tecnico deve verificare:
-  - il carico sul solaio, neve compresa;
-  - l'ancoraggio senza bucare l'impermeabilizzazione;
-  - il vento;
-  - il titolo edilizio, perché è nuova volumetria.
-
-Nella versione 1 il terrazzo resta com'era, con il gazebo.
-
 Come funziona nel codice:
 
 - Il muro di spina è escluso dall'involucro comune. Ogni versione ha il suo, con porte e
   battiscopa (`muroVariabile` in `architettura.js`).
 - Muri, arredi e lampade di ogni versione sono marcati `v1` o `v2` e si accendono solo con
   la loro versione.
-- La versione, la porta e la veranda finiscono nel link alla vista
-  (`versione=2&porta=chiusa&veranda=aperta`).
+- La versione e lo stato della porta finiscono nel link alla vista (`versione=2&porta=chiusa`).
 
 ## Zona pranzo e cucina del piano primo
 
@@ -269,7 +237,6 @@ src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Gr
 src/arredi/index.js          registro delle stanze, del tavolo chiuso/aperto e delle due versioni
 src/arredi/camera_sud_v2.js  versione 2: angolo gaming e allenamento
 src/arredi/porta_telescopica.js  versione 2: porta telescopica a tre ante
-src/arredi/veranda.js        versione 2: veranda sul terrazzo, porte a libro e tetto in rovere
 piantina-terra.jpg           piantina del piano terra
 src/data/piano-terra.json    misure del piano terra in cm
 src/pianoTerra.js            involucro del piano terra (cognata e suoceri), solaio, lanterne
@@ -338,7 +305,7 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 - **Schermata di caricamento** con le tappe della costruzione; tipografia Cormorant Garamond e
   Jost, menu rifinito.
 - **Copia il link di questa vista**: il link riapre piano, camera, ora, giorno, luce, tavolo,
-  versione, porta e veranda.
+  versione e porta.
 
 ## Prestazioni
 

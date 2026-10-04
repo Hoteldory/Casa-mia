@@ -243,35 +243,23 @@ function lanternaPavimento(g, x, z, h = 0.5) {
   g.add(cyl(0.035, 0.035, 0.14, M.carta, x, 0.1, z, 10));
 }
 
-// misure del terrazzo in metri
-function misure() {
-  const T = plan.esterni.terrazzo_nord, I = T.interno_cm;
-  return { xO: I.x_ovest * C, zS: I.z_sud * C, zN: I.z_nord * C, zR: I.z_risega * C,
-    xEs: I.x_est_tratto_sud * C, xEn: I.x_est_tratto_nord * C };
-}
-const OFF = 0.21; // distanza dell'asse fioriera dal filo del muro
-
-// Parte comune alle due versioni: verde lungo il muretto nord e il tratto nord del lato est
 export function arredaTerrazzo(ctx) {
-  const g = new THREE.Group();
-  const { xO, zN, zR, xEs, xEn } = misure();
-  filaFioriere(ctx, g, { da: xO + 0.5, a: xEn - 0.5, fisso: zN + OFF, asse: 'x', ry: 0, seed: 30 });
-  filaFioriere(ctx, g, { da: zN + 0.5, a: zR - 0.3, fisso: xEn - OFF, asse: 'z', ry: Math.PI / 2, seed: 50 });
-  // la risega e' corta: una fioriera sola
-  g.add(fioriera(ctx, { x: (xEn + xEs) / 2 + 0.1, z: zR + OFF, lung: 0.6, ry: 0, seed: 90 }));
-  return g;
-}
-
-const OLIVO = ['#7d8f6a', '#8a9b78', '#6b7d5a'];
-
-// Versione 1: pranzo all'aperto sotto il gazebo, verde lungo tutti i muretti, ulivi alla cucina
-export function terrazzoV1(ctx) {
   const M = MAT();
   const g = new THREE.Group();
-  const { xO, zS, zN, zR, xEs } = misure();
-  filaFioriere(ctx, g, { da: zN + 0.3, a: zS - 0.3, fisso: xO + OFF, asse: 'z', ry: Math.PI / 2, seed: 10 });
-  filaFioriere(ctx, g, { da: zR + 0.3, a: zS - 0.3, fisso: xEs - OFF, asse: 'z', ry: Math.PI / 2, seed: 70 });
-  // gazebo al centro del tratto largo
+  const T = plan.esterni.terrazzo_nord, I = T.interno_cm;
+  const xO = I.x_ovest * C, zS = I.z_sud * C, zN = I.z_nord * C, zR = I.z_risega * C;
+  const xEs = I.x_est_tratto_sud * C, xEn = I.x_est_tratto_nord * C;
+  const off = 0.21; // distanza dell'asse fioriera dal filo del muro
+
+  // verde lungo tutto il perimetro libero
+  filaFioriere(ctx, g, { da: zN + 0.3, a: zS - 0.3, fisso: xO + off, asse: 'z', ry: Math.PI / 2, seed: 10 });
+  filaFioriere(ctx, g, { da: xO + 0.5, a: xEn - 0.5, fisso: zN + off, asse: 'x', ry: 0, seed: 30 });
+  filaFioriere(ctx, g, { da: zN + 0.5, a: zR - 0.3, fisso: xEn - off, asse: 'z', ry: Math.PI / 2, seed: 50 });
+  filaFioriere(ctx, g, { da: zR + 0.3, a: zS - 0.3, fisso: xEs - off, asse: 'z', ry: Math.PI / 2, seed: 70 });
+  // la risega e' corta: una fioriera sola
+  g.add(fioriera(ctx, { x: (xEn + xEs) / 2 + 0.1, z: zR + off, lung: 0.6, ry: 0, seed: 90 }));
+
+  // pranzo all'aperto sotto il gazebo, al centro del tratto largo
   const cx = (xO + xEs) / 2, cz = (zR + zS) / 2;
   g.add(gazebo(ctx, { cx, cz, L: 4.2, W: 3.3, H: 2.45 }));
   // tavolo da fattoria in rovere (lato lungo est-ovest) con sedie Windsor nere
@@ -291,26 +279,10 @@ export function terrazzoV1(ctx) {
   lanternaPavimento(g, cx - 2.45, cz + 1.9);
   lanternaPavimento(g, cx - 2.15, cz + 2.05, 0.38);
   lanternaPavimento(g, cx + 2.45, cz + 1.9);
+
   // due ulivi in vaso di cotto ai lati della portafinestra della cucina
+  const OLIVO = ['#7d8f6a', '#8a9b78', '#6b7d5a'];
   g.add(vasoAlbero(ctx, 1.78, -0.75, 4, OLIVO));
   g.add(vasoAlbero(ctx, 3.58, -0.75, 9, OLIVO));
-  return g;
-}
-
-// Versione 2, fuori dalla veranda: il verde riparte oltre le ante aperte, gli ulivi e le lanterne
-// accompagnano le porte a libro sul fronte; un festone fra gli ulivi per le sere d'estate
-export function terrazzoV2(ctx, zFronte) {
-  const g = new THREE.Group();
-  const { xO, zN, zR, xEs } = misure();
-  const fine = zFronte - 1.0; // le ante del fronte, aperte, sporgono 80 cm
-  filaFioriere(ctx, g, { da: zN + 0.3, a: fine, fisso: xO + OFF, asse: 'z', ry: Math.PI / 2, seed: 10 });
-  filaFioriere(ctx, g, { da: zR + 0.3, a: fine, fisso: xEs - OFF, asse: 'z', ry: Math.PI / 2, seed: 70 });
-  const zU = zFronte - 1.15;
-  g.add(vasoAlbero(ctx, 3.0, zU, 4, OLIVO));
-  g.add(vasoAlbero(ctx, 6.95, zU, 9, OLIVO));
-  lanternaPavimento(g, 3.55, zU + 0.1);
-  lanternaPavimento(g, 3.8, zU - 0.05, 0.38);
-  lanternaPavimento(g, 6.4, zU + 0.1);
-  festone(ctx, g, [3.0, 2.0, zU], [6.95, 2.0, zU], { n: 11, freccia: 0.35, luce: true });
   return g;
 }
