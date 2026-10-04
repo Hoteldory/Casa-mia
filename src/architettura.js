@@ -5,6 +5,7 @@ import plan from './data/planimetria.json';
 import { getMateriali, uvMetri, PALETTE, texVernice } from './data/stile.js';
 import { box, cyl, plane, group, lanterna, conSmusso } from './arredi/comune.js';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { vetrataTelescopica } from './arredi/vetrata.js';
 
 const C = 0.01; // cm -> m
 export const H = plan.altezze.soffitto_cm * C;
@@ -58,11 +59,11 @@ export function stanze() {
 }
 
 // Aperture per muro
-function aperturePerMuro(P = plan) {
+function aperturePerMuro(P = plan, porte = P.porte) {
   const A = P.altezze;
   const map = {};
   const push = (id, o) => (map[id] = map[id] || []).push(o);
-  for (const p of P.porte) {
+  for (const p of porte) {
     const top = p.h_cm ?? (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm);
     push(p.muro, { ...p, a: p.x_da ?? p.y_da, b: p.x_a ?? p.y_a, bottom: 0, top, kind: 'porta' });
   }
@@ -158,8 +159,9 @@ function buildPorta(p, seg, ctx, P = plan) {
   g.add(along(s, h + s, (p.a * C) + s / 2 - 0.02, (h + s) / 2));
   g.add(along(s, h + s, (p.b * C) - s / 2 + 0.02, (h + s) / 2));
   g.add(along(w + 0.04, s, (p.a + p.b) / 2 * C, h + s / 2));
-  // soglia in pietra
-  g.add(horiz ? box(w, 0.012, T, M.pietra, (p.a + p.b) / 2 * C, 0.006, cross) : box(T, 0.012, w, M.pietra, cross, 0.006, (p.a + p.b) / 2 * C));
+  // soglia in pietra (in rovere dove il pavimento continua da una stanza all'altra)
+  const matSoglia = p.soglia === 'legno' ? M.rovereMiele : M.pietra;
+  g.add(horiz ? box(w, 0.012, T, matSoglia, (p.a + p.b) / 2 * C, 0.006, cross) : box(T, 0.012, w, matSoglia, cross, 0.006, (p.a + p.b) / 2 * C));
   // vano: passaggio senza anta (la porta, se c'e', e' nel muro accostato dell'altro edificio)
   if (p.tipo === 'vano') return g;
   // scorrevole a scomparsa: l'anta e' quasi tutta nella tasca del muro; se ne vede il bordo
@@ -294,11 +296,13 @@ function buildFinestra(f, seg, ctx) {
 }
 
 // ---------- battiscopa ----------
-function battiscopa(st, ctx, P = plan) {
+// esclusi: muri da saltare (costruiti a parte, uno per versione); solo: il battiscopa del solo
+// muro indicato; porte: le aperture di quella versione
+function battiscopa(st, ctx, P = plan, { esclusi = null, solo = null, porte = P.porte } = {}) {
   const M = getMateriali();
   const g = new THREE.Group();
-  const segs = P.muri.segmenti;
-  const aper = aperturePerMuro(P);
+  const segs = P.muri.segmenti.filter((s) => (solo ? s.id === solo : !esclusi?.has(s.id)));
+  const aper = aperturePerMuro(P, porte);
   const inWall = (x, y) => segs.find((s) => x >= s.rect.x && x <= s.rect.x + s.rect.w && y >= s.rect.y && y <= s.rect.y + s.rect.d);
   for (const k of Object.keys(st)) {
     for (const rc of P.stanze[k].rettangoli || [P.stanze[k].rect]) {
@@ -571,25 +575,43 @@ function travi(st) {
 
 // ---------- involucro di un piano: muri con aperture, porte, finestre, battiscopa ----------
 // hMuro(seg) = altezza del muro in metri (i muri esterni del piano terra salgono fino al piano primo)
-function involucro(P, st, ctx, walls, wallsLow, hMuro) {
+// esclusi: id dei muri costruiti a parte (cambiano da una versione all'altra, vedi muroVariabile)
+function involucro(P, st, ctx, walls, wallsLow, hMuro, esclusi = new Set()) {
   const aper = aperturePerMuro(P);
   const segById = {};
   const precedenti = [];
   for (const seg of P.muri.segmenti) {
     segById[seg.id] = seg;
+    if (esclusi.has(seg.id)) continue;
     walls.add(buildMuro(seg, aper[seg.id] || [], hMuro(seg), ctx, false, precedenti));
     wallsLow.add(buildMuro(seg, aper[seg.id] || [], 0.45, { addCollider() {} }, true, precedenti));
     precedenti.push(seg);
   }
   // porte e finestre con gli spigoli arrotondati (telai, ante, scuri), come gli arredi
   conSmusso(() => {
-    for (const p of P.porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
+    for (const p of P.porte) if (!esclusi.has(p.muro)) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
     for (const f of P.finestre) {
+      if (esclusi.has(f.muro)) continue;
       const o = aper[f.muro].find((x) => x.id === f.id);
       walls.add(buildFinestra(o, segById[f.muro], ctx));
     }
   });
-  walls.add(battiscopa(st, ctx, P));
+  walls.add(battiscopa(st, ctx, P, { esclusi }));
+}
+
+// Un muro che cambia da una versione all'altra della casa: il muro con le aperture di quella
+// versione, le sue porte e il battiscopa che lo costeggia. Si taglia contro tutti gli altri muri
+// (che, esclusi dall'involucro comune, non si sono tagliati contro di lui).
+function muroVariabile(P, st, ctx, segId, porte, hMuro) {
+  const walls = new THREE.Group(), low = new THREE.Group();
+  const seg = P.muri.segmenti.find((s) => s.id === segId);
+  const altri = P.muri.segmenti.filter((s) => s.id !== segId);
+  const aper = aperturePerMuro(P, porte)[segId] || [];
+  walls.add(buildMuro(seg, aper, hMuro, ctx, false, altri));
+  low.add(buildMuro(seg, aper, 0.45, { addCollider() {} }, true, altri));
+  conSmusso(() => { for (const o of aper) if (o.kind === 'porta') walls.add(buildPorta(o, seg, ctx, P)); });
+  walls.add(battiscopa(st, ctx, P, { solo: segId, porte }));
+  return { walls, low };
 }
 
 // ---------- un piano generico (piano terra): involucro, pavimenti e soffitti ----------
@@ -696,6 +718,14 @@ function tettoCapanna() {
   return g;
 }
 
+// ---------- versione 2: varco fra soggiorno e seconda camera, vetrata telescopica ----------
+const SPINA = 'I-spina-camere';
+// varco largo 2,40 m e alto 2,50 nel muro di spina (cm, come la planimetria), soglia in rovere
+const VARCO = { id: 'P-varco-camera-sud', tipo: 'vano', muro: SPINA, da: 'soggiorno', a: 'camera_sud', y_da: 685, y_a: 925, h_cm: 250, soglia: 'legno' };
+// vetrata dal lato della camera: tre ante su tre binari; aperta, si impacchettano a sud del varco
+// davanti al muro del vano scala, chiusa coprono tutto il varco
+export const VETRATA = { xMuro: 6.14, z0: 6.85, z1: 9.25, h: 2.5, ante: 3 };
+
 // ---------- costruzione completa del piano primo ----------
 export function costruisciArchitettura(ctx) {
   const M = getMateriali();
@@ -704,7 +734,18 @@ export function costruisciArchitettura(ctx) {
   const wallsLow = new THREE.Group();
   const floors = new THREE.Group();
   const ceilings = new THREE.Group();
-  involucro(plan, st, ctx, walls, wallsLow, () => H);
+  // il muro di spina fra soggiorno e camere cambia con la versione: in V1 la seconda camera ha
+  // la sua porta, in V2 un varco di 2,40 m con la vetrata telescopica (open space)
+  involucro(plan, st, ctx, walls, wallsLow, () => H, new Set([SPINA]));
+  const porteSpina = plan.porte.filter((p) => p.muro === SPINA);
+  const versioni = {};
+  for (const [tag, porte] of Object.entries({ v1: porteSpina, v2: [...porteSpina.filter((p) => p.id !== 'P-camera-sud'), VARCO] })) {
+    ctx.variante = tag; // gli ingombri del muro valgono solo nella sua versione
+    versioni[tag] = muroVariabile(plan, st, ctx, SPINA, porte, H);
+  }
+  ctx.variante = 'vetrata'; // la vetrata ferma il passo solo quando e' chiusa
+  versioni.v2.vetrata = conSmusso(() => vetrataTelescopica(ctx, VETRATA));
+  ctx.variante = null;
 
   // pavimenti e soffitti
   // rovere a listoni larghi in tutto il piano, ardesia nel bagno
@@ -742,5 +783,5 @@ export function costruisciArchitettura(ctx) {
 
   const exterior = esterni(ctx, walls);
   const terrazzo = terrazzoNord(ctx);
-  return { walls, wallsLow, floors, ceilings, exterior, terrazzo, stanze: st };
+  return { walls, wallsLow, floors, ceilings, exterior, terrazzo, stanze: st, versioni };
 }

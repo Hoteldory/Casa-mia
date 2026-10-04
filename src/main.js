@@ -10,7 +10,7 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { costruisciArchitettura, H } from './architettura.js';
-import { arredi, TAVOLO_STATI } from './arredi/index.js';
+import { arredi, TAVOLO_STATI, VERSIONI } from './arredi/index.js';
 import { creaPiantina } from './piantina.js';
 import { costruisciPianoTerra, PIANO_TERRA, PIANO_SUOCERI, QUOTA_TERRA, ORIGINE_SUOCERI } from './pianoTerra.js';
 import { arredaPianoTerra } from './arredi/piano_terra.js';
@@ -141,7 +141,12 @@ ctx.pareti = new THREE.Group();
 arch.walls.add(ctx.pareti);
 scene.add(arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo);
 arch.wallsLow.visible = false;
-const { comuni: gruppiArredi, varianti } = conSmusso(() => arredi(ctx, arch.stanze));
+// le due versioni del muro fra soggiorno e seconda camera: ognuna con il suo gruppo per i pezzi
+// appesi ai muri; si uniscono ai muri dopo l'ottimizzazione, per accenderle una alla volta
+const versioni = arch.versioni;
+const paretiVersione = {};
+for (const [tag, v] of Object.entries(versioni)) { paretiVersione[tag] = new THREE.Group(); v.walls.add(paretiVersione[tag]); }
+const { comuni: gruppiArredi, varianti } = conSmusso(() => arredi(ctx, arch.stanze, paretiVersione));
 for (const g of gruppiArredi) scene.add(g);
 for (const g of Object.values(varianti)) scene.add(g);
 
@@ -188,7 +193,9 @@ function ottimizza(root) {
   const rel = new THREE.Matrix4();
   const buckets = new Map();
   const daRimuovere = [];
-  root.traverse((o) => {
+  // i pezzi mobili (le ante della vetrata) restano fuori: si fondono a parte, uno per uno
+  const visita = (o, fn) => { if (o !== root && o.userData.mobile) return; fn(o); for (const c of o.children) visita(c, fn); };
+  visita(root, (o) => {
     if (!o.isMesh) return;
     if (!o.visible) { daRimuovere.push(o); return; }
     const metti = (material, geom) => {
@@ -223,7 +230,14 @@ function ottimizza(root) {
   }
 }
 for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
-  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino]) ottimizza(g);
+  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino,
+  ...Object.values(versioni).flatMap((v) => [v.walls, v.low])]) ottimizza(g);
+for (const v of Object.values(versioni)) { arch.walls.add(v.walls); arch.wallsLow.add(v.low); }
+// la vetrata: ogni anta si fonde per conto suo e resta libera di scorrere
+const vetrata = versioni.v2.vetrata;
+for (const a of vetrata.userData.ante) ottimizza(a);
+ottimizza(vetrata);
+versioni.v2.walls.add(vetrata);
 
 // materiali lucidi o metallici: riflettono l'ambiente per intero
 scene.traverse((o) => {
@@ -322,7 +336,7 @@ function applicaLuce() {
     for (const m of lucidi) m.envMapIntensity = 0.12;
     bloom.enabled = true;
     for (const l of luciArtificiali) {
-      l.light.visible = l.esterno || l.piano === piano;
+      l.light.visible = (l.esterno || l.piano === piano) && (!l.v || attivi.has(l.v));
       l.light.intensity = l.base * FATTORE_SERA;
     }
     for (const e of emissivi) {
@@ -492,22 +506,58 @@ function vaiA(k) {
     camera.position.set(v.orbit[2], q + v.orbit[3], v.orbit[4]);
   }
 }
-// ---------- tavolo da pranzo: chiuso o aperto ----------
+// ---------- allestimento: versione del piano primo, vetrata, tavolo da pranzo ----------
 let statoTavolo = 'aperto';
+let versione = 'v1';          // 'v1' seconda camera | 'v2' open space gaming e allenamento
+let vetrataChiusa = false;    // solo in V2
+let vetrataK = 0;             // posizione delle ante: 0 aperta, 1 chiusa (scorre verso vetrataChiusa)
+let attesaVetrata = 0;        // secondi prima che le ante partano (nel tour)
 const attivi = new Set(); // i tag dei gruppi accesi in questo momento
 const bottoniTavolo = { chiuso: document.getElementById('btn-t-chiuso'), aperto: document.getElementById('btn-t-aperto') };
 const notaTavolo = document.getElementById('nota-tavolo');
+const bottoniVersione = { v1: document.getElementById('btn-v1'), v2: document.getElementById('btn-v2') };
+const btnVetrata = document.getElementById('btn-vetrata');
+const notaVersione = document.getElementById('nota-versione');
 function applicaAllestimento() {
   attivi.clear();
   attivi.add(statoTavolo);
+  attivi.add(versione);
+  if (versione === 'v2' && vetrataChiusa) attivi.add('vetrata'); // la vetrata chiusa ferma il passo
   for (const [tag, g] of Object.entries(varianti)) g.visible = piano === 'primo' && attivi.has(tag);
+  for (const [tag, v] of Object.entries(versioni)) v.walls.visible = v.low.visible = attivi.has(tag);
   for (const k of Object.keys(bottoniTavolo)) bottoniTavolo[k].classList.toggle('on', k === statoTavolo);
+  for (const k of Object.keys(bottoniVersione)) bottoniVersione[k].classList.toggle('on', k === versione);
+  btnVetrata.style.display = versione === 'v2' ? '' : 'none';
+  btnVetrata.textContent = vetrataChiusa ? 'Apri la vetrata' : 'Chiudi la vetrata';
+  btnVetrata.classList.toggle('on', vetrataChiusa);
   notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota;
+  notaVersione.textContent = VERSIONI[versione].nota;
 }
 function applicaTavolo(t) { statoTavolo = t; applicaAllestimento(); }
+// subito: le ante vanno in posizione senza scorrere (link, tour)
+function applicaVersione(v, { chiusa = vetrataChiusa, subito = false } = {}) {
+  versione = v; vetrataChiusa = chiusa;
+  if (subito) { vetrataK = chiusa ? 1 : 0; vetrata.userData.imposta(vetrataK); }
+  applicaAllestimento();
+  applicaLuce(); // di sera si accendono le lampade della versione in vista
+}
 for (const k of Object.keys(bottoniTavolo)) {
   bottoniTavolo[k].textContent = TAVOLO_STATI[k].nome;
   bottoniTavolo[k].onclick = () => applicaTavolo(k);
+}
+for (const k of Object.keys(bottoniVersione)) {
+  bottoniVersione[k].textContent = VERSIONI[k].nome;
+  bottoniVersione[k].onclick = () => applicaVersione(k);
+}
+btnVetrata.onclick = () => { vetrataChiusa = !vetrataChiusa; applicaAllestimento(); };
+// le ante scorrono insieme in circa un secondo e mezzo
+function aggiornaVetrata(dt) {
+  const meta = vetrataChiusa ? 1 : 0;
+  if (vetrataK === meta) return;
+  if (attesaVetrata > 0) { attesaVetrata -= dt; return; }
+  vetrataK = meta > vetrataK ? Math.min(meta, vetrataK + dt / 1.6) : Math.max(meta, vetrataK - dt / 1.6);
+  const k = vetrataK * vetrataK * (3 - 2 * vetrataK);
+  vetrata.userData.imposta(k);
 }
 applicaAllestimento();
 
@@ -633,6 +683,10 @@ const tour = creaTour({
   prepara(sc) {
     cambiaPiano(sc.piano, true);
     volo = null;
+    // ogni scatto mostra la sua versione (di norma quella che si stava guardando)
+    const v = sc.versione || primaDelTour.versione;
+    applicaVersione(v, { chiusa: sc.vetrata === 'chiusa' || (!sc.versione && primaDelTour.vetrataChiusa), subito: true });
+    if (sc.vetrata === 'scorre') { vetrataChiusa = true; attesaVetrata = 4.5; applicaAllestimento(); } // si chiude sotto gli occhi
     if (sc.sera) impostaGiorno(false);
     else { statoSole.ora = sc.ora; impostaGiorno(true); }
     aggiornaSoleUI();
@@ -641,6 +695,7 @@ const tour = creaTour({
     const p = primaDelTour;
     cambiaPiano(p.piano, true);
     tettoOn = p.tettoOn; paretiIntere = p.paretiIntere;
+    applicaVersione(p.versione, { chiusa: p.vetrataChiusa, subito: true });
     applicaVisibilita();
     statoSole.ora = p.ora; statoSole.mese0 = p.mese0;
     impostaGiorno(p.giorno);
@@ -654,7 +709,7 @@ const tour = creaTour({
 function avviaTour() {
   if (modoFP) esciFP();
   if (piantinaAperta) mostraPiantina(false);
-  primaDelTour = { piano, giorno, ora: statoSole.ora, mese0: statoSole.mese0, tettoOn, paretiIntere, p: camera.position.clone(), m: orbit.target.clone() };
+  primaDelTour = { piano, versione, vetrataChiusa, giorno, ora: statoSole.ora, mese0: statoSole.mese0, tettoOn, paretiIntere, p: camera.position.clone(), m: orbit.target.clone() };
   tettoOn = true; paretiIntere = true;
   applicaVisibilita();
   volo = null; orbit.enabled = false;
@@ -682,7 +737,8 @@ function mostraAvviso(testo) {
 function linkVista() {
   const f = (v) => v.toArray().map((x) => x.toFixed(2)).join(',');
   const m = modoFP ? camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3())) : orbit.target;
-  const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), ora: statoSole.ora, mese: statoSole.mese0 + 1, luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo });
+  const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), ora: statoSole.ora, mese: statoSole.mese0 + 1, luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo, versione: versione.slice(1) });
+  if (versione === 'v2') q.set('vetrata', vetrataChiusa ? 'chiusa' : 'aperta');
   return `${location.origin}${location.pathname}#${q}`;
 }
 document.getElementById('btn-link').onclick = () => {
@@ -699,6 +755,7 @@ function leggiLink() {
   const vec = (k) => { const a = (q.get(k) || '').split(',').map(Number); return a.length === 3 && a.every(Number.isFinite) ? new THREE.Vector3(...a) : null; };
   if (q.get('piano') === 'terra' || q.get('piano') === 'primo') cambiaPiano(q.get('piano'), true);
   if (TAVOLO_STATI[q.get('tavolo')]) applicaTavolo(q.get('tavolo'));
+  if (VERSIONI['v' + q.get('versione')]) applicaVersione('v' + q.get('versione'), { chiusa: q.get('vetrata') === 'chiusa', subito: true });
   const ora = +q.get('ora'), mese = +q.get('mese');
   if (ora >= 5 && ora <= 22) statoSole.ora = ora;
   if (mese >= 1 && mese <= 12) statoSole.mese0 = mese - 1;
@@ -751,6 +808,7 @@ function loop() {
   else if (modoFP) aggiornaFP(dt);
   else if (volo) aggiornaVolo(dt);
   else orbit.update();
+  aggiornaVetrata(tour.attivo ? Math.min(dtVero, 0.25) : dt);
   if (qualita === 'alta') composer.render(dt);
   else renderer.render(scene, camera);
   frames++; acc += dt;
@@ -761,4 +819,4 @@ leggiLink();
 loop();
 caricamento.style.setProperty('--avanzamento', 1);
 requestAnimationFrame(() => { caricamento.classList.add('fatto'); setTimeout(() => caricamento.remove(), 1400); });
-window.__casa = { tour, vola, impostaSole, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+window.__casa = { applicaVersione, vetrata, tour, vola, impostaSole, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, colliders, vaiA, arch, archT, blocca, pos, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

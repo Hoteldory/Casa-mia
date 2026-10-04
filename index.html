@@ -36,6 +36,7 @@
     #pannello button.evidente:hover { background: #6b4930; }
     #pannello .row { display: flex; gap: 6px; }
     #pannello .row button { flex: 1; text-align: center; }
+    #pannello button.largo { width: 100%; margin-top: 6px; text-align: center; }
     #pannello .hint { font-size: 11.5px; color: var(--tortora); margin-top: 8px; line-height: 1.45; }
     .cursore { display: grid; grid-template-columns: 42px 1fr 76px; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; color: var(--inchiostro); }
     .cursore output { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--noce); text-align: right; white-space: nowrap; }
@@ -218,6 +219,13 @@
       <button id="btn-terra">Piano terra</button>
     </div>
     <div id="sez-allestimento">
+    <h2>Versione</h2>
+    <div class="row">
+      <button id="btn-v1" class="on">Versione 1</button>
+      <button id="btn-v2">Versione 2</button>
+    </div>
+    <button id="btn-vetrata" class="largo" style="display:none">Chiudi la vetrata</button>
+    <div class="hint" id="nota-versione"></div>
     <h2>Tavolo</h2>
     <div class="row">
       <button id="btn-t-chiuso">Chiuso</button>

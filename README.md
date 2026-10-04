@@ -159,6 +159,60 @@ Tappa 2 (fatta): il resto del piano.
   lanterne a pavimento, ulivi in vasi di cotto.
 - Telai delle porte in rovere miele.
 
+## Piano primo, versione 2: open space gaming e allenamento
+
+Nel menu, sezione "Versione", si sceglie fra:
+
+- **Versione 1 · camera**: la configurazione attuale, con la seconda camera da letto e la sua porta.
+- **Versione 2 · open space**: la seconda camera si apre sul soggiorno. Ci sono l'angolo gaming
+  e lo spazio per allenarsi, e una vetrata la chiude quando serve.
+
+Il varco:
+
+- È largo 2,40 m (da z 6,85 a 9,25) e alto 2,50 m.
+- Sta nel muro di spina fra l'appendice est del soggiorno e la camera, al posto della porta.
+- Ha telaio e soglia in rovere, perché il pavimento continua senza stacchi.
+- **Il muro di spina potrebbe essere portante.** Prima di aprire va sentito un ingegnere: può
+  servire una cerchiatura, con le relative pratiche.
+
+La vetrata telescopica:
+
+- Ha tre ante bianco latte con zoccolo pieno e vetro cannettato, che fa passare la luce e non
+  gli sguardi, e un maniglione in ottone.
+- Le ante corrono su tre binari nascosti in un cassonetto di rovere al soffitto, dal lato
+  della camera.
+- Aperta, le ante stanno impacchettate a sud del varco, davanti al muro del vano scala.
+  Chiusa, coprono tutto il varco.
+- Il pulsante "Chiudi/Apri la vetrata" le fa scorrere insieme.
+- In prima persona la vetrata chiusa ferma il passo, quella aperta no.
+
+Gli arredi della versione 2:
+
+- Angolo gaming:
+  - parete est in azzurro polvere, che si vede dal soggiorno attraverso il varco;
+  - scrivania in rovere da 160 cm, schermo da 48", PS5 in piedi e controller;
+  - poltroncina in tessuto grafite su un tappeto in juta;
+  - mensola con libri e una pianta, sospensione a globo.
+- Allenamento a corpo libero:
+  - pavimento in gomma 1,70 x 2,10 m con tappetino salvia e rullo;
+  - spalliera in rovere con sbarra per le trazioni;
+  - specchio alto con cornice in ottone sulla parete nord.
+- Cyclette con telaio in rovere, volano nero e sella in cuoio, nell'angolo sud-est.
+- Rastrelliera con tre coppie di manubri e tre kettlebell.
+- Mobile basso bianco latte con asciugamani e corda.
+- Lampadario a tamburo alto, tende in lino avena e tenda a pacchetto in bambù.
+
+Nel soggiorno la pianta grande dell'appendice passa dall'altra parte, così il varco resta libero.
+
+Come funziona nel codice:
+
+- Il muro di spina è escluso dall'involucro comune. Ogni versione ha il suo, con porte e
+  battiscopa (`muroVariabile` in `architettura.js`).
+- Muri, arredi, ingombri e lampade di ogni versione sono marcati `v1` o `v2` e si accendono
+  solo con la loro versione. Gli ingombri della vetrata sono marcati `vetrata`.
+- La versione e lo stato della vetrata finiscono nel link alla vista (`versione=2&vetrata=chiusa`).
+- Il tour ha un'inquadratura dedicata alla versione 2, in cui la vetrata si chiude.
+
 ## Zona pranzo e cucina del piano primo
 
 Niente isola: il tavolo da pranzo sta in verticale (lato lungo nord-sud), spostato verso est
@@ -182,7 +236,9 @@ src/architettura.js          muri con aperture, pavimenti, soffitti, porte, fine
                              battiscopa, travi, balconi, pianerottolo e scala esterna
 src/arredi/comune.js         helper geometrici e oggetti ricorrenti (lampade, tende, quadri…)
 src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Group
-src/arredi/index.js          registro delle stanze e del tavolo chiuso/aperto
+src/arredi/index.js          registro delle stanze, del tavolo chiuso/aperto e delle due versioni
+src/arredi/camera_sud_v2.js  versione 2: angolo gaming e allenamento
+src/arredi/vetrata.js        versione 2: vetrata telescopica a tre ante
 piantina-terra.jpg           piantina del piano terra
 src/data/piano-terra.json    misure del piano terra in cm
 src/pianoTerra.js            involucro del piano terra (cognata e suoceri), solaio, lanterne

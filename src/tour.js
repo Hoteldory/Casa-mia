@@ -14,6 +14,8 @@ export const SCATTI = [
     da: [5.9, 1.6, 2.9], mira0: [4.4, 1.0, 1.0], a: [5.5, 1.6, 2.3], mira1: [4.6, 1.2, 0.6] },
   { piano: 'primo', ora: 12, durata: 8, titolo: 'La camera', testo: 'Parete a doghe verde oliva, lino e rovere',
     da: [9.8, 1.7, 1.3], mira0: [8.6, 0.9, 3.9], a: [7.6, 1.65, 1.4], mira1: [8.8, 0.9, 3.8] },
+  { piano: 'primo', ora: 15, durata: 10, versione: 'v2', vetrata: 'scorre', titolo: 'Versione 2', testo: 'La seconda camera si apre sul soggiorno: gaming e allenamento, e una vetrata che la chiude',
+    da: [4.75, 1.6, 8.9], mira0: [9.0, 1.05, 7.9], a: [5.35, 1.6, 8.35], mira1: [9.2, 1.0, 8.2] },
   { piano: 'primo', ora: 17, durata: 9, titolo: 'Il terrazzo', testo: 'Pergola con festoni di luci e ulivi. Sotto, la casa dei suoceri',
     da: [4.0, 1.7, -9.6], mira0: [5.0, 1.2, -3.4], a: [6.2, 1.9, -8.4], mira1: [4.9, 1.0, -3.0] },
   { piano: 'terra', ora: 11, durata: 8, titolo: 'Piano terra', testo: 'La cucina della cognata, con il camino',

@@ -280,11 +280,19 @@ export function arredaSoggiorno(ctx, stanze) {
   g.add(tavolinoTondo(ctx, B.x + 0.35, B.z + 1.05));
   g.add(lampadaTerra(ctx, B.x + 0.3, B.z + 2.2));
   g.add(tappeto(1.3, 1.5, M.juta, B.cx, B.z + 1.5));
-  g.add(pianta(B.x + B.w - 0.3, B.z + B.d - 0.35, { h: 1.4, vaso: 0.2, matVaso: M.ceramica }));
   // tende in lino azzurro; tende a pacchetto in bambu' sulla finestra sud e su quella del lavello
   ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+', M.linoAzzurro));
   ctx.pareti.add(tende(1.42, 1.5, 2.16, 1.62, zS - 0.03, 'z-', M.linoAzzurro));
   ctx.pareti.add(tendaBambu(1.42, 2.16, 2.32, zS - 0.04, 'z-'));
   ctx.pareti.add(tendaBambu(1.24, R.x + 0.04, 2.22, 3.55, 'x+'));
   return g;
+}
+
+// La pianta grande dell'appendice: in V1 nell'angolo verso la porta della camera, in V2 si
+// sposta dall'altra parte e lascia libero il varco verso l'open space
+export function piantaAppendice(stanze, versione) {
+  const M = MAT();
+  const B = stanze.soggiorno.rects[2];
+  const x = versione === 'v2' ? B.x + 0.3 : B.x + B.w - 0.3;
+  return pianta(x, B.z + B.d - 0.35, { h: 1.4, vaso: 0.2, matVaso: M.ceramica });
 }
