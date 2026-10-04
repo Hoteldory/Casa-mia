@@ -3,7 +3,7 @@
 // persiano panna e blu, rovere e ottone, tende in lino azzurro e a pacchetto in bambu'.
 import * as THREE from 'three';
 import { specchio } from './bagno.js';
-import { box, cyl, sphere, plane, group, place, matColore, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, quadro, pianta, libri, lampadaTerra, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
+import { box, cyl, sphere, plane, group, place, matColore, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, quadro, pianta, libri, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
 
 // ---- boiserie a riquadri su una parete (piano XY locale, normale +Z verso la stanza) ----
 export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, mat }) {
@@ -225,46 +225,65 @@ export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
   return g;
 }
 
-// ---- stufa a legna in ghisa nera, su una lastra di ardesia, con piastrelle metro alle spalle ----
+// ---- stufa a legna in ghisa nera, alta 1,60 m, su una lastra di ardesia, piastrelle metro alle spalle ----
+// Sopra la porta del fuoco con il vetro, sotto il vano per i ciocchi, in basso il cassetto della cenere.
 // xMuro: filo della parete a cui si appoggia (la stufa sta a ovest); z: asse della stufa
 function stufaLegna(ctx, { xMuro, z }) {
   const M = MAT();
   const g = new THREE.Group();
   const ghisa = matColore('#1d1c1b', 0.55);
+  const scuro = matColore('#0d0c0b', 0.9);
   const d = 0.42, w = 0.52, x = xMuro - 0.22 - d / 2; // 22 cm dal muro
+  const hTop = 1.6;
   // lastra di ardesia a pavimento e rivestimento in piastrelle metro sulla parete, con cimasa in rovere
   g.add(box(0.95, 0.025, 1.0, M.ardesia, xMuro - 0.475, 0.0125, z, { cast: false }));
-  g.add(box(0.012, 1.45, 1.0, M.metro, xMuro - 0.006, 0.725, z, { cast: false }));
-  g.add(box(0.05, 0.04, 1.04, M.rovereMiele, xMuro - 0.025, 1.47, z));
-  // corpo su quattro piedini, piano superiore sporgente, maniglia della porta in ottone
+  g.add(box(0.012, 2.2, 1.0, M.metro, xMuro - 0.006, 1.1, z, { cast: false }));
+  g.add(box(0.05, 0.04, 1.04, M.rovereMiele, xMuro - 0.025, 2.22, z));
+  // corpo su quattro piedini, zoccolo e piano superiore sporgenti
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.05, 0.14, 0.05, ghisa, x + sx * (d / 2 - 0.05), 0.095, z + sz * (w / 2 - 0.05)));
-  g.add(box(d, 0.6, w, ghisa, x, 0.47, z));
-  g.add(box(d + 0.04, 0.035, w + 0.04, ghisa, x, 0.787, z));
-  g.add(box(d - 0.04, 0.05, w - 0.04, ghisa, x, 0.19, z));                   // cassetto della cenere
-  // porta con vetro: dietro, il fuoco (si accende di sera) e due ciocchi
+  g.add(box(d, hTop - 0.2, w, ghisa, x, 0.17 + (hTop - 0.2) / 2, z));
+  g.add(box(d + 0.03, 0.04, w + 0.03, ghisa, x, 0.19, z));
+  g.add(box(d + 0.04, 0.035, w + 0.04, ghisa, x, hTop - 0.012, z));
+  g.add(box(d + 0.02, 0.025, w + 0.02, ghisa, x, hTop - 0.31, z));            // cornice sopra la porta
   const xF = x - d / 2;
-  // cornice della porta (un anello profondo 5 cm), dentro il fuoco e due ciocchi, davanti il vetro
-  for (const dy of [-0.18, 0.18]) g.add(box(0.05, 0.04, 0.44, ghisa, xF - 0.025, 0.5 + dy, z));
-  for (const dz of [-0.2, 0.2]) g.add(box(0.05, 0.4, 0.04, ghisa, xF - 0.025, 0.5, z + dz));
+  // anello sporgente (profondo 5 cm) intorno a un'apertura sul fronte
+  const anello = (yc, h, wa) => {
+    for (const dy of [-1, 1]) g.add(box(0.05, 0.04, wa, ghisa, xF - 0.025, yc + dy * (h / 2 - 0.02), z));
+    for (const dz of [-1, 1]) g.add(box(0.05, h, 0.04, ghisa, xF - 0.025, yc, z + dz * (wa / 2 - 0.02)));
+  };
+  // cassetto della cenere con pomolo in ottone
+  g.add(box(0.02, 0.08, w - 0.08, ghisa, xF - 0.01, 0.28, z));
+  g.add(cyl(0.012, 0.012, 0.03, M.ottone, xF - 0.035, 0.28, z, 8).rotateZ(Math.PI / 2));
+  // vano dei ciocchi: fondo scuro e una catasta di legna
+  const yL = 0.55, hL = 0.36;
+  anello(yL, hL + 0.08, 0.46);
+  g.add(box(0.006, hL, 0.38, scuro, xF - 0.003, yL, z, { cast: false }));
+  const legna = [matColore('#6b4a30', 0.9), matColore('#8a6a48', 0.9), matColore('#5a3e28', 0.9)];
+  [[-0.11, -0.12], [-0.11, 0], [-0.11, 0.12], [-0.02, -0.06], [-0.02, 0.06], [0.07, 0]].forEach(([dy, dz], k) => {
+    const c = cyl(0.045, 0.045, 0.06, legna[k % 3], xF - 0.03, yL + dy, z + dz, 10);
+    c.rotation.z = Math.PI / 2; g.add(c);
+  });
+  // porta del fuoco con vetro: dietro, il fuoco (si accende di sera) e due ciocchi
+  const yF = 1.03, hF = 0.5;
+  anello(yF, hF + 0.08, 0.46);
   const fuoco = new THREE.MeshStandardMaterial({ color: '#3a1a0a', emissive: '#ff7a2a', emissiveIntensity: 0 });
-  g.add(box(0.006, 0.32, 0.36, fuoco, xF - 0.003, 0.5, z, { cast: false }));
-  for (const [dy, dz] of [[-0.1, -0.03], [-0.07, 0.05]]) {
-    const c = cyl(0.018, 0.018, 0.26, matColore('#4a2f1c', 0.9), xF - 0.024, 0.5 + dy, z + dz, 8);
+  g.add(box(0.006, hF, 0.38, fuoco, xF - 0.003, yF, z, { cast: false }));
+  for (const [dy, dz] of [[-0.19, -0.03], [-0.16, 0.05]]) {
+    const c = cyl(0.02, 0.02, 0.28, matColore('#4a2f1c', 0.9), xF - 0.024, yF + dy, z + dz, 8);
     c.rotation.x = Math.PI / 2; c.rotation.y = dz * 3; g.add(c);
   }
-  const vetro = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.32), M.vetro);
-  vetro.rotation.y = -Math.PI / 2; vetro.position.set(xF - 0.045, 0.5, z);
+  const vetro = new THREE.Mesh(new THREE.PlaneGeometry(0.38, hF), M.vetro);
+  vetro.rotation.y = -Math.PI / 2; vetro.position.set(xF - 0.045, yF, z);
   g.add(vetro);
-  const man = cyl(0.008, 0.008, 0.12, M.ottone, xF - 0.065, 0.5, z + 0.18, 8);
-  g.add(man);
+  g.add(cyl(0.008, 0.008, 0.14, M.ottone, xF - 0.065, yF, z + 0.19, 8));
   // canna fumaria nera fino al soffitto, con rosone
-  g.add(cyl(0.08, 0.08, 0.06, ghisa, x, 0.835, z, 20));
-  g.add(cyl(0.075, 0.075, ctx.H - 0.86, ghisa, x, (ctx.H + 0.86) / 2, z, 20));
-  g.add(cyl(0.085, 0.085, 0.03, ghisa, x, 1.45, z, 20));
+  g.add(cyl(0.08, 0.08, 0.06, ghisa, x, hTop + 0.03, z, 20));
+  g.add(cyl(0.075, 0.075, ctx.H - hTop - 0.06, ghisa, x, (ctx.H + hTop + 0.06) / 2, z, 20));
+  g.add(cyl(0.085, 0.085, 0.03, ghisa, x, 2.15, z, 20));
   g.add(cyl(0.13, 0.13, 0.015, ghisa, x, ctx.H - 0.02, z, 24));
   // il fuoco scalda di arancio la stanza, di sera
-  const luce = new THREE.PointLight('#ff9a4a', 7, 4.5, 2);
-  luce.position.set(xF - 0.25, 0.5, z);
+  const luce = new THREE.PointLight('#ff9a4a', 8, 5, 2);
+  luce.position.set(xF - 0.25, yF, z);
   g.add(luce);
   ctx.addLight(luce, g.children.find((m) => m.material === fuoco), null);
   ctx.solid(g);
@@ -282,23 +301,6 @@ function cestaLegna(x, z) {
     c.rotation.x = Math.PI / 2; c.rotation.y = 0.15 * ((i % 3) - 1); g.add(c);
   }
   g.position.set(x, 0, z);
-  return g;
-}
-
-// ---- tavolino tondo in rovere con gamba a tre piedi (accanto alla poltrona) ----
-function tavolinoTondo(ctx, x, z) {
-  const M = MAT();
-  const g = new THREE.Group();
-  g.add(cyl(0.24, 0.24, 0.03, M.rovereMiele, 0, 0.55, 0, 28));
-  g.add(cyl(0.2, 0.2, 0.02, M.rovereMiele, 0, 0.18, 0, 24));
-  for (let i = 0; i < 3; i++) {
-    const a = (i / 3) * Math.PI * 2;
-    g.add(cyl(0.014, 0.014, 0.55, M.ottone, Math.cos(a) * 0.19, 0.275, Math.sin(a) * 0.19, 8));
-  }
-  g.add(libri(0.18, 0.02, 0.565, 0.02, 9).rotateY(0.4));
-  g.add(cyl(0.035, 0.03, 0.09, M.ceramica, -0.1, 0.61, -0.08, 12));
-  place(g, x, z);
-  ctx.solid(g);
   return g;
 }
 
@@ -339,8 +341,6 @@ export function arredaSoggiorno(ctx, stanze) {
   g.add(stufaLegna(ctx, { xMuro: B.x + B.w, z: 6.1 }));
   ctx.pareti.add(specchio(ctx, 0.8, 1.9, B.cx, 1.22, B.z + 0.01, 'z+', M.ottone));
   g.add(cestaLegna(B.x + 0.3, B.z + 0.4));
-  g.add(tavolinoTondo(ctx, B.x + 0.35, B.z + 1.6));
-  g.add(lampadaTerra(ctx, B.x + 0.3, B.z + 2.2));
   g.add(tappeto(1.3, 1.5, M.juta, B.cx, B.z + 1.95));
   // tende in lino azzurro; tende a pacchetto in bambu' sulla finestra sud e su quella del lavello
   ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+', M.linoAzzurro));
