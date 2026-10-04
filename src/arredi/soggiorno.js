@@ -225,7 +225,7 @@ export function tvOled(ctx, { x, y, z, ry = 0, w = 1.228, h = 0.695 }) {
   return g;
 }
 
-// ---- stufa a legna in ghisa nera, alta 1,60 m, su una lastra di ardesia, piastrelle metro alle spalle ----
+// ---- stufa a legna in ghisa nera, alta 1,60 m, su una lastra di ardesia ----
 // Sopra la porta del fuoco con il vetro, sotto il vano per i ciocchi, in basso il cassetto della cenere.
 // xMuro: filo della parete a cui si appoggia (la stufa sta a ovest); z: asse della stufa
 function stufaLegna(ctx, { xMuro, z }) {
@@ -235,10 +235,8 @@ function stufaLegna(ctx, { xMuro, z }) {
   const scuro = matColore('#0d0c0b', 0.9);
   const d = 0.42, w = 0.52, x = xMuro - 0.22 - d / 2; // 22 cm dal muro
   const hTop = 1.6;
-  // lastra di ardesia a pavimento e rivestimento in piastrelle metro sulla parete, con cimasa in rovere
+  // lastra di ardesia a pavimento
   g.add(box(0.95, 0.025, 1.0, M.ardesia, xMuro - 0.475, 0.0125, z, { cast: false }));
-  g.add(box(0.012, 2.2, 1.0, M.metro, xMuro - 0.006, 1.1, z, { cast: false }));
-  g.add(box(0.05, 0.04, 1.04, M.rovereMiele, xMuro - 0.025, 2.22, z));
   // corpo su quattro piedini, zoccolo e piano superiore sporgenti
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.05, 0.14, 0.05, ghisa, x + sx * (d / 2 - 0.05), 0.095, z + sz * (w / 2 - 0.05)));
   g.add(box(d, hTop - 0.2, w, ghisa, x, 0.17 + (hTop - 0.2) / 2, z));
@@ -263,19 +261,19 @@ function stufaLegna(ctx, { xMuro, z }) {
     const c = cyl(0.045, 0.045, 0.06, legna[k % 3], xF - 0.03, yL + dy, z + dz, 10);
     c.rotation.z = Math.PI / 2; g.add(c);
   });
-  // porta del fuoco con vetro: dietro, il fuoco (si accende di sera) e due ciocchi
-  const yF = 1.03, hF = 0.5;
-  anello(yF, hF + 0.08, 0.46);
+  // porta del fuoco con vetro stretto e alto: dietro, il fuoco (si accende di sera) e due ciocchi
+  const yF = 1.03, hF = 0.5, wV = 0.28;
+  anello(yF, hF + 0.08, wV + 0.08);
   const fuoco = new THREE.MeshStandardMaterial({ color: '#3a1a0a', emissive: '#ff7a2a', emissiveIntensity: 0 });
-  g.add(box(0.006, hF, 0.38, fuoco, xF - 0.003, yF, z, { cast: false }));
+  g.add(box(0.006, hF, wV, fuoco, xF - 0.003, yF, z, { cast: false }));
   for (const [dy, dz] of [[-0.19, -0.03], [-0.16, 0.05]]) {
-    const c = cyl(0.02, 0.02, 0.28, matColore('#4a2f1c', 0.9), xF - 0.024, yF + dy, z + dz, 8);
+    const c = cyl(0.02, 0.02, wV - 0.04, matColore('#4a2f1c', 0.9), xF - 0.024, yF + dy, z + dz, 8);
     c.rotation.x = Math.PI / 2; c.rotation.y = dz * 3; g.add(c);
   }
-  const vetro = new THREE.Mesh(new THREE.PlaneGeometry(0.38, hF), M.vetro);
+  const vetro = new THREE.Mesh(new THREE.PlaneGeometry(wV, hF), M.vetro);
   vetro.rotation.y = -Math.PI / 2; vetro.position.set(xF - 0.045, yF, z);
   g.add(vetro);
-  g.add(cyl(0.008, 0.008, 0.14, M.ottone, xF - 0.065, yF, z + 0.19, 8));
+  g.add(cyl(0.008, 0.008, 0.14, M.ottone, xF - 0.065, yF, z + wV / 2 + 0.02, 8));
   // canna fumaria nera fino al soffitto, con rosone
   g.add(cyl(0.08, 0.08, 0.06, ghisa, x, hTop + 0.03, z, 20));
   g.add(cyl(0.075, 0.075, ctx.H - hTop - 0.06, ghisa, x, (ctx.H + hTop + 0.06) / 2, z, 20));

@@ -142,9 +142,8 @@ Tappa 1 (fatta): base comune e zona giorno.
   stampe botaniche in cornici di rovere, tende in lino azzurro e a pacchetto in bambu'.
 - Stufa a legna nell'appendice est del soggiorno, in tutte e due le versioni:
   - ghisa nera, alta 1,60 m, su lastra di ardesia, appoggiata alla parete est;
-  - sopra la porta del fuoco con il vetro, sotto il vano per i ciocchi e il cassetto della cenere;
-  - piastrelle metro alle spalle fino a 2,20 m, canna fumaria nera fino al soffitto, cesta di
-    ciocchi accanto;
+  - sopra la porta del fuoco con un vetro stretto e alto, sotto il vano per i ciocchi e il cassetto della cenere;
+  - canna fumaria nera fino al soffitto, cesta di ciocchi accanto;
   - di sera il fuoco si accende e scalda la stanza di arancio.
   Dove c'era la libreria c'è uno specchio lungo con cornice in ottone; poltrona, tavolino e
   lampada da terra sono stati tolti.
