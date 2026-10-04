@@ -143,7 +143,21 @@ Tappa 1 (fatta): base comune e zona giorno.
   stampe botaniche in cornici di rovere, tende in lino azzurro e a pacchetto in bambu',
   angolo lettura con poltrona azzurra, libreria in rovere e ottone, tavolino tondo.
 
-Tappa 2 (da fare): camere, bagno, disimpegno, terrazzo.
+Tappa 2 (fatta): il resto del piano.
+- Camera matrimoniale: parete a doghe verde oliva con mensola in rovere e stampe botaniche,
+  letto in rovere con testiera in lino avena, coperta azzurra e plaid ruggine, comodini in
+  rovere, armadi bianco latte e rovere, tappeto persiano, lampadario a tamburo.
+- Camera sud: carta a righe azzurre, testiera in lino azzurro, cuscini a fiorellini, armadio
+  bianco latte, scrittoio in rovere con sedia Windsor, tende a righe e a pacchetto in bambu'.
+- Camera est (studio e lavanderia): parete azzurro polvere con perlinato bianco latte, colonna
+  lavanderia salvia con ceste, scrittoio in rovere con sedia Windsor.
+- Bagno: piastrelle metro a 1,20 m con listello in ottone, salvia chiaro sopra, pavimento in
+  ardesia, mobile lavabo in rovere con catino in ceramica, specchio con cornice in ottone,
+  scaletta portasciugamani, ceste.
+- Disimpegno: perlinato a mezza parete, passatoia persiana, lanterna in ottone e vetro.
+- Terrazzo: tavolo da fattoria con sedie Windsor sotto il gazebo, festoni di lampadine,
+  lanterne a pavimento, ulivi in vasi di cotto.
+- Telai delle porte in rovere miele.
 
 ## Zona pranzo e cucina del piano primo
 

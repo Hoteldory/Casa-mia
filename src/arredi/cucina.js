@@ -237,7 +237,7 @@ const profiloGamba = (() => {
     [0.026, 0.4], [0.036, 0.46], [0.026, 0.5], [0.024, 0.56], [0.045, 0.58], [0.045, 0.72], [0.0, 0.72]];
   return p.map(([r, y]) => new THREE.Vector2(r, y));
 })();
-export function tavoloFattoria(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.77, giunti = 0 }) {
+export function tavoloFattoria(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.77, giunti = 0, ry = 0 }) {
   const M = MAT();
   const g = new THREE.Group();
   const legno = M.rovereMiele;
@@ -267,7 +267,7 @@ export function tavoloFattoria(ctx, { cx, cz, L = 2.2, W = 1.0, H = 0.77, giunti
   for (let i = 0; i < 4; i++) g.add(sphere(0.035, M.foglia, Math.cos(i * 1.6) * 0.13, H + 0.22, -0.15 + Math.sin(i * 1.6) * 0.13, 6));
   g.add(box(0.36, 0.04, 0.24, M.juta, 0, H + 0.02, 0.32));
   for (const dz of [-0.05, 0.05]) g.add(cyl(0.02, 0.02, 0.12, M.carta, dz * 2, H + 0.1, 0.32, 10));
-  place(g, cx, cz, 0);
+  place(g, cx, cz, ry);
   ctx.solid(g);
   return g;
 }

@@ -1,6 +1,9 @@
-// Bagno. Dettaglio di carattere: cementine a terra con motivo a stella (terracotta, salvia, nero, crema).
+// Bagno del piano primo, stile country chiaro: piastrelle metro bianche a 1,20 m con listello
+// in ottone, pareti salvia chiaro sopra, pavimento in ardesia, mobile lavabo in rovere con
+// catino in ceramica, specchio con cornice in ottone, scaletta portasciugamani, ceste.
+// (Le cementine restano nei bagni del piano terra.)
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, group, place, applique, pendente, pianta, MAT } from './comune.js';
+import { box, cyl, sphere, plane, group, place, applique, pendente, pendenteGlobo, pianta, cesta, MAT } from './comune.js';
 
 // ---- lavabo a catino ampio e profondo su consolle in noce e ferro, rubinetteria a muro in ottone brunito ----
 export function lavaboCatino(ctx, { x, z, ry = 0 }) {
@@ -41,16 +44,17 @@ export function lavaboCatino(ctx, { x, z, ry = 0 }) {
 }
 
 // ---- specchio con cornice in noce e ottone ----
-export function specchio(ctx, w, h, x, y, z, normal = 'z+') {
+export function specchio(ctx, w, h, x, y, z, normal = 'z+', cornice) {
   const M = MAT();
+  const Cr = cornice || M.noceScuro;
   const g = new THREE.Group();
   const mirror = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({ color: '#b9c4c6', metalness: 0.9, roughness: 0.08 }));
   mirror.position.z = 0.03; g.add(mirror);
   const c = 0.05;
-  g.add(box(w + 2 * c, c, 0.04, M.noceScuro, 0, h / 2 + c / 2, 0.02));
-  g.add(box(w + 2 * c, c, 0.04, M.noceScuro, 0, -h / 2 - c / 2, 0.02));
-  g.add(box(c, h, 0.04, M.noceScuro, -w / 2 - c / 2, 0, 0.02));
-  g.add(box(c, h, 0.04, M.noceScuro, w / 2 + c / 2, 0, 0.02));
+  g.add(box(w + 2 * c, c, 0.04, Cr, 0, h / 2 + c / 2, 0.02));
+  g.add(box(w + 2 * c, c, 0.04, Cr, 0, -h / 2 - c / 2, 0.02));
+  g.add(box(c, h, 0.04, Cr, -w / 2 - c / 2, 0, 0.02));
+  g.add(box(c, h, 0.04, Cr, w / 2 + c / 2, 0, 0.02));
   g.add(box(w + 2 * c + 0.02, 0.012, 0.02, M.ottone, 0, h / 2 + c + 0.006, 0.02));
   g.position.set(x, y, z);
   g.rotation.y = { 'z+': 0, 'z-': Math.PI, 'x+': Math.PI / 2, 'x-': -Math.PI / 2 }[normal];
@@ -122,11 +126,11 @@ export function scaldasalviette(ctx, x, y, z, normal = 'x-') {
 }
 
 // ---- boiserie bassa in ceramica bianca (rivestimento a mezza altezza) ----
-function rivestimento(ctx, r) {
+function rivestimento(ctx, r, mat) {
   const M = MAT();
   const g = new THREE.Group();
   const h = 1.2, y = h / 2;
-  const m = new THREE.MeshStandardMaterial({ color: '#f2eee6', roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
+  const m = mat || new THREE.MeshStandardMaterial({ color: '#f2eee6', roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   g.add(plane(r.d, h, m, r.x + 0.015, y, r.cz, 'x+'));
   g.add(plane(r.d, h, m, r.x + r.w - 0.015, y, r.cz, 'x-'));
   g.add(plane(r.w, h, m, r.cx, y, r.z + 0.015, 'z+'));
@@ -138,29 +142,80 @@ function rivestimento(ctx, r) {
   return g;
 }
 
+// ---- mobile lavabo in rovere: due cassetti con pomoli in ottone, catino in ceramica
+// appoggiato sul piano, rubinetto a muro in ottone (costruito contro un muro a -z) ----
+export function mobileLavabo(ctx, { x, z, ry = 0, w = 0.9 }) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const d = 0.5, h = 0.8;
+  g.add(box(w, 0.04, d, M.rovereMiele, 0, h, 0));
+  g.add(box(w - 0.04, h - 0.18, d - 0.04, M.rovereMiele, 0, 0.16 + (h - 0.18) / 2, -0.01));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.05, 0.16, 0.05, M.rovereMiele, sx * (w / 2 - 0.04), 0.08, sz * (d / 2 - 0.04)));
+  for (const y of [0.34, 0.6]) {
+    g.add(box(w - 0.1, 0.22, 0.02, M.rovereMiele, 0, y, d / 2 - 0.01));
+    g.add(sphere(0.016, M.ottone, 0, y, d / 2 + 0.01, 10));
+  }
+  // catino in ceramica sul piano
+  g.add(cyl(0.22, 0.19, 0.15, M.ceramica, 0, h + 0.095, 0.02, 28));
+  const fondo = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.16, 0.12, 24, 1, true), new THREE.MeshStandardMaterial({ color: '#e4dfd4', roughness: 0.3, side: THREE.BackSide }));
+  fondo.position.set(0, h + 0.11, 0.02); g.add(fondo);
+  // rubinetto a muro in ottone
+  g.add(cyl(0.025, 0.025, 0.02, M.ottone, 0, h + 0.33, -d / 2 + 0.01, 12).rotateX(Math.PI / 2));
+  g.add(cyl(0.011, 0.011, 0.18, M.ottone, 0, h + 0.33, -d / 2 + 0.1, 8).rotateX(Math.PI / 2));
+  g.add(cyl(0.011, 0.011, 0.06, M.ottone, 0, h + 0.3, -d / 2 + 0.18, 8));
+  for (const dx of [-0.1, 0.1]) g.add(cyl(0.02, 0.02, 0.04, M.ottone, dx, h + 0.36, -d / 2 + 0.03, 10).rotateX(Math.PI / 2));
+  // sapone, asciugamano e cesta sotto
+  g.add(cyl(0.035, 0.03, 0.1, M.ceramicaSalvia, w / 2 - 0.1, h + 0.07, -0.1, 12));
+  g.add(box(0.3, 0.06, 0.3, M.linoBianco, -w / 2 + 0.2, h + 0.05, 0.05));
+  place(g, x, z, ry);
+  ctx.solid(g);
+  return g;
+}
+
+// ---- scaletta portasciugamani in rovere appoggiata al muro (a -z) ----
+export function scalettaTeli(ctx, x, z, ry = 0) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const h = 1.6, inc = 0.18;
+  for (const sx of [-1, 1]) {
+    const m = box(0.04, h, 0.03, M.rovereMiele, sx * 0.2, h / 2, -0.14);
+    m.rotation.x = inc; g.add(m);
+  }
+  for (let i = 0; i < 5; i++) {
+    const y = 0.25 + i * 0.3, zz = -0.14 - Math.sin(inc) * (y - h / 2);
+    g.add(cyl(0.013, 0.013, 0.4, M.rovereMiele, 0, y, zz, 8).rotateZ(Math.PI / 2));
+  }
+  g.add(box(0.36, 0.38, 0.03, M.linoBianco, 0.02, 1.0, -0.18));
+  g.add(box(0.3, 0.3, 0.03, M.linoAzzurro, -0.02, 0.62, -0.12));
+  place(g, x, z, ry);
+  return g;
+}
+
 export function arredaBagno(ctx, stanze) {
   const M = MAT();
   const g = new THREE.Group();
   const R = stanze.bagno.rects[0]; // x 4.31-5.99, z 0.28-2.84
-  ctx.pareti.add(rivestimento(ctx, R));
+  // piastrelle metro a 1,20 m (listello in ottone), pareti salvia chiaro sopra
+  ctx.pareti.add(rivestimento(ctx, R, M.metro));
+  const Hp = ctx.H, hp = Hp - 1.23, yp = 1.23 + hp / 2;
+  ctx.pareti.add(plane(R.d, hp, M.salviaChiaro, R.x + 0.015, yp, R.cz, 'x+'));
+  ctx.pareti.add(plane(R.d, hp, M.salviaChiaro, R.x + R.w - 0.015, yp, R.cz, 'x-'));
+  ctx.pareti.add(plane(R.w - 0.9, hp, M.salviaChiaro, R.x + (R.w - 0.9) / 2, yp, R.z + R.d - 0.015, 'z-'));
   // sanitari sotto la finestra, a nord
   g.add(wc(ctx, R.x + 0.38, R.z + 0.32));
   g.add(bidet(ctx, R.x + 1.2, R.z + 0.32));
-  // lavabo sulla parete ovest, specchio e applique
-  g.add(lavaboCatino(ctx, { x: R.x + 0.3, z: R.z + 1.45, ry: -Math.PI / 2 }));
-  ctx.pareti.add(specchio(ctx, 0.6, 0.8, R.x + 0.03, 1.75, R.z + 1.45, 'x+'));
+  // mobile lavabo in rovere sulla parete ovest, specchio con cornice in ottone e applique
+  g.add(mobileLavabo(ctx, { x: R.x + 0.27, z: R.z + 1.45, ry: Math.PI / 2 }));
+  ctx.pareti.add(specchio(ctx, 0.6, 0.8, R.x + 0.03, 1.75, R.z + 1.45, 'x+', M.ottone));
   ctx.pareti.add(applique(ctx, R.x + 0.02, 2.05, R.z + 1.0, 'x+', { intensita: 4 }));
   ctx.pareti.add(applique(ctx, R.x + 0.02, 2.05, R.z + 1.9, 'x+', { intensita: 4 }));
-  // doccia nell'angolo sud-ovest
+  // doccia nell'angolo sud-ovest (vetro con profilo in ottone)
   g.add(doccia(ctx, { x0: R.x, z0: R.z + R.d - 0.8 }));
-  // scaldasalviette sulla parete est
+  // scaldasalviette e scaletta portasciugamani sulla parete est, cesta, pianta
   ctx.pareti.add(scaldasalviette(ctx, R.x + R.w - 0.02, 1.2, R.z + 1.2, 'x-'));
-  // sgabellino in noce con asciugamani, pianta
-  g.add(box(0.3, 0.03, 0.3, M.noce, R.x + R.w - 0.3, 0.42, R.z + 1.85));
-  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.03, 0.42, 0.03, M.noce, R.x + R.w - 0.3 + sx * 0.12, 0.21, R.z + 1.85 + sz * 0.12));
-  g.add(box(0.26, 0.1, 0.22, M.linoBianco, R.x + R.w - 0.3, 0.485, R.z + 1.85));
-  g.add(pianta(R.x + R.w - 0.25, R.z + 0.35, { h: 0.5, vaso: 0.1 }));
-  // lampada centrale
-  g.add(pendente(ctx, R.cx, R.cz, { yTop: ctx.H, calata: 0.35, raggio: 0.14, intensita: 10 }));
+  g.add(scalettaTeli(ctx, R.x + R.w - 0.05, R.z + 1.95, -Math.PI / 2));
+  g.add(cesta(R.x + R.w - 0.25, R.z + 2.45, { r: 0.16, h: 0.34 }));
+  g.add(pianta(R.x + R.w - 0.25, R.z + 0.35, { h: 0.55, vaso: 0.1, matVaso: M.ceramica }));
+  g.add(pendenteGlobo(ctx, R.cx, R.cz, { yTop: ctx.H, calata: 0.45, raggio: 0.12, intensita: 10 }));
   return g;
 }

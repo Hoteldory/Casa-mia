@@ -1,8 +1,10 @@
-// Terrazzo nord: verde lungo tutto il perimetro, tavolo da otto e gazebo in acciaio
-// con rampicanti. Le misure del terrazzo arrivano da planimetria.json.
+// Terrazzo nord: verde lungo tutto il perimetro, gazebo in ferro con rampicanti e festoni di
+// lampadine, tavolo da fattoria in rovere con sedie Windsor, ulivi in vasi di cotto, lanterne.
+// Le misure del terrazzo arrivano da planimetria.json.
 import * as THREE from 'three';
 import plan from '../data/planimetria.json';
 import { box, cyl, sphere, place, pendente, lanterna, MAT, matColore } from './comune.js';
+import { tavoloFattoria, sediaWindsor } from './cucina.js';
 
 const C = 0.01;
 export const VERDI = ['#4a6b3a', '#3d5c32', '#5b7d45', '#38502c', '#6b8a4e'];
@@ -186,17 +188,59 @@ export function gazebo(ctx, { cx, cz, L = 4.2, W = 3.3, H = 2.45 }) {
 }
 
 // ---- vaso alto con alberello ----
-export function vasoAlbero(ctx, x, z, seed = 3) {
+export function vasoAlbero(ctx, x, z, seed = 3, colori = VERDI) {
   const M = MAT();
   const g = new THREE.Group();
   const rand = rnd(seed * 131 + 7);
   g.add(cyl(0.26, 0.2, 0.52, M.cotto, 0, 0.26, 0, 22));
   g.add(cyl(0.28, 0.28, 0.04, M.cotto, 0, 0.53, 0, 22));
   g.add(cyl(0.05, 0.07, 0.75, matColore('#6b5a42', 0.9), 0, 0.9, 0, 10));
-  cespuglio(g, 0, 1.45, 0, 0.42, rand, VERDI, 8);
+  cespuglio(g, 0, 1.45, 0, 0.42, rand, colori, 8);
   place(g, x, z);
   ctx.solid(g);
   return g;
+}
+
+// ---- festone di lampadine a filamento fra due punti, con la sua catenaria ----
+const matFestone = () => {
+  if (!matFestone.m) matFestone.m = MAT().lampadina.clone(); // un materiale per tutte: si accendono insieme
+  return matFestone.m;
+};
+function festone(ctx, g, [x0, y0, z0], [x1, y1, z1], { n = 9, freccia = 0.25, luce = false } = {}) {
+  const M = MAT();
+  const pt = (t) => [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t - freccia * 4 * t * (1 - t), z0 + (z1 - z0) * t];
+  let prima = pt(0), bulbo = null;
+  for (let i = 1; i <= 12; i++) {
+    const p = pt(i / 12), m = [(prima[0] + p[0]) / 2, (prima[1] + p[1]) / 2, (prima[2] + p[2]) / 2];
+    const L = Math.hypot(p[0] - prima[0], p[1] - prima[1], p[2] - prima[2]);
+    const f = cyl(0.003, 0.003, L, M.nero, m[0], m[1], m[2], 4, { cast: false });
+    f.lookAt(p[0], p[1], p[2]); f.rotateX(Math.PI / 2);
+    g.add(f);
+    prima = p;
+  }
+  for (let i = 1; i < n; i++) {
+    const [x, y, z] = pt(i / n);
+    g.add(cyl(0.008, 0.008, 0.04, M.ottoneScuro, x, y - 0.02, z, 6, { cast: false }));
+    bulbo = sphere(0.022, matFestone(), x, y - 0.06, z, 8);
+    g.add(bulbo);
+  }
+  if (luce) {
+    const [x, y, z] = pt(0.5);
+    const l = new THREE.PointLight('#ffcf8a', 8, 6, 2);
+    l.position.set(x, y - 0.1, z);
+    g.add(l);
+    ctx.addLight(l, bulbo, null);
+  }
+}
+
+// ---- lanterna da pavimento in ottone e vetro, con candela ----
+function lanternaPavimento(g, x, z, h = 0.5) {
+  const M = MAT();
+  g.add(box(0.24, 0.03, 0.24, M.ottoneScuro, x, 0.015, z));
+  g.add(box(0.22, h - 0.06, 0.22, M.vetroGlobo, x, h / 2, z, { cast: false }));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.016, h, 0.016, M.ottoneScuro, x + sx * 0.11, h / 2, z + sz * 0.11));
+  g.add(cyl(0.03, 0.15, 0.08, M.ottoneScuro, x, h + 0.04, z, 4).rotateY(Math.PI / 4));
+  g.add(cyl(0.035, 0.035, 0.14, M.carta, x, 0.1, z, 10));
 }
 
 export function arredaTerrazzo(ctx) {
@@ -218,16 +262,27 @@ export function arredaTerrazzo(ctx) {
   // pranzo all'aperto sotto il gazebo, al centro del tratto largo
   const cx = (xO + xEs) / 2, cz = (zR + zS) / 2;
   g.add(gazebo(ctx, { cx, cz, L: 4.2, W: 3.3, H: 2.45 }));
-  g.add(tavoloTerrazzo(ctx, { cx, cz, L: 2.4, W: 1.0 }));
+  // tavolo da fattoria in rovere (lato lungo est-ovest) con sedie Windsor nere
+  g.add(tavoloFattoria(ctx, { cx, cz, L: 2.4, W: 1.0, ry: Math.PI / 2 }));
   for (let i = 0; i < 3; i++) {
-    g.add(sediaTerrazzo(ctx, cx - 0.82 + i * 0.82, cz - 0.79, 0));
-    g.add(sediaTerrazzo(ctx, cx - 0.82 + i * 0.82, cz + 0.79, Math.PI));
+    g.add(sediaWindsor(ctx, cx - 0.8 + i * 0.8, cz - 0.78, 0));
+    g.add(sediaWindsor(ctx, cx - 0.8 + i * 0.8, cz + 0.78, Math.PI));
   }
-  g.add(sediaTerrazzo(ctx, cx - 1.52, cz, Math.PI / 2));
-  g.add(sediaTerrazzo(ctx, cx + 1.52, cz, -Math.PI / 2));
+  g.add(sediaWindsor(ctx, cx - 1.52, cz, Math.PI / 2, M.rovereMiele));
+  g.add(sediaWindsor(ctx, cx + 1.52, cz, -Math.PI / 2, M.rovereMiele));
+  // festoni di lampadine sotto il gazebo, da un angolo all'altro
+  const hx = 2.06, hz = 1.61, yf = 2.38;
+  festone(ctx, g, [cx - hx, yf, cz - hz], [cx + hx, yf, cz + hz], { luce: true });
+  festone(ctx, g, [cx - hx, yf, cz + hz], [cx + hx, yf, cz - hz], { luce: true });
+  festone(ctx, g, [cx - hx, yf, cz], [cx + hx, yf, cz], { n: 7, freccia: 0.18 });
+  // lanterne a pavimento accanto al gazebo
+  lanternaPavimento(g, cx - 2.45, cz + 1.9);
+  lanternaPavimento(g, cx - 2.15, cz + 2.05, 0.38);
+  lanternaPavimento(g, cx + 2.45, cz + 1.9);
 
-  // due alberelli in vaso ai lati della portafinestra della cucina
-  g.add(vasoAlbero(ctx, 1.78, -0.75, 4));
-  g.add(vasoAlbero(ctx, 3.58, -0.75, 9));
+  // due ulivi in vaso di cotto ai lati della portafinestra della cucina
+  const OLIVO = ['#7d8f6a', '#8a9b78', '#6b7d5a'];
+  g.add(vasoAlbero(ctx, 1.78, -0.75, 4, OLIVO));
+  g.add(vasoAlbero(ctx, 3.58, -0.75, 9, OLIVO));
   return g;
 }

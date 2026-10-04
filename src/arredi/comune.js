@@ -244,6 +244,54 @@ export function tendaBambu(w, x, yTop, z, normal = 'z+', { aperta = 0.42 } = {})
   return g;
 }
 
+// Parete a doghe verticali (perlinato) con mensola-cimasa in legno, appoggiata a un muro.
+// asse 'x': muro lungo X a z = at; asse 'z': muro lungo Z a x = at; verso = lato della stanza
+export function pareteDoghe(g, { asse, a, b, at, verso, h = 1.2, mat, cimasa, fuga = '#c4baa8' }) {
+  const M = MAT();
+  const L = b - a, pos = (a + b) / 2, m = mat || M.biancoLatte;
+  const lungo = (len, hh, dd, mt, u, y, off) => (asse === 'x'
+    ? box(len, hh, dd, mt, u, y, at + verso * off) : box(dd, hh, len, mt, at + verso * off, y, u));
+  g.add(lungo(L, h, 0.012, m, pos, h / 2, 0.006));                    // fondo
+  const n = Math.max(2, Math.round(L / 0.12));
+  const mf = matColore(fuga, 0.9);
+  for (let i = 1; i < n; i++) g.add(lungo(0.006, h - 0.12, 0.004, mf, a + (L * i) / n, h / 2 + 0.03, 0.0125)); // fughe
+  g.add(lungo(L, 0.1, 0.02, m, pos, 0.05, 0.014));                   // zoccolo
+  g.add(lungo(L, 0.05, 0.08, cimasa || M.rovereMiele, pos, h + 0.025, 0.04)); // cimasa a mensola
+}
+
+// Lanterna a soffitto in ottone e vetro su catenella
+export function lanternaSoffitto(ctx, x, z, { yTop, calata = 0.6, intensita = 10 } = {}) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const y = yTop - calata;
+  g.add(cyl(0.05, 0.05, 0.02, M.ottone, x, yTop - 0.01, z, 12));
+  g.add(cyl(0.006, 0.006, calata - 0.2, M.ottone, x, yTop - (calata - 0.2) / 2, z, 6));
+  const vetro = M.vetroGlobo.clone();
+  vetro.emissive = new THREE.Color('#ffd9a8'); vetro.emissiveIntensity = 0;
+  g.add(box(0.2, 0.28, 0.2, vetro, x, y, z, { cast: false }));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(box(0.014, 0.3, 0.014, M.ottone, x + sx * 0.1, y, z + sz * 0.1));
+  g.add(cyl(0.02, 0.15, 0.08, M.ottone, x, y + 0.18, z, 4).rotateY(Math.PI / 4));
+  g.add(box(0.22, 0.02, 0.22, M.ottone, x, y - 0.15, z));
+  const bulb = sphere(0.025, M.lampadina, x, y, z, 10);
+  g.add(bulb);
+  const light = new THREE.PointLight('#ffd9a8', intensita, 6, 2);
+  light.position.set(x, y - 0.05, z);
+  g.add(light);
+  ctx.addLight(light, bulb, vetro);
+  return g;
+}
+
+// Cesta in vimini/juta con bordo
+export function cesta(x, z, { r = 0.18, h = 0.3 } = {}) {
+  const M = MAT();
+  const g = new THREE.Group();
+  g.add(cyl(r, r * 0.88, h, M.juta, 0, h / 2, 0, 18));
+  g.add(cyl(r + 0.01, r + 0.01, 0.03, M.rovereMiele, 0, h, 0, 18));
+  g.add(cyl(r * 0.8, r * 0.8, 0.06, M.linoBianco, 0, h - 0.02, 0, 14));
+  g.position.set(x, 0, z);
+  return g;
+}
+
 // Applique in ottone con paralume in tessuto
 export function applique(ctx, x, y, z, normal = 'z+', { intensita = 6 } = {}) {
   const M = MAT();

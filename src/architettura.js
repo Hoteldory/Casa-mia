@@ -147,7 +147,8 @@ function buildPorta(p, seg, ctx, P = plan) {
   const h = (p.h_cm ?? (p.tipo === 'portoncino' ? A.portoncino_h_cm : A.porta_interna_h_cm)) * C;
   const cross = ((horiz ? r.y : r.x) + (horiz ? r.d : r.w) / 2) * C;
   const g = new THREE.Group();
-  const matT = p.tipo === 'portoncino' ? M.noceScuro : M.noce;
+  // telai: rovere miele al piano primo, noce altrove
+  const matT = p.tipo === 'portoncino' ? M.noceScuro : (P === plan ? M.rovereMiele : M.noce);
   // telaio (stipiti + traversa), poco più largo del muro
   const T = thick + 0.02, s = 0.09;
   const along = (len, hh, pos, y) => {
@@ -706,10 +707,10 @@ export function costruisciArchitettura(ctx) {
   involucro(plan, st, ctx, walls, wallsLow, () => H);
 
   // pavimenti e soffitti
-  // rovere a listoni larghi in tutto il piano, tranne il bagno
+  // rovere a listoni larghi in tutto il piano, ardesia nel bagno
   const R = M.rovereListoni;
-  const floorMat = { soggiorno: R, bagno: M.cementine, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
-  const ceilMat = { disimpegno: M.salvia };
+  const floorMat = { soggiorno: R, bagno: M.ardesia, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
+  const ceilMat = {};
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {
       floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0.005, r.cz, 'y+'));

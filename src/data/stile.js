@@ -727,6 +727,31 @@ export function texStampaBotanica(seed = 91) {
   }, { seed });
 }
 
+// Ardesia in lastre 40 x 40 (texture = 80 cm): grigio antracite con riflessi blu e verdi,
+// superficie a sfaldature, fughe scure
+export function texArdesia(seed = 83) {
+  return canvasTexture(512, (ctx, s, r) => {
+    const t = s / 2;
+    ctx.fillStyle = '#2a2b2c';
+    ctx.fillRect(0, 0, s, s);
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+      const l = 30 + r() * 8, h = 200 + r() * 30;
+      ctx.fillStyle = `hsl(${h}, 7%, ${l}%)`;
+      ctx.fillRect(i * t + 3, j * t + 3, t - 6, t - 6);
+      ctx.save(); ctx.beginPath(); ctx.rect(i * t + 3, j * t + 3, t - 6, t - 6); ctx.clip();
+      for (let k = 0; k < 18; k++) {
+        ctx.fillStyle = `hsla(${h + (r() - 0.5) * 60}, 10%, ${l + (r() - 0.5) * 12}%, 0.35)`;
+        const y = j * t + r() * t;
+        ctx.beginPath(); ctx.moveTo(i * t, y);
+        for (let x = 0; x <= t; x += 16) ctx.lineTo(i * t + x, y + (r() - 0.5) * 10);
+        ctx.lineTo(i * t + t, y + 14 + r() * 20); ctx.lineTo(i * t, y + 14 + r() * 20); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
+    }
+    noiseOver(ctx, s, r, { n: 9000, alpha: 0.08, colors: ['#000', '#9aa3a8'], rmin: 0.5, rmax: 1.8 });
+  }, { seed });
+}
+
 // ---------- rilievo: la texture stessa fa da mappa di rilievo (bump map) ----------
 // L'altezza e' la tinta della texture: fughe, venature, trame e bordi dei coppi, piu' scuri,
 // stanno piu' in basso. Lo calcola la scheda grafica pixel per pixel, nessuna texture in piu'.
@@ -742,6 +767,7 @@ const RILIEVO = {
   prato: 1.0, ghiaia: 1.4, terreno: 1.0, terraOrto: 1.0,
   rovereListoni: 0.8, rovereMiele: 0.5, marmo: 0.2, metro: 1.0, azzurroPolvere: 0.25, biancoLatte: 0.2,
   linoAvena: 0.8, linoAzzurro: 0.8, floreale: 0.3, righeAzzurre: 0.2, juta: 1.5, bambu: 1.2,
+  olivaPittura: 0.25, linoRuggine: 0.8, ardesia: 1.2, cartaRigheAzzurre: 0.15,
 };
 function applicaRilievo(M) {
   for (const [k, f] of Object.entries(RILIEVO)) {
@@ -831,10 +857,14 @@ export function getMateriali() {
     juta: std({ map: texJuta(), roughness: 1 }),
     bambu: std({ map: texBambu(), roughness: 0.8 }),
     neroWindsor: std({ color: '#1f1c19', roughness: 0.45 }),
+    olivaPittura: std({ map: texVernice('#7a8662', 45), roughness: 0.85 }),
+    linoRuggine: std({ map: texLino('#b0663f', 46), roughness: 0.95 }),
+    ardesia: std({ map: texArdesia(), roughness: 0.55 }),
+    cartaRigheAzzurre: std({ map: texRighe('#efe8da', '#a7bacb', 47), roughness: 0.9 }),
     vetroGlobo: new THREE.MeshPhysicalMaterial({ color: '#f4efe4', roughness: 0.15, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false }),
   };
   // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
-  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio', 'rovereListoni', 'metro', 'azzurroPolvere', 'biancoLatte']) {
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio', 'rovereListoni', 'metro', 'azzurroPolvere', 'biancoLatte', 'olivaPittura', 'ardesia', 'cartaRigheAzzurre']) {
     _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
   }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
@@ -866,6 +896,10 @@ export function getMateriali() {
   _MAT.bambu.map.repeat.set(1 / 0.3, 1 / 0.3);
   for (const k of ['azzurroPolvere', 'biancoLatte', 'linoAvena', 'linoAzzurro', 'righeAzzurre']) _MAT[k].map.repeat.set(3, 3);
   _MAT.floreale.map.repeat.set(4, 4);
+  _MAT.olivaPittura.map.repeat.set(3, 3);
+  _MAT.linoRuggine.map.repeat.set(3, 3);
+  _MAT.ardesia.map.repeat.set(1 / 0.8, 1 / 0.8);
+  _MAT.cartaRigheAzzurre.map.repeat.set(1 / 0.5, 1 / 0.5);
   _MAT.cartaRighe.map.repeat.set(1 / 0.5, 1 / 0.5);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);
