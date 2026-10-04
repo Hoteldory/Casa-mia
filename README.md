@@ -300,6 +300,25 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 - Pulsante **Qualità** nel pannello: "alta" con ombre di contatto e bagliore, "leggera" senza.
   Su telefono si parte leggeri e senza spigoli arrotondati.
 
+## Materiali fotografici e cielo vero
+
+- **Texture fotografiche** da [Poly Haven](https://polyhaven.com) (licenza CC0, uso libero):
+  - parquet in rovere, intonaci, pitture, legni dei mobili, lino, velluto e cuoio;
+  - cotto, pietra, coppi, juta, ghiaia, prato e campagna intorno.
+  - Ogni materiale ha la sua normal map (il rilievo vero della foto) e, dove serve, la mappa di
+    ruvidità.
+- **I colori della casa non cambiano**: per la maggior parte dei materiali dalla foto si prende
+  solo la trama (in grigio) e la tinta resta quella scelta. Coppi, juta, ghiaia e campagna
+  tengono i colori della foto.
+- I file sono in `public/tex/` (circa 6 MB in tutto). Si rigenerano con
+  `python3 tools/texture_foto.py`.
+- **Cielo vero**: due foto a 360° di Poly Haven, una di giorno con le nuvole e una al tramonto,
+  in `public/cielo/`.
+  - Fanno da sfondo e da luce riflessa.
+  - Il cielo gira in modo che il suo sole stia dove sta il sole vero; sotto i 10° di altezza
+    passa a quello del tramonto.
+  - La campagna intorno arriva fino alla foschia dell'orizzonte.
+
 ## Esperienza di visita
 
 - **Sole vero**: cursori Ora e Giorno (il 21 di ogni mese). La posizione del sole e' calcolata

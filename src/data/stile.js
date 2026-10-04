@@ -787,6 +787,98 @@ function applicaRilievo(M) {
   }
 }
 
+// ---------- texture fotografiche (Poly Haven, CC0; vedi tools/texture_foto.py) ----------
+// Per ogni materiale: la foto da cui prendere trama e rilievo, quanti metri copre, la forza della
+// normal map, se ha la mappa di ruvidita', una rotazione in piu'. Nei materiali "dettaglio" il
+// colore resta quello scelto per la casa (la media della texture disegnata); i "naturali" tengono
+// i colori della foto.
+const PAINT = { src: 'vernice', m: 1.2, n: 0.25 };
+const LEGNO = { src: 'legno', m: 0.8, n: 0.5, rot: Math.PI / 2 };
+const LINO = { src: 'lino', m: 0.35, n: 0.6 };
+const VELLUTO = { src: 'velluto', m: 0.4, n: 0.4 };
+const FOTO = {
+  intonaco: { src: 'intonaco', m: 2.0, n: 0.6 },
+  intonacoSoffitto: { src: 'intonaco', m: 2.0, n: 0.4 },
+  intonacoEsterno: { src: 'intonaco', m: 1.5, n: 1.0 },
+  salvia: PAINT, salviaChiaro: PAINT, terracottaPittura: PAINT, tortora: PAINT, scuri: PAINT,
+  bluPetrolio: PAINT, bluPolvere: PAINT, crema: PAINT, azzurroPolvere: PAINT, biancoLatte: PAINT, olivaPittura: PAINT,
+  rovereListoni: { src: 'listoni', m: 1.6, n: 0.8, r: true },
+  noce: LEGNO, noceVerticale: LEGNO, noceScuro: LEGNO, rovere: LEGNO, rovereMiele: LEGNO, cognac: LEGNO,
+  parquet: { src: 'parquet', m: 2.0, n: 0.8, r: true },
+  lino: LINO, linoBianco: LINO, linoTortora: LINO, linoAvena: LINO, linoAzzurro: LINO, linoRuggine: LINO, tessutoGrafite: LINO,
+  velluto: VELLUTO, vellutoSalvia: VELLUTO, vellutoRuggine: VELLUTO,
+  cuoio: { src: 'cuoio', m: 0.6, n: 0.6, r: true },
+  cotto: { src: 'cotto', m: 2.0, n: 0.8, r: true },
+  pietra: { src: 'pietra', m: 2.0, n: 0.5, r: true },
+  pietraScura: { src: 'pietra', m: 2.0, n: 0.5, r: true },
+  prato: { src: 'prato', m: 2.5, n: 0.8 },
+  terreno: { src: 'terreno', m: 6.0, n: 0.8, naturale: true, tinta: '#c9dca0' },
+  coppi: { src: 'coppi', m: 3.0, n: 1.0, r: true, naturale: true, tinta: '#f0a27e' },
+  juta: { src: 'juta', m: 0.5, n: 0.8, naturale: true },
+  ghiaia: { src: 'ghiaia', m: 1.2, n: 0.8, naturale: true },
+};
+const _foto = {}; // sorgente -> { d, n, r } texture caricate
+
+// Carica le foto prima di costruire la casa (main.js la attende). Se qualcosa non arriva,
+// quei materiali restano con la texture disegnata.
+export async function preparaFoto() {
+  const base = `${import.meta.env.BASE_URL}tex/`;
+  const loader = new THREE.TextureLoader();
+  const carica = (f) => loader.loadAsync(base + f).catch(() => null);
+  const sorgenti = {};
+  for (const c of Object.values(FOTO)) sorgenti[c.src] = sorgenti[c.src] || !!c.r;
+  await Promise.all(Object.entries(sorgenti).map(async ([src, conR]) => {
+    const [d, n, r] = await Promise.all([carica(`${src}_d.webp`), carica(`${src}_n.webp`), conR ? carica(`${src}_r.webp`) : null]);
+    if (d && n) _foto[src] = { d, n, r };
+  }));
+}
+
+// colore medio di una texture disegnata (canvas), letto su una copia di 4 x 4 pixel
+function mediaColore(tex) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 4;
+  const g = c.getContext('2d');
+  g.drawImage(tex.image, 0, 0, 4, 4);
+  const px = g.getImageData(0, 0, 4, 4).data;
+  let r = 0, gg = 0, b = 0;
+  for (let i = 0; i < px.length; i += 4) { r += px[i]; gg += px[i + 1]; b += px[i + 2]; }
+  const n = px.length / 4;
+  return new THREE.Color().setRGB(r / n / 255, gg / n / 255, b / n / 255, THREE.SRGBColorSpace);
+}
+
+function applicaFoto(M) {
+  for (const [k, c] of Object.entries(FOTO)) {
+    const m = M[k], f = _foto[c.src];
+    if (!m || !f) continue;
+    const vecchia = m.map;
+    const rot = (vecchia?.rotation || 0) + (c.rot || 0);
+    const copia = (t, spazio) => {
+      const x = t.clone();
+      x.wrapS = x.wrapT = THREE.RepeatWrapping;
+      x.repeat.set(1 / c.m, 1 / c.m);
+      x.rotation = rot; x.center.set(0.5, 0.5);
+      x.colorSpace = spazio;
+      x.anisotropy = 8;
+      x.needsUpdate = true;
+      return x;
+    };
+    if (c.naturale) {
+      m.map = copia(f.d, THREE.SRGBColorSpace);
+      m.color.set(c.tinta || '#ffffff'); // una velatura per scaldare o schiarire la foto
+    } else {
+      // la trama grigia ha media 0.8: il colore del materiale la riporta alla tinta di prima
+      const tinta = vecchia ? mediaColore(vecchia).multiply(m.color) : m.color.clone();
+      m.map = copia(f.d, THREE.NoColorSpace);
+      m.color.copy(tinta).multiplyScalar(1 / 0.8);
+    }
+    m.normalMap = copia(f.n, THREE.NoColorSpace);
+    m.normalScale.set(c.n, c.n);
+    if (f.r) { m.roughnessMap = copia(f.r, THREE.NoColorSpace); m.roughness = Math.min(1, m.roughness + 0.1); }
+    m.bumpMap = null;
+    m.needsUpdate = true;
+  }
+}
+
 // ---------- materiali condivisi ----------
 let _MAT = null;
 export function getMateriali() {
@@ -925,6 +1017,7 @@ export function getMateriali() {
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);
   applicaRilievo(_MAT);
+  applicaFoto(_MAT);
   return _MAT;
 }
 

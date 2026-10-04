@@ -16,6 +16,7 @@ import { arredaPianoTerra } from './arredi/piano_terra.js';
 import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
 import { conSmusso, raggioSmusso } from './arredi/comune.js';
+import { preparaFoto } from './data/stile.js';
 import { posizioneSole, direzioneSole, albaTramonto, puntoCardinale, hhmm, MESI, LUOGO } from './sole.js';
 
 // ---------- schermata di caricamento: la costruzione procede a tappe, la barra avanza ----------
@@ -71,7 +72,7 @@ renderer.toneMappingExposure = 1.0;
 app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.15, 120);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.15, 240);
 // luce d'ambiente riflessa: uno studio luminoso. Su tutto arriva appena (scene.environment
 // tenue, se no gli intonaci sbiancano); ottone, ferro, vetri, ceramiche, smalti e pietra lucida
 // lo riflettono pieno (envMap propria, assegnata dopo la costruzione: vedi lucidi).
@@ -82,6 +83,29 @@ const ambienteRiflesso = (() => {
   return t;
 })();
 scene.environment = ambienteRiflesso;
+
+// cielo vero: due foto a 360 gradi (Poly Haven, CC0), di giorno e al tramonto. u = dove sta il sole
+// nella foto (frazione della larghezza): il cielo si gira perche' coincida con il sole vero.
+const CIELI = {
+  giorno: { file: 'giorno.jpg', u: 0.595, orizzonte: '#9b9fae' },
+  tramonto: { file: 'tramonto.jpg', u: 0.606, orizzonte: '#c7bca9' },
+};
+async function caricaCieli() {
+  const loader = new THREE.TextureLoader();
+  await Promise.all(Object.values(CIELI).map(async (c) => {
+    try {
+      const t = await loader.loadAsync(`${import.meta.env.BASE_URL}cielo/${c.file}`);
+      t.mapping = THREE.EquirectangularReflectionMapping;
+      t.colorSpace = THREE.SRGBColorSpace;
+      const pm = new THREE.PMREMGenerator(renderer);
+      c.tex = t;
+      c.env = pm.fromEquirectangular(t).texture;
+      pm.dispose();
+    } catch { /* senza foto resta il cielo a tinta unita */ }
+  }));
+}
+await passo('Materiali e cielo', 0.06);
+await Promise.all([preparaFoto(), caricaCieli()]);
 const lucidi = new Set();
 
 // ---------- qualita': alta (ombre di contatto, bagliore delle lampade di sera) o leggera ----------
@@ -269,9 +293,21 @@ function applicaLuce() {
     // sole vero: basso e caldo all'alba e al tramonto, alto e bianco a mezzogiorno
     const s = soleAdesso(), d = direzioneSole(s);
     const f = THREE.MathUtils.smoothstep(s.altezza, -1, 28);
-    const sfondo = CIELO_TRAMONTO.clone().lerp(CIELO_GIORNO, f);
-    scene.background = sfondo;
-    scene.fog = new THREE.Fog(sfondo, 45, 90);
+    const c = s.altezza < 10 ? CIELI.tramonto : CIELI.giorno;
+    if (c.tex) {
+      // la foto del cielo, girata in modo che il suo sole stia dove sta il sole vero
+      const giro = Math.atan2(d.z, d.x) - (c.u - 0.5) * Math.PI * 2;
+      scene.background = c.tex;
+      scene.environment = c.env;
+      scene.backgroundRotation.set(0, giro, 0);
+      scene.environmentRotation.set(0, giro, 0);
+      scene.fog = new THREE.Fog(c.orizzonte, 50, 150);
+    } else {
+      const sfondo = CIELO_TRAMONTO.clone().lerp(CIELO_GIORNO, f);
+      scene.background = sfondo;
+      scene.environment = ambienteRiflesso;
+      scene.fog = new THREE.Fog(sfondo, 45, 90);
+    }
     sole.color.copy(C_TRAMONTO).lerp(C_MEZZODI, f);
     sole.position.set(CENTRO.x + d.x * 35, CENTRO.y + Math.max(d.y, 0.03) * 35, CENTRO.z + d.z * 35);
     sole.intensity = 3.2 * (0.3 + 0.7 * f);
@@ -291,6 +327,8 @@ function applicaLuce() {
   } else {
     // notte: la luna fa da unica direzionale con ombre, tutto il resto viene dalle lampade
     scene.background = new THREE.Color('#070b12');
+    scene.environment = ambienteRiflesso;
+    scene.environmentRotation.set(0, 0, 0);
     scene.fog = new THREE.Fog('#070b12', 26, 70);
     sole.color.set('#a9c2e6');
     sole.position.set(15, 11, -13);
