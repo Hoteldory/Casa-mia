@@ -15,7 +15,7 @@ import { costruisciPianoTerra, PIANO_TERRA, PIANO_SUOCERI, QUOTA_TERRA, ORIGINE_
 import { arredaPianoTerra } from './arredi/piano_terra.js';
 import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
-import { conSmusso, raggioSmusso } from './arredi/comune.js';
+import { conSmusso, raggioSmusso, preparaModelli } from './arredi/comune.js';
 import { preparaFoto } from './data/stile.js';
 import { posizioneSole, direzioneSole, albaTramonto, puntoCardinale, hhmm, MESI, LUOGO } from './sole.js';
 
@@ -105,7 +105,7 @@ async function caricaCieli() {
   }));
 }
 await passo('Materiali e cielo', 0.06);
-await Promise.all([preparaFoto(), caricaCieli()]);
+await Promise.all([preparaFoto(), caricaCieli(), preparaModelli()]);
 const lucidi = new Set();
 
 // ---------- qualita': alta (ombre di contatto, bagliore delle lampade di sera) o leggera ----------
@@ -184,8 +184,8 @@ function ottimizza(root) {
   const rel = new THREE.Matrix4();
   const buckets = new Map();
   const daRimuovere = [];
-  // i pezzi mobili (le ante della porta telescopica) restano fuori: si fondono a parte, uno per uno
-  const visita = (o, fn) => { if (o !== root && o.userData.mobile) return; fn(o); for (const c of o.children) visita(c, fn); };
+  // i pezzi da tenere a parte (ante che scorrono, modelli 3D con geometria condivisa) non si fondono qui
+  const visita = (o, fn) => { if (o !== root && o.userData.aParte) return; fn(o); for (const c of o.children) visita(c, fn); };
   visita(root, (o) => {
     if (!o.isMesh) return;
     if (!o.visible) { daRimuovere.push(o); return; }

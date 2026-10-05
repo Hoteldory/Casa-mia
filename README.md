@@ -319,6 +319,18 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
     passa a quello del tramonto.
   - La campagna intorno arriva fino alla foschia dell'orizzonte.
 
+## Modelli 3D veri
+
+- Le **piante in vaso** di tutta la casa sono modelli 3D veri di Poly Haven (CC0):
+  - una pianta alta (circa 1,35 m) e una media, entrambe in vaso di cotto;
+  - una piccola grassa in vaso bianco, per mensole e mobili.
+  Si sceglie il modello in base all'altezza, e la pianta non è mai più larga del posto che aveva.
+- **Alleggeriti per il web** con gltf-transform (meshoptimizer): meno triangoli, texture webp a
+  512 px, geometria compressa. 6,3 MB diventano 330 KB per la pianta grande. File in
+  `public/modelli/`, rigenerabili con `bash tools/modelli_3d.sh`.
+- Ogni pianta è una copia che condivide geometria e materiali: non si fonde con la stanza
+  (flag `userData.aParte`, come le ante della porta telescopica).
+
 ## Esperienza di visita
 
 - **Sole vero**: cursori Ora e Giorno (il 21 di ogni mese). La posizione del sole e' calcolata

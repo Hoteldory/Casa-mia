@@ -3,6 +3,8 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { getMateriali, uvMetri, texPersiano, texStampaBotanica } from '../data/stile.js';
 
 export const MAT = () => getMateriali();
@@ -376,8 +378,48 @@ export function quadro(w, h, matTela, x, y, z, normal = 'z+', matCornice) {
   return g;
 }
 
-// Pianta in vaso di cotto
+// ---------- modelli 3D veri (Poly Haven, CC0; vedi tools/modelli_3d.sh) ----------
+// Caricati prima di costruire la casa (main.js li attende); ogni uso ne fa una copia leggera
+// che condivide geometria e materiali. Se un file non arriva, resta la versione disegnata.
+const MODELLI = { pianta_alta: null, pianta_media: null, pianta_piccola: null };
+export async function preparaModelli() {
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  await Promise.all(Object.keys(MODELLI).map(async (k) => {
+    try {
+      const g = await loader.loadAsync(`${import.meta.env.BASE_URL}modelli/${k}.glb`);
+      const scena = g.scene;
+      scena.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      const b = new THREE.Box3().setFromObject(scena);
+      MODELLI[k] = { scena, h: b.max.y - b.min.y, largo: Math.max(b.max.x - b.min.x, b.max.z - b.min.z), centro: b.getCenter(new THREE.Vector3()), base: b.min.y };
+    } catch { /* resta la pianta disegnata */ }
+  }));
+}
+
+// Pianta in vaso: un modello 3D vero scelto per altezza (alta, media o piccola grassa), con il suo
+// vaso di cotto, girata a caso secondo il posto. Non e' mai piu' larga del posto che aveva la
+// pianta disegnata (diametro del vaso piu' le foglie).
+function piantaModello(x, z, h, vaso) {
+  const H = vaso * 1.2 + h * 0.8; // altezza totale, come la pianta disegnata
+  const k = H >= 0.9 ? 'pianta_alta' : H >= 0.42 ? 'pianta_media' : 'pianta_piccola';
+  const m = MODELLI[k];
+  if (!m) return null;
+  const s = Math.min(H / m.h, (vaso * 2.6 + 0.1) / m.largo);
+  const copia = m.scena.clone();
+  copia.position.set(-m.centro.x, -m.base, -m.centro.z);
+  const dentro = new THREE.Group();
+  dentro.add(copia);
+  dentro.scale.setScalar(s);
+  dentro.rotation.y = ((Math.sin(x * 12.9898 + z * 78.233) * 43758.5453) % 1) * Math.PI * 2;
+  const g = new THREE.Group();
+  g.add(dentro);
+  g.position.set(x, 0, z);
+  g.userData.aParte = true; // non si fonde con la stanza: le copie condividono la geometria
+  return g;
+}
+
 export function pianta(x, z, { h = 0.9, vaso = 0.16, matVaso } = {}) {
+  const vera = piantaModello(x, z, h, vaso);
+  if (vera) return vera;
   const M = MAT();
   const mv = matVaso || M.cotto;
   const g = new THREE.Group();
