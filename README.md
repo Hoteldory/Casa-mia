@@ -154,9 +154,7 @@ Tappa 2 (fatta): il resto del piano.
   bianco latte, scrittoio in rovere con sedia Windsor, tende a righe e a pacchetto in bambu'.
 - Camera est (studio e lavanderia): parete azzurro polvere con perlinato bianco latte, colonna
   lavanderia salvia con ceste, scrittoio in rovere con sedia Windsor.
-- Bagno: piastrelle metro a 1,20 m con listello in ottone, salvia chiaro sopra, pavimento in
-  ardesia, mobile lavabo in rovere con catino in ceramica, specchio con cornice in ottone,
-  scaletta portasciugamani, ceste.
+- Bagno: rifatto dalle due foto di riferimento (vedi sotto, "Bagno con doccia blu").
 - Disimpegno: perlinato a mezza parete, passatoia persiana, lanterna in ottone e vetro.
 - Terrazzo: tavolo da fattoria con sedie Windsor sotto il gazebo, festoni di lampadine,
   lanterne a pavimento, ulivi in vasi di cotto.
@@ -186,6 +184,30 @@ noce anni '60 e ottone.
 - **Tappeto persiano sbiadito**, azzurro e panna, sotto il letto.
 - Rispetto a prima: niente parete a doghe, niente panca ai piedi del letto, e l'armadio in
   rovere della parete ovest lascia il posto alla cassettiera.
+
+## Bagno con doccia blu (dalle due foto di riferimento)
+
+Il bagno del piano primo segue due foto: perlinato panna, doccia in piastrelle blu lucide,
+ottone, rovere e un tocco di salvia.
+
+- **Perlinato bianco latte a tutta altezza** sulle pareti, con la cimasa a fare da cornice.
+- **Pavimento a ottagonette** bianche con tozzetti neri, anche dentro la doccia.
+- **Soffitto a doghe di rovere** con tre travetti e due faretti incassati in ottone.
+- **Doccia 80 x 110** nell'angolo sud-ovest, a filo pavimento:
+  - piastrelle blu lucide 7,5 x 30 in verticale, fatte a mano, su tutte e due le pareti;
+  - controparete sul fondo con la **nicchia illuminata** e i flaconi;
+  - soffione a pioggia, miscelatore a incasso e doccetta col flessibile, tutto in ottone;
+  - scarico a canalina, vetro fisso a nord e porta a battente a est, con profili, cerniere e
+    maniglione in ottone.
+- **Mobile lavabo in rovere** sulla parete ovest: cassetto con maniglia in ottone, due ripiani a
+  giorno con spugne salvia e una cesta, piano in marmo, **lavabo d'appoggio smerlato** e
+  rubinetto a muro in ottone con manopole a croce, flaconi in vetro ambrato.
+- **Specchio laccato azzurro** con cornice a tubo e angoli arrotondati, **applique a collo di
+  cigno** in ottone con paralume in rattan.
+- **Vaso e bidet sospesi** su una controparete bassa sotto la finestra, rivestita a doghe con
+  piano in marmo; placca di scarico e scopino in ottone, una piantina sul davanzale.
+- Parete est: scaldasalviette in ottone con spugna azzurra, **sgabello in noce tornito**,
+  stampa botanica. Tappeto da bagno blu davanti alla doccia.
 
 ## Piano primo, versione 2: open space gaming e allenamento
 
@@ -301,7 +323,7 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 - **Cucina**: maioliche blu cobalto/bianco dipinte (pattern generato) dietro il piano cottura, sotto
   la cappa in muratura, e dietro il piano di appoggio sulla parete est.
 - **Soggiorno**: parete sud in verde salvia profondo con boiserie a riquadri.
-- **Bagno**: cementine a terra con motivo a stella terracotta, salvia, nero e crema.
+- **Bagno**: doccia in piastrelle blu lucide, pavimento a ottagonette bianche e nere.
 - **Camera nord** (matrimoniale principale): pareti e cornice in blu avio, tende in velluto oliva.
 - **Camera sud** (seconda matrimoniale): carta da parati botanica verde bottiglia.
 - **Camera est** (studio e lavanderia): parete in terracotta bruciata con lavanderia in noce.

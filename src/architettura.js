@@ -571,6 +571,9 @@ function travi(st) {
   }
   // trave di colmo longitudinale
   g.add(box(0.18, 0.24, main.d, M.rovereMiele, main.cx, H - 0.12, main.cz));
+  // bagno: soffitto a doghe di rovere con tre travetti
+  const b = st.bagno.rects[0];
+  for (let i = 0; i < 3; i++) g.add(box(b.w, 0.12, 0.1, M.rovereMiele, b.cx, H - 0.06, b.z + b.d * (i + 0.5) / 3));
   return g;
 }
 
@@ -748,10 +751,10 @@ export function costruisciArchitettura(ctx) {
   versioni.v2.porta = conSmusso(() => portaTelescopica(ctx, PORTA_TELESCOPICA));
 
   // pavimenti e soffitti
-  // rovere a listoni larghi in tutto il piano, ardesia nel bagno
+  // rovere a listoni larghi in tutto il piano, ottagonette bianche e nere nel bagno (soffitto a doghe di rovere)
   const R = M.rovereListoni;
-  const floorMat = { soggiorno: R, bagno: M.ardesia, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
-  const ceilMat = {};
+  const floorMat = { soggiorno: R, bagno: M.ottagonette, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
+  const ceilMat = { bagno: R };
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {
       floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0.005, r.cz, 'y+'));
