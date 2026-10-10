@@ -213,7 +213,7 @@ export function arredaBagno(ctx, stanze) {
   g.add(doccia(ctx, { x0: R.x, z0: R.z + R.d - 0.8 }));
   // scaldasalviette e scaletta portasciugamani sulla parete est, cesta, pianta
   ctx.pareti.add(scaldasalviette(ctx, R.x + R.w - 0.02, 1.2, R.z + 1.2, 'x-'));
-  g.add(scalettaTeli(ctx, R.x + R.w - 0.05, R.z + 1.95, -Math.PI / 2));
+  g.add(scalettaTeli(ctx, R.x + R.w - 0.29, R.z + 1.95, -Math.PI / 2)); // la cima appoggia al muro, senza attraversarlo
   g.add(cesta(R.x + R.w - 0.25, R.z + 2.45, { r: 0.16, h: 0.34 }));
   g.add(pianta(R.x + R.w - 0.25, R.z + 0.35, { h: 0.55, vaso: 0.1, matVaso: M.ceramica }));
   g.add(pendenteGlobo(ctx, R.cx, R.cz, { yTop: ctx.H, calata: 0.45, raggio: 0.12, intensita: 10 }));

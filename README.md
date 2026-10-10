@@ -149,9 +149,7 @@ Tappa 1 (fatta): base comune e zona giorno.
   lampada da terra sono stati tolti.
 
 Tappa 2 (fatta): il resto del piano.
-- Camera matrimoniale: parete a doghe verde oliva con mensola in rovere e stampe botaniche,
-  letto in rovere con testiera in lino avena, coperta azzurra e plaid ruggine, comodini in
-  rovere, armadi bianco latte e rovere, tappeto persiano, lampadario a tamburo.
+- Camera matrimoniale: rifatta dalla foto di riferimento (vedi sotto, "Camera matrimoniale blu avio").
 - Camera sud: carta a righe azzurre, testiera in lino azzurro, cuscini a fiorellini, armadio
   bianco latte, scrittoio in rovere con sedia Windsor, tende a righe e a pacchetto in bambu'.
 - Camera est (studio e lavanderia): parete azzurro polvere con perlinato bianco latte, colonna
@@ -163,6 +161,31 @@ Tappa 2 (fatta): il resto del piano.
 - Terrazzo: tavolo da fattoria con sedie Windsor sotto il gazebo, festoni di lampadine,
   lanterne a pavimento, ulivi in vasi di cotto.
 - Telai delle porte in rovere miele.
+
+## Camera matrimoniale blu avio (dalla foto di riferimento)
+
+La camera nord-est del piano primo segue una foto scelta: pareti blu, velluto verde oliva,
+noce anni '60 e ottone.
+
+- Pareti in **blu avio** su tutti e quattro i lati, cornice modanata a soffitto dello stesso blu,
+  soffitto bianco. L'armadio a muro sulla parete nord è verniciato blu come le pareti, con
+  maniglie in ottone.
+- **Tende in velluto oliva** a tutta altezza, su bastone d'ottone, alla portafinestra e alla
+  finestra est.
+- **Letto in noce** con testiera a pannello e gambe affusolate, piumone bianco, plaid in maglia
+  panna, cuscini azzurri e oliva in velluto.
+- Due **comodini in noce** con cassetto e vano a giorno. A est: lampada in ceramica bianca e
+  applique a braccio in ottone. A ovest: lampada d'ottone, una piantina, libri nel vano.
+- **Parete di quadri** sopra il letto: una stampa astratta in cornice d'ottone al centro e cinque
+  stampe botaniche in cornici di rovere.
+- **Lampadario sputnik** in ottone sopra il letto.
+- Parete ovest: **cassettiera in noce** a sei cassetti con **specchio tondo** in ottone, vaso
+  oliva con eucalipto, libri e candela.
+- Angolo lettura vicino alla portafinestra: **poltrona in velluto oliva** e tavolino in ottone
+  su tre gambe.
+- **Tappeto persiano sbiadito**, azzurro e panna, sotto il letto.
+- Rispetto a prima: niente parete a doghe, niente panca ai piedi del letto, e l'armadio in
+  rovere della parete ovest lascia il posto alla cassettiera.
 
 ## Piano primo, versione 2: open space gaming e allenamento
 
@@ -279,7 +302,7 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
   la cappa in muratura, e dietro il piano di appoggio sulla parete est.
 - **Soggiorno**: parete sud in verde salvia profondo con boiserie a riquadri.
 - **Bagno**: cementine a terra con motivo a stella terracotta, salvia, nero e crema.
-- **Camera nord** (matrimoniale principale): testiera imbottita in velluto senape a tutta parete.
+- **Camera nord** (matrimoniale principale): pareti e cornice in blu avio, tende in velluto oliva.
 - **Camera sud** (seconda matrimoniale): carta da parati botanica verde bottiglia.
 - **Camera est** (studio e lavanderia): parete in terracotta bruciata con lavanderia in noce.
 - **Disimpegno**: soffitto in verde salvia.

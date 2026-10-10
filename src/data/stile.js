@@ -727,6 +727,26 @@ export function texStampaBotanica(seed = 91) {
   }, { seed });
 }
 
+// Stampa astratta (camera matrimoniale): carta panna, un arco blu avio, una forma verde oliva
+// e un filo nero, come le stampe moderne di una parete di quadri
+export function texAstratto(seed = 97) {
+  return canvasTexture(256, (ctx, s, r) => {
+    ctx.fillStyle = '#eee7d8';
+    ctx.fillRect(0, 0, s, s);
+    ctx.fillStyle = '#4f6f8c';
+    ctx.beginPath(); ctx.arc(s * 0.46, s * 0.62, s * 0.26, Math.PI, 0); ctx.lineTo(s * 0.72, s * 0.8); ctx.lineTo(s * 0.2, s * 0.8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#eee7d8';
+    ctx.beginPath(); ctx.arc(s * 0.46, s * 0.66, s * 0.11, Math.PI, 0); ctx.lineTo(s * 0.57, s * 0.8); ctx.lineTo(s * 0.35, s * 0.8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4a5530';
+    ctx.beginPath(); ctx.ellipse(s * 0.62, s * 0.3, s * 0.13, s * 0.09, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#a9bcc9';
+    ctx.beginPath(); ctx.arc(s * 0.3, s * 0.28, s * 0.07, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#1f1d1a'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(s * 0.2, s * 0.45); ctx.bezierCurveTo(s * 0.4, s * 0.35, s * 0.55, s * 0.55, s * 0.8, s * 0.42); ctx.stroke();
+    noiseOver(ctx, s, r, { n: 2500, alpha: 0.05, colors: ['#5a4a30', '#fff'], rmin: 0.4, rmax: 1.2 });
+  }, { seed });
+}
+
 // Ardesia in lastre 40 x 40 (texture = 80 cm): grigio antracite con riflessi blu e verdi,
 // superficie a sfaldature, fughe scure
 export function texArdesia(seed = 83) {
@@ -777,6 +797,7 @@ const RILIEVO = {
   rovereListoni: 0.8, rovereMiele: 0.5, marmo: 0.2, metro: 1.0, azzurroPolvere: 0.25, biancoLatte: 0.2,
   linoAvena: 0.8, linoAzzurro: 0.8, floreale: 0.3, righeAzzurre: 0.2, juta: 1.5, bambu: 1.2,
   olivaPittura: 0.25, linoRuggine: 0.8, ardesia: 1.2, cartaRigheAzzurre: 0.15, gomma: 1.4, cognac: 0.3,
+  bluAvio: 0.25, noceCaldo: 0.5, vellutoOliva: 0.4, vellutoAvio: 0.4,
 };
 function applicaRilievo(M) {
   for (const [k, f] of Object.entries(RILIEVO)) {
@@ -801,12 +822,12 @@ const FOTO = {
   intonacoSoffitto: { src: 'intonaco', m: 2.0, n: 0.4 },
   intonacoEsterno: { src: 'intonaco', m: 1.5, n: 1.0 },
   salvia: PAINT, salviaChiaro: PAINT, terracottaPittura: PAINT, tortora: PAINT, scuri: PAINT,
-  bluPetrolio: PAINT, bluPolvere: PAINT, crema: PAINT, azzurroPolvere: PAINT, biancoLatte: PAINT, olivaPittura: PAINT,
+  bluPetrolio: PAINT, bluPolvere: PAINT, crema: PAINT, azzurroPolvere: PAINT, biancoLatte: PAINT, olivaPittura: PAINT, bluAvio: PAINT,
   rovereListoni: { src: 'listoni', m: 1.6, n: 0.8, r: true },
-  noce: LEGNO, noceVerticale: LEGNO, noceScuro: LEGNO, rovere: LEGNO, rovereMiele: LEGNO, cognac: LEGNO,
+  noce: LEGNO, noceVerticale: LEGNO, noceScuro: LEGNO, rovere: LEGNO, rovereMiele: LEGNO, cognac: LEGNO, noceCaldo: LEGNO,
   parquet: { src: 'parquet', m: 2.0, n: 0.8, r: true },
   lino: LINO, linoBianco: LINO, linoTortora: LINO, linoAvena: LINO, linoAzzurro: LINO, linoRuggine: LINO, tessutoGrafite: LINO,
-  velluto: VELLUTO, vellutoSalvia: VELLUTO, vellutoRuggine: VELLUTO,
+  velluto: VELLUTO, vellutoSalvia: VELLUTO, vellutoRuggine: VELLUTO, vellutoOliva: VELLUTO, vellutoAvio: VELLUTO,
   cuoio: { src: 'cuoio', m: 0.6, n: 0.6, r: true },
   cotto: { src: 'cotto', m: 2.0, n: 0.8, r: true },
   pietra: { src: 'pietra', m: 2.0, n: 0.5, r: true },
@@ -972,9 +993,14 @@ export function getMateriali() {
     plasticaBianca: std({ color: '#eef0f0', roughness: 0.35 }),
     plasticaNera: std({ color: '#151617', roughness: 0.4 }),
     tessutoGrafite: std({ map: texLino('#55585a', 48), roughness: 0.95 }),
+    // ---- camera matrimoniale: blu avio, velluto oliva, noce anni '60 ----
+    bluAvio: std({ map: texVernice('#8fabc8', 49), roughness: 0.85 }),
+    noceCaldo: std({ map: texLegno({ base: '#7d4b2a', scuro: '#57311a', chiaro: '#a06a42', seed: 93 }), roughness: 0.55 }),
+    vellutoOliva: new THREE.MeshPhysicalMaterial({ map: texVelluto('#46512a', 50), roughness: 0.9, sheen: 0.6, sheenColor: new THREE.Color('#8e9a5c') }),
+    vellutoAvio: new THREE.MeshPhysicalMaterial({ map: texVelluto('#7e9cbf', 51), roughness: 0.9, sheen: 0.7, sheenColor: new THREE.Color('#c4d6ea') }),
   };
   // materiali usati come "decal" su superfici vicine (rivestimenti, carte, pitture): offset di profondità
-  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio', 'rovereListoni', 'metro', 'azzurroPolvere', 'biancoLatte', 'olivaPittura', 'ardesia', 'cartaRigheAzzurre']) {
+  for (const k of ['maiolica', 'cartaBotanica', 'terracottaPittura', 'salvia', 'cotto', 'cementine', 'parquet', 'ceramica', 'reteOttone', 'lastre', 'piastrelleVerdi', 'piastrelleCrema', 'piastrelleOcra', 'cartaRighe', 'bluPetrolio', 'rovereListoni', 'metro', 'azzurroPolvere', 'biancoLatte', 'olivaPittura', 'ardesia', 'cartaRigheAzzurre', 'bluAvio']) {
     _MAT[k].polygonOffset = true; _MAT[k].polygonOffsetFactor = -1; _MAT[k].polygonOffsetUnits = -2;
   }
   // ripetizione per metro: gli oggetti impostano le UV in metri (vedi uvMetri)
@@ -1014,6 +1040,8 @@ export function getMateriali() {
   _MAT.cognac.map.repeat.set(1.4, 1.4);
   _MAT.gomma.map.repeat.set(2, 2);
   _MAT.tessutoGrafite.map.repeat.set(3, 3);
+  for (const k of ['bluAvio', 'vellutoOliva', 'vellutoAvio']) _MAT[k].map.repeat.set(3, 3);
+  _MAT.noceCaldo.map.repeat.set(0.6, 0.6);
   for (const k of ['noce', 'noceVerticale', 'noceScuro', 'rovere']) _MAT[k].map.repeat.set(0.6, 0.6);
   for (const k of ['velluto', 'vellutoSalvia', 'lino', 'linoBianco', 'linoTortora', 'salvia', 'salviaChiaro', 'terracottaPittura', 'tortora', 'bluPetrolio', 'bluPolvere', 'crema', 'vellutoRuggine', 'scuri']) _MAT[k].map.repeat.set(3, 3);
   applicaRilievo(_MAT);
