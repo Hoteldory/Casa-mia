@@ -303,18 +303,42 @@ src/sole.js                  posizione del sole, alba e tramonto (luogo in src/d
 ## Misure
 
 Le misure sono in `src/data/planimetria.json`. I muri sono stati rilevati sui pixel della piantina
-e la scala calibrata ai minimi quadrati sulle superfici quotate (soggiorno calcolato 43,9 mq
-contro "circa 44"). Altezza soffitto **270 cm (assunta)**, muri esterni 25 cm, interni 15 cm.
+e la scala calibrata ai minimi quadrati sulle superfici quotate. Altezza soffitto **270 cm
+(assunta)**, muri esterni 25 cm, interni 15 cm.
 
-| Stanza | Interno (cm) | Calcolata | Quotata |
+**Verifica** (`python3 tools/verifica_misure.py`): rasterizza la pianta al centimetro e controlla
+che ogni stanza chiuda sui suoi muri, che non ci siano buchi o sovrapposizioni, che ogni apertura
+stia nel suo muro fra due ambienti, il varco della versione 2 e tutte le superfici.
+- Muri e aperture coincidono con il disegno originale entro 3 cm.
+- Il disegno originale e' schematico: le superfici scritte delle singole stanze non stanno tutte
+  nella stessa scala (scarti da -5% a +3%), ma il totale torna (93,11 contro 93,21 mq). Le misure
+  vanno confermate con il rilievo sul posto.
+
+| Stanza | Interno (cm) | Calcolata (mq) | Sul disegno (mq) |
 |---|---|---|---|
-| Soggiorno pranzo-cucina (a L) | 391 × 912 + appendici | 43,9 mq | ~44 |
-| Bagno | 168 × 256 | 4,30 | 4,56 |
+| Soggiorno pranzo-cucina (a L) | 391 × 912 + 36 × 640 + 147 × 401 | 43,86 | circa 44 |
+| Bagno | 168 × 257 | 4,32 | 4,56 |
 | Disimpegno | 132 × 224 | 2,96 | — |
-| Camera nord-est | 412 × 378 | 15,57 | 15,43 |
-| Camera est | 412 × 229 | 9,43 | 9,74 |
-| Camera sud-est | 412 × 412 | 16,97 | 16,52 |
-| Terrazzo nord (con risega) | 634×684 + 594×384 | 66,18 | 67,12 |
+| Camera nord-est | 412 × 379 | 15,61 | 15,43 |
+| Camera est | 412 × 228 | 9,39 | 9,74 |
+| Camera sud-est (open space nella versione 2) | 412 × 412 | 16,97 | 16,52 |
+| **Calpestabile** | | **93,11** | 93,21 |
+| Lorda, al filo esterno dei muri | 1051 × 965 + 467 × 132 | 107,59 | — |
+| Open space versione 2 (soggiorno + camera + soglia del varco) | | 61,19 | — |
+| Terrazzo nord (con risega) | 634 × 684 + 594 × 384 | 66,18 | 67,12 |
+
+### Piantina quotata per il geometra
+
+La piantina quotata del piano primo disegna la versione scelta nel menu. La versione 2 e' anche
+in `piantina-quotata-v2.pdf` (A4, tre pagine):
+- **Pianta**: varco 240 x 250 con le sue quote, porta telescopica (ante aperte e chiuse, cassonetto)
+  e la finestra tamponata a retino.
+- **Bolli neri**: le aperture nuove, modificate o tamponate rispetto al disegno originale.
+- **Modifiche rispetto al disegno originale**: prima e dopo, con la posizione.
+- **Abaco delle aperture**: con stato, misure e posizione in cm dall'angolo esterno nord-ovest.
+- **Superfici**: confrontate con quelle del disegno, con calpestabile, lorda e open space.
+- **Impianti e sanitari da riportare** (bagno nuovo, attacco lavatrice) e l'avviso sul muro di
+  spina, forse portante.
 
 Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde salvia chiaro.
 

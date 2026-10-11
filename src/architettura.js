@@ -724,11 +724,13 @@ function tettoCapanna() {
 
 // ---------- versione 2: varco fra soggiorno e seconda camera, porta telescopica ----------
 const SPINA = 'I-spina-camere';
-// varco largo 2,40 m e alto 2,50 nel muro di spina (cm, come la planimetria), soglia in rovere
-const VARCO = { id: 'P-varco-camera-sud', tipo: 'vano', muro: SPINA, da: 'soggiorno', a: 'camera_sud', y_da: 685, y_a: 925, h_cm: 250, soglia: 'legno' };
+// varco largo 2,40 m e alto 2,50 nel muro di spina, soglia in rovere, e la porta telescopica:
+// le misure stanno in planimetria.json (versioni.v2), le stesse della piantina quotata
+const V2 = plan.versioni.v2;
+const PT = V2.porta_telescopica;
 // porta dal lato della camera: tre ante su tre binari; aperta, si impacchettano a sud del varco
 // davanti al muro del vano scala, chiusa coprono tutto il varco
-export const PORTA_TELESCOPICA = { xMuro: 6.14, z0: 6.85, z1: 9.25, h: 2.5, ante: 3 };
+export const PORTA_TELESCOPICA = { xMuro: PT.x_muro_cm / 100, z0: PT.y_da / 100, z1: PT.y_a / 100, h: PT.h_cm / 100, ante: PT.ante };
 
 // ---------- costruzione completa del piano primo ----------
 export function costruisciArchitettura(ctx) {
@@ -743,7 +745,7 @@ export function costruisciArchitettura(ctx) {
   involucro(plan, st, ctx, walls, wallsLow, () => H, new Set([SPINA]));
   const porteSpina = plan.porte.filter((p) => p.muro === SPINA);
   const versioni = {};
-  for (const [tag, porte] of Object.entries({ v1: porteSpina, v2: [...porteSpina.filter((p) => p.id !== 'P-camera-sud'), VARCO] })) {
+  for (const [tag, porte] of Object.entries({ v1: porteSpina, v2: [...porteSpina.filter((p) => !V2.porte_tolte.includes(p.id)), ...V2.porte_nuove] })) {
     ctx.variante = tag; // gli ingombri del muro valgono solo nella sua versione
     versioni[tag] = muroVariabile(plan, st, ctx, SPINA, porte, H);
   }

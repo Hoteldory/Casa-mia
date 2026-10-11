@@ -392,6 +392,7 @@ function applicaAllestimento() {
 function applicaTavolo(t) { statoTavolo = t; applicaAllestimento(); }
 // subito: le ante vanno in posizione senza scorrere (link alla vista)
 function applicaVersione(v, { chiusa = portaChiusa, subito = false } = {}) {
+  if (v !== versione && piantinaEl) { piantinaEl.remove(); piantinaEl = null; } // la piantina quotata si ridisegna per la versione
   versione = v; portaChiusa = chiusa;
   if (subito) { portaK = chiusa ? 1 : 0; porta.userData.imposta(portaK); }
   applicaAllestimento();
@@ -566,7 +567,7 @@ let piantinaAperta = false;
 const btnPiantina = document.getElementById('btn-piantina');
 function mostraPiantina(on) {
   if (on && !piantinaEl) {
-    piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined);
+    piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined, { versione: piano === 'terra' ? null : versione });
     document.body.appendChild(piantinaEl);
     piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
     piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();
