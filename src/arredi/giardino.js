@@ -303,6 +303,9 @@ export function giardino(ctx) {
   const M = MAT();
   const g = new THREE.Group();
   const L = LOTTO;
+  // ---- zoccolo di terra sotto il lotto: fuori dalla recinzione non c'e' niente, come in un plastico ----
+  const Hz = 0.6;
+  g.add(box(L.x1 - L.x0, Hz, L.z1 - L.z0, matColore('#7d6650', 1), (L.x0 + L.x1) / 2, -Hz / 2 - 0.002, (L.z0 + L.z1) / 2, { cast: false }));
   // ---- prato attorno alla casa (il piano terra ha pavimento a quota 0,005: il prato non entra) ----
   for (const [x0, z0, x1, z1] of [
     [L.x0, L.z0, L.x1, -11.78],       // dietro, oltre la casa dei suoceri

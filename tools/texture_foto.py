@@ -1,7 +1,8 @@
 """Scarica da Poly Haven (CC0) le texture fotografiche dei materiali e le prepara per il sito.
 
 Per ogni sorgente scarica la foto (diff), la normal map (nor_gl) e, dove serve, la ruvidita'
-(rough), a 1K, e scrive in public/tex/ dei .webp leggeri:
+(rough), a 1K, e scrive in tools/sorgenti/tex/ dei .webp leggeri: sono le sorgenti delle texture
+KTX2 che usa il sito (npm run texture, tools/texture_ktx2.mjs).
 
 - modo "dettaglio": dalla foto resta solo la trama, in grigio, con media 0.8; il colore lo mette
   il materiale (stile.js), cosi' le tinte scelte per la casa non cambiano;
@@ -14,7 +15,7 @@ import io, os, urllib.request
 from PIL import Image, ImageFilter, ImageOps
 
 BASE = 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/{n}/{n}_{m}_1k.jpg'
-OUT = os.path.join(os.path.dirname(__file__), '..', 'public', 'tex')
+OUT = os.path.join(os.path.dirname(__file__), 'sorgenti', 'tex')
 
 # chiave: (sorgente Poly Haven, modo, contrasto, passa-alto, lato in px, con ruvidita')
 SORGENTI = {

@@ -2,6 +2,7 @@
 // Stile: "antico in chiave moderna" — finiture opache, legno noce, ottone brunito,
 // ceramica smaltata, pietra, ferro battuto sottile, cotto. Niente lucido, niente cromo.
 import * as THREE from 'three';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 
 export const PALETTE = {
   calce: '#efe9dd',
@@ -895,16 +896,19 @@ const _foto = {}; // sorgente -> { d, n, r } texture caricate
 
 // Carica le foto prima di costruire la casa (main.js la attende). Se qualcosa non arriva,
 // quei materiali restano con la texture disegnata.
-export async function preparaFoto() {
+// Le foto sono KTX2 (tools/texture_ktx2.mjs): sulla scheda grafica restano compresse, nel formato
+// che la scheda sa leggere (BC7 sui computer, ASTC o ETC sui telefoni), con le mipmap gia' fatte.
+export async function preparaFoto(renderer) {
   const base = `${import.meta.env.BASE_URL}tex/`;
-  const loader = new THREE.TextureLoader();
+  const loader = new KTX2Loader().setTranscoderPath(`${import.meta.env.BASE_URL}basis/`).detectSupport(renderer);
   const carica = (f) => loader.loadAsync(base + f).catch(() => null);
   const sorgenti = {};
   for (const c of Object.values(FOTO)) sorgenti[c.src] = sorgenti[c.src] || !!c.r;
   await Promise.all(Object.entries(sorgenti).map(async ([src, conR]) => {
-    const [d, n, r] = await Promise.all([carica(`${src}_d.webp`), carica(`${src}_n.webp`), conR ? carica(`${src}_r.webp`) : null]);
+    const [d, n, r] = await Promise.all([carica(`${src}_d.ktx2`), carica(`${src}_n.ktx2`), conR ? carica(`${src}_r.ktx2`) : null]);
     if (d && n) _foto[src] = { d, n, r };
   }));
+  loader.dispose(); // chiude i worker del traduttore: le texture restano
 }
 
 // colore medio di una texture disegnata (canvas), letto su una copia di 4 x 4 pixel

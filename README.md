@@ -406,24 +406,38 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 - Pulsante **Qualità** nel pannello: "alta" con ombre di contatto e bagliore, "leggera" senza.
   Su telefono si parte leggeri e senza spigoli arrotondati.
 
-## Materiali fotografici e cielo vero
+## Materiali fotografici, compressi in KTX2
 
 - **Texture fotografiche** da [Poly Haven](https://polyhaven.com) (licenza CC0, uso libero):
   - parquet in rovere, intonaci, pitture, legni dei mobili, lino, velluto e cuoio;
-  - cotto, pietra, coppi, juta, ghiaia, prato e campagna intorno.
+  - cotto, pietra, coppi, juta, ghiaia, prato e la terra dei vasi sul terrazzo.
   - Ogni materiale ha la sua normal map (il rilievo vero della foto) e, dove serve, la mappa di
     ruvidità.
 - **I colori della casa non cambiano**: per la maggior parte dei materiali dalla foto si prende
-  solo la trama (in grigio) e la tinta resta quella scelta. Coppi, juta, ghiaia e campagna
+  solo la trama (in grigio) e la tinta resta quella scelta. Coppi, juta, ghiaia e terra
   tengono i colori della foto.
-- I file sono in `public/tex/` (circa 6 MB in tutto). Si rigenerano con
-  `python3 tools/texture_foto.py`.
-- **Cielo vero**: due foto a 360° di Poly Haven, una di giorno con le nuvole e una al tramonto,
-  in `public/cielo/`.
-  - Fanno da sfondo e da luce riflessa.
-  - Il cielo gira in modo che il suo sole stia dove sta il sole vero; sotto i 10° di altezza
-    passa a quello del tramonto.
-  - La campagna intorno arriva fino alla foschia dell'orizzonte.
+- **In KTX2 (Basis Universal)**: sulla scheda grafica le texture restano compresse, nel formato
+  che la scheda sa leggere (BC7 sui computer, ASTC o ETC sui telefoni), con le mipmap già fatte.
+  - In memoria video passano da circa 127 MB (webp scompattati) a circa 32 MB, 16 sui telefoni.
+  - Da scaricare sono 4,4 MB contro i 5,3 dei webp.
+  - Tutte in ETC1S: le trame grigie, le ruvidità e le normal map lineari, le foto a colori in sRGB.
+    Le normal map in UASTC sarebbero più fedeli ma 4-5 volte più pesanti.
+  - Il traduttore (`basis/`) arriva dal pacchetto di three, alla stessa versione del caricatore:
+    lo serve e lo copia nella build `vite.config.js`.
+- **Come si rigenerano**:
+  - `python3 tools/texture_foto.py` scarica le foto e scrive i webp sorgenti in
+    `tools/sorgenti/tex/` (serve accesso a dl.polyhaven.org);
+  - `npm run texture` (`tools/texture_ktx2.mjs`) li converte in `public/tex/*.ktx2` con l'encoder
+    Basis Universal in WebAssembly del pacchetto `ktx2-encoder` (serve Python con Pillow).
+
+## Sfondo e terreno
+
+Niente cielo fotografico e niente campagna: fuori dalla recinzione non c'è nulla, come in un
+plastico.
+- Di giorno lo sfondo è a tinta unita, caldo all'alba e al tramonto e azzurrino di giorno; di sera
+  è blu notte. Niente foschia.
+- La luce riflessa viene dallo studio luminoso (RoomEnvironment), come per i materiali lucidi.
+- Il lotto poggia su uno zoccolo di terra alto 60 cm, a filo della recinzione.
 
 ## Modelli 3D veri
 

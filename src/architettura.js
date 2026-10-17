@@ -475,10 +475,7 @@ function esterni(ctx, walls) {
   walls.add(lanterna(ctx, 5.78, 2.15, 9.66, 'z+', { intensita: 16 }));
   walls.add(lanterna(ctx, -0.01, 2.15, 7.85, 'x-', { intensita: 12 }));
   walls.add(lanterna(ctx, 9.35, 2.15, 10.98, 'z+', { intensita: 12 }));
-  // terreno
-  // campagna intorno: abbastanza grande da sparire nella foschia prima del bordo
-  const ground = plane(420, 420, M.terreno, 5, -3.4, 0, 'y+');
-  g.add(ground);
+  // il terreno e' solo quello del lotto, con il giardino: vedi giardino.js
   return g;
 }
 
