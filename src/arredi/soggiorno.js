@@ -5,7 +5,7 @@
 // terrazzo (a sud c'e' la cucina). Stufa, appendice e tende dei balconi sono di tutte e due.
 import * as THREE from 'three';
 import { specchio } from './bagno.js';
-import { box, cyl, sphere, plane, group, place, matColore, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, quadro, pianta, libri, lampadaTavolo, lampadaTerra, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
+import { box, cyl, plane, place, matColore, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, pianta, libri, lampadaTavolo, lampadaTerra, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
 
 // ---- boiserie a riquadri su una parete (piano XY locale, normale +Z verso la stanza) ----
 export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, mat }) {

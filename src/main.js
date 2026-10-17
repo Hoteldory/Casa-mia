@@ -9,7 +9,6 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { costruisciArchitettura, H } from './architettura.js';
 import { arredi, TAVOLO_STATI, VERSIONI } from './arredi/index.js';
-import { creaPiantina } from './piantina.js';
 import { costruisciPianoTerra, PIANO_TERRA, PIANO_SUOCERI, QUOTA_TERRA, ORIGINE_SUOCERI } from './pianoTerra.js';
 import { arredaPianoTerra } from './arredi/piano_terra.js';
 import { arredaSuoceri } from './arredi/suoceri.js';
@@ -486,13 +485,17 @@ function leggiLink() {
 let piantinaEl = null;
 let piantinaAperta = false;
 const btnPiantina = document.getElementById('btn-piantina');
-function mostraPiantina(on) {
+// la piantina si carica solo la prima volta che si apre (import dinamico: un file a parte)
+async function mostraPiantina(on) {
   if (on && !piantinaEl) {
-    // il piano primo si disegna come da progetto (varco e porta telescopica), uguale per le due versioni
-    piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined, { versione: piano === 'terra' ? null : 'v2' });
-    document.body.appendChild(piantinaEl);
-    piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
-    piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();
+    const { creaPiantina } = await import('./piantina.js');
+    if (!piantinaEl) { // un doppio clic mentre il file arriva non ne crea due
+      // il piano primo si disegna come da progetto (varco e porta telescopica), uguale per le due versioni
+      piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined, { versione: piano === 'terra' ? null : 'v2' });
+      document.body.appendChild(piantinaEl);
+      piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
+      piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();
+    }
   }
   piantinaAperta = on;
   document.body.classList.toggle('piantina', on);
@@ -522,7 +525,7 @@ function loop() {
   const dt = Math.min(passati, 0.05);
   tPrev = tNow;
   // la camera si muove da sola durante un volo e, finito il trascinamento, per inerzia
-  let muove = false;
+  let muove;
   if (volo) { aggiornaVolo(dt); muove = true; } else muove = orbit.update();
   if (aggiornaPorta(dt)) muove = true;
   if (muove || daDisegnare > 0) {

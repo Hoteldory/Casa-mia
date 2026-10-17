@@ -1,0 +1,29 @@
+# A ogni push su main e a ogni pull request: controllo del codice, build, verifica delle misure
+# della pianta e prova del sito vero in Chromium (WebGL software, qualche minuto).
+name: Verifica
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verifica:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run lint
+      - run: npm run build
+      - run: python3 tools/verifica_misure.py
+      - run: npm test

@@ -1,7 +1,7 @@
 // Disimpegno: snodo tra bagno e camere. Stile country chiaro: perlinato bianco latte a mezza
 // parete, appendiabiti con ganci in ottone, panchetta con cesta, passatoia persiana, lanterna.
 import * as THREE from 'three';
-import { box, cyl, plane, place, applique, quadro, pareteDoghe, tappetoPersiano, lanternaSoffitto, MAT } from './comune.js';
+import { box, cyl, place, applique, pareteDoghe, tappetoPersiano, lanternaSoffitto, MAT } from './comune.js';
 import { specchio } from './bagno.js';
 
 export function appendiabiti(ctx, x, y, z, normal = 'x+', w = 0.9) {

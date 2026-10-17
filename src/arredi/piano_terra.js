@@ -8,7 +8,7 @@
 //   camera 10,48  armadio a tre moduli laccato blu polvere
 //   bagno       rivestimento a meta' parete in piastrelle smaltate verde bottiglia
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, place, pendente, applique, lampadaTavolo, lampadaTerra, tappeto, quadro, pianta, libri, cuscino, tende, MAT } from './comune.js';
+import { box, cyl, plane, place, pendente, applique, lampadaTavolo, lampadaTerra, tappeto, quadro, pianta, cuscino, tende, MAT } from './comune.js';
 import { baseCucina, cappaMuratura, mensole, tavolo, sedia } from './cucina.js';
 import { divano, mobileTv, tvOled, libreria } from './soggiorno.js';
 import { lettoMatrimoniale, comodino, armadio } from './camera_nord.js';

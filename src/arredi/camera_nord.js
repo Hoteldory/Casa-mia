@@ -3,7 +3,7 @@
 // anni '60, lampadario sputnik in ottone, parete di quadri sopra il letto, specchio tondo in ottone,
 // poltrona in velluto oliva con tavolino d'ottone, tappeto persiano sbiadito azzurro e panna.
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, place, cuscino, tappeto, tappetoPersiano, quadro, stampaBotanica, lampadaTavolo, tende, antaTelaio, manigliaOttone, pianta, matColore, MAT } from './comune.js';
+import { box, cyl, sphere, plane, place, cuscino, tappetoPersiano, quadro, stampaBotanica, lampadaTavolo, tende, antaTelaio, manigliaOttone, pianta, matColore, MAT } from './comune.js';
 import { texAstratto } from '../data/stile.js';
 
 // ---- letto matrimoniale con testiera velluto senape a tutta parete (capitonné) ----

@@ -1,7 +1,7 @@
 // Scala a chiocciola bianca che sale al secondo piano.
 // Colonna centrale, pedate a ventaglio, balaustra e corrimano elicoidale.
 import * as THREE from 'three';
-import { cyl, box, MAT } from './comune.js';
+import { cyl, box } from './comune.js';
 
 const BIANCO = new THREE.MeshStandardMaterial({ color: '#f4f1ea', roughness: 0.42 });
 const BIANCO_PEDATA = new THREE.MeshStandardMaterial({ color: '#ece7dc', roughness: 0.55 });
@@ -33,7 +33,6 @@ export function scalaChiocciola(ctx, {
   partenza = 260,        // orientamento della prima pedata (gradi: 0 = sud, 90 = est)
   hMax = 2.98,           // quota del piano di arrivo: balaustra e colonna si fermano qui
 } = {}) {
-  const M = MAT();
   const g = new THREE.Group();
   const rise = interpiano / alzate;
   const rCol = 0.075;

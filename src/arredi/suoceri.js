@@ -9,7 +9,7 @@
 //   camera 12,47  testiera in velluto salvia
 //   bagno 5,31 (della cognata)  piastrelle verde bottiglia come il suo bagno
 import * as THREE from 'three';
-import { box, cyl, plane, pendente, applique, lampadaTavolo, lampadaTerra, tappeto, quadro, pianta, tende, manigliaOttone, MAT } from './comune.js';
+import { box, cyl, plane, pendente, applique, lampadaTavolo, lampadaTerra, tappeto, quadro, pianta, tende, MAT } from './comune.js';
 import { baseCucina, cappaMuratura, mensole, colonne, tavolo, sedia } from './cucina.js';
 import { divano, poltrona, mobileTv, tvOled } from './soggiorno.js';
 import { lettoMatrimoniale, comodino, armadio } from './camera_nord.js';

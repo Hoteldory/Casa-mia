@@ -2,14 +2,13 @@
 // balconi, pianerottolo e scala esterna. Tutte le misure derivano da planimetria.json (cm).
 import * as THREE from 'three';
 import plan from './data/planimetria.json';
-import { getMateriali, uvMetri, PALETTE, texVernice } from './data/stile.js';
-import { box, cyl, plane, group, lanterna, conSmusso } from './arredi/comune.js';
+import { getMateriali } from './data/stile.js';
+import { box, cyl, plane, lanterna, conSmusso } from './arredi/comune.js';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { portaTelescopica } from './arredi/porta_telescopica.js';
 
 const C = 0.01; // cm -> m
 export const H = plan.altezze.soffitto_cm * C;
-const A = plan.altezze;
 const ESTERNO_NORMALE = {
   'E-nord': [0, -1], 'E-ovest': [-1, 0], 'E-est': [1, 0],
   'E-sud-soggiorno': [0, 1], 'E-sud-camera-sud': [0, 1], 'E-vano-scala-est': [-1, 0],
@@ -756,7 +755,6 @@ export function costruisciArchitettura(ctx) {
   }
   // tetto a capanna sopra il solaio: il foro della scala porta al sottotetto
   ceilings.add(tettoCapanna());
-  const roof = box(0.001, 0.001, 0.001, matTetto, -50, -50, -50);
   const roof2 = box((I.larghezza_cm - 584) * C + 0.5, 0.26, 1.32 + 0.25, matTetto, (584 + (I.larghezza_cm - 584) / 2) * C + 0.125, H + 0.15, 9.65 + 0.66 + 0.125);
   ceilings.add(roof2);
 

@@ -4,7 +4,7 @@
 // doghe di rovere con travetti, mobile lavabo in rovere con vano a giorno e spugne salvia,
 // lavabo d'appoggio smerlato, specchio laccato azzurro, applique in rattan, sanitari sospesi.
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, group, place, pareteDoghe, manigliaOttone, stampaBotanica, pianta, cesta, matColore, MAT } from './comune.js';
+import { box, cyl, sphere, plane, place, pareteDoghe, manigliaOttone, stampaBotanica, pianta, cesta, matColore, MAT } from './comune.js';
 
 // ---- lavabo a catino ampio e profondo su consolle in noce e ferro, rubinetteria a muro in ottone brunito ----
 export function lavaboCatino(ctx, { x, z, ry = 0 }) {

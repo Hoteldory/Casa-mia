@@ -2,7 +2,7 @@
 // studio e colonna lavanderia. Stile country chiaro: parete nord azzurro polvere con
 // perlinato bianco latte, colonna lavanderia salvia, ceste, scrittoio in rovere.
 import * as THREE from 'three';
-import { box, cyl, plane, place, tappeto, quadro, stampaBotanica, pareteDoghe, cesta, pendente, pendenteGlobo, applique, lampadaTavolo, tende, pianta, libri, manigliaOttone, MAT } from './comune.js';
+import { box, cyl, plane, place, tappeto, stampaBotanica, pareteDoghe, cesta, pendenteGlobo, applique, lampadaTavolo, tende, pianta, MAT } from './comune.js';
 import { sediaWindsor } from './cucina.js';
 import { libreria } from './soggiorno.js';
 import { scalaChiocciola } from './scala.js';

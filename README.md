@@ -310,6 +310,21 @@ Il pacchetto e' scritto per Three.js r160+; il progetto usa la r186. Nelle skill
 ombre c'e' una nota: `PCFSoftShadowMap` nella r186 non esiste piu', si usa `PCFShadowMap` (che
 ora tiene conto di `shadow.radius`).
 
+## Controlli automatici
+
+```bash
+npm run lint       # ESLint, regole consigliate (eslint.config.js)
+npm test           # prova del sito vero in Chromium: serve prima npm run build
+npm run verifica   # tutto: lint, build, misure della pianta (tools/verifica_misure.py), prove
+```
+
+- `test/sito.test.mjs` apre la build con `vite preview` in Chromium (WebGL software) e controlla:
+  caricamento senza errori nella console, texture KTX2 compresse, meno di 600 draw call nella
+  vista esterna, cambio di versione, piantina che si apre e si chiude, nessun ridisegno da ferma.
+  Con `CHROMIUM=/percorso/chrome` usa un Chromium già installato.
+- Su GitHub la stessa verifica gira a ogni push su main e a ogni pull request
+  (`.github/workflows/verifica.yml`).
+
 ## Struttura
 
 ```
@@ -334,6 +349,9 @@ src/arredi/suoceri.js        arredi della casa dei suoceri
 src/arredi/giardino.js       giardino, recinzioni e orto
 src/main.js                  scena, luci, controlli, pannello
 src/ottimizza.js             materiali uniti, mesh fuse per materiale, sagome d'ombra
+test/sito.test.mjs           prova del sito vero in Chromium (npm test)
+tools/verifica_misure.py     verifica delle misure della pianta
+public/favicon.svg           icona della pagina
 src/sole.js                  posizione del sole (luogo in src/data/luogo.json)
 ```
 
@@ -474,6 +492,11 @@ Il contatore in basso a destra lo mostra: "fermo" quando la scena non si ridiseg
 `ridisegna()` in `main.js`, chiamata da `applicaLuce`, `applicaAllestimento`, `applicaQualita`,
 dal ridimensionamento e dall'evento `change` dei controlli della camera.
 
+
+**Pacchetto JavaScript diviso.** Three.js sta in un file a parte (`three-[hash].js`, circa 820 KB,
+216 compressi): cambia di rado, cosi' dopo una modifica alla casa si riscarica solo il codice della
+casa (circa 185 KB, 63 compressi). La piantina quotata è un altro file ancora e si scarica solo
+quando la si apre (vedi `vite.config.js`).
 
 **Avvio più veloce.** Misurato con un profilo della CPU durante il caricamento (Chromium senza
 scheda grafica, quindi tempi assoluti gonfiati: contano le proporzioni), da 51,7 a 12,4 secondi:

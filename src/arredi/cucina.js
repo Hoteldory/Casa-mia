@@ -2,7 +2,7 @@
 // piano in marmo bianco, piastrelle metro bianche, cappa intonacata con trave in rovere,
 // mensole in rovere su staffe d'ottone, globi di vetro; tavolo da fattoria con sedie Windsor.
 import * as THREE from 'three';
-import { box, cyl, sphere, plane, group, place, matColore, antaTelaio, manigliaOttone, pendente, pendenteGlobo, lampadarioTamburo, libri, tappeto, pianta, MAT } from './comune.js';
+import { box, cyl, sphere, plane, group, place, matColore, antaTelaio, manigliaOttone, pendenteGlobo, lampadarioTamburo, libri, tappeto, pianta, MAT } from './comune.js';
 
 // ---- base cucina lineare con ante a telaio e maniglie in ottone (lungo Z, contro il muro ovest) ----
 // hobZ o sinkZ a null: tratto senza piano cottura o senza lavello; mat = colore delle ante;
