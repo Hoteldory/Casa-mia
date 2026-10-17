@@ -1,7 +1,6 @@
 // Scena, luci, controlli (orbita), pannello laterale.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -18,6 +17,7 @@ import { giardino } from './arredi/giardino.js';
 import { conSmusso, raggioSmusso, preparaModelli } from './arredi/comune.js';
 import { preparaFoto } from './data/stile.js';
 import { posizioneSole, direzioneSole } from './sole.js';
+import { ottimizza, unificaMateriali, ombreSuLivello } from './ottimizza.js';
 
 // ---------- schermata di caricamento: la costruzione procede a tappe, la barra avanza ----------
 const caricamento = document.getElementById('caricamento');
@@ -67,6 +67,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.25 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
+ombreSuLivello(renderer); // mappa d'ombra una volta per fotogramma, dalle sagome d'ombra (ottimizza.js)
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 app.appendChild(renderer.domElement);
@@ -119,7 +120,12 @@ arch.wallsLow.visible = false;
 const versioni = arch.versioni;
 const paretiVersione = {};
 for (const [tag, v] of Object.entries(versioni)) { paretiVersione[tag] = new THREE.Group(); v.walls.add(paretiVersione[tag]); }
-const { comuni: gruppiArredi, varianti } = conSmusso(() => arredi(ctx, arch.stanze, paretiVersione));
+const { comuni, varianti } = conSmusso(() => arredi(ctx, arch.stanze, paretiVersione));
+// le stanze del piano primo si accendono e si spengono insieme: un gruppo solo, cosi' lo stesso
+// materiale in stanze diverse si fonde in una draw call; il terrazzo (esterno) resta a parte
+const stanzePrimo = new THREE.Group();
+for (const g of comuni) if (!g.userData.esterno) stanzePrimo.add(g);
+const gruppiArredi = [stanzePrimo, ...comuni.filter((g) => g.userData.esterno)];
 for (const g of gruppiArredi) scene.add(g);
 for (const g of Object.values(varianti)) scene.add(g);
 
@@ -143,7 +149,10 @@ const arrediT = conSmusso(() => arredaPianoTerra(ctxT));
   ctxT.pareti.add(pareti);
   arrediT.push(conSmusso(() => arredaSuoceri(ctxT, radice, pareti)));
 }
-for (const g of arrediT) terra.add(g);
+// anche le stanze del piano terra (cognata e suoceri) stanno in un gruppo solo
+const stanzeTerra = new THREE.Group();
+for (const g of arrediT) stanzeTerra.add(g);
+terra.add(stanzeTerra);
 
 // ---------- giardino tutto intorno, al piano del terreno ----------
 await passo('Il giardino', 0.65);
@@ -155,53 +164,16 @@ ctx.esterno = true; // le sue luci restano accese di sera su entrambi i piani
 gGiardino.add(conSmusso(() => giardino(ctxG)));
 ctx.esterno = false;
 
-// ---------- ottimizzazione: fonde le mesh statiche per materiale (meno draw call) ----------
+// ---------- ottimizzazione: materiali uguali uniti, mesh statiche fuse per materiale ----------
 await passo('Gli ultimi ritocchi', 0.82);
-function ottimizza(root) {
-  root.updateMatrixWorld(true);
-  // le geometrie fuse restano figlie di root: si portano nelle sue coordinate (root puo' essere spostato)
-  const inv = root.matrixWorld.clone().invert();
-  const rel = new THREE.Matrix4();
-  const buckets = new Map();
-  const daRimuovere = [];
-  // i pezzi da tenere a parte (ante che scorrono, modelli 3D con geometria condivisa) non si fondono qui
-  const visita = (o, fn) => { if (o !== root && o.userData.aParte) return; fn(o); for (const c of o.children) visita(c, fn); };
-  visita(root, (o) => {
-    if (!o.isMesh) return;
-    if (!o.visible) { daRimuovere.push(o); return; }
-    const metti = (material, geom) => {
-      const key = `${material.uuid}|${o.castShadow ? 1 : 0}${o.receiveShadow ? 1 : 0}`;
-      if (!buckets.has(key)) buckets.set(key, { material, cast: o.castShadow, receive: o.receiveShadow, geoms: [] });
-      geom.applyMatrix4(rel.multiplyMatrices(inv, o.matrixWorld));
-      for (const name of Object.keys(geom.attributes)) if (!['position', 'normal', 'uv'].includes(name)) geom.deleteAttribute(name);
-      buckets.get(key).geoms.push(geom);
-    };
-    if (Array.isArray(o.material)) {
-      // multi-materiale (muri esterni, solette, falde): si divide per gruppo di facce
-      const geo = o.geometry;
-      if (!geo.index || !geo.groups.length) return;
-      for (const gr of geo.groups) {
-        const mat = o.material[gr.materialIndex];
-        if (!mat) continue;
-        const sub = geo.clone();
-        sub.setIndex(Array.from(geo.index.array.slice(gr.start, gr.start + gr.count)));
-        sub.clearGroups();
-        metti(mat, sub);
-      }
-    } else metti(o.material, o.geometry.clone());
-    daRimuovere.push(o);
-  });
-  for (const o of daRimuovere) o.parent.remove(o);
-  for (const b of buckets.values()) {
-    const merged = BufferGeometryUtils.mergeGeometries(b.geoms, false);
-    for (const g of b.geoms) g.dispose();
-    const m = new THREE.Mesh(merged, b.material);
-    m.castShadow = b.cast; m.receiveShadow = b.receive;
-    root.add(m);
-  }
+{
+  // i paralumi che di sera si accendono si uniscono solo fra loro; poi si aggiornano i riferimenti
+  const paralumi = new Set(emissivi.map((e) => e.shade).filter(Boolean));
+  const sostituti = unificaMateriali(scene, paralumi);
+  for (const e of emissivi) if (e.shade) e.shade = sostituti.get(e.shade) || e.shade;
 }
 for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
-  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, ...arrediT, gGiardino,
+  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, stanzeTerra, gGiardino,
   ...Object.values(versioni).flatMap((v) => [v.walls, v.low])]) ottimizza(g);
 for (const v of Object.values(versioni)) { arch.walls.add(v.walls); arch.wallsLow.add(v.low); }
 // la porta telescopica: ogni anta si fonde per conto suo e resta libera di scorrere
@@ -549,6 +521,7 @@ function loop() {
   if (volo) { aggiornaVolo(dt); muove = true; } else muove = orbit.update();
   if (aggiornaPorta(dt)) muove = true;
   if (muove || daDisegnare > 0) {
+    renderer.shadowMap.needsUpdate = true;
     if (qualita === 'alta') composer.render(dt);
     else renderer.render(scene, camera);
     daDisegnare = Math.max(0, daDisegnare - 1);

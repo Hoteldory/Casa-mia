@@ -332,7 +332,8 @@ piantina-suoceri.jpg         piantina della casa dei suoceri
 src/data/piano-suoceri.json  misure della casa dei suoceri in cm
 src/arredi/suoceri.js        arredi della casa dei suoceri
 src/arredi/giardino.js       giardino, recinzioni e orto
-src/main.js                  scena, luci, controlli, pannello, ottimizzazione
+src/main.js                  scena, luci, controlli, pannello
+src/ottimizza.js             materiali uniti, mesh fuse per materiale, sagome d'ombra
 src/sole.js                  posizione del sole (luogo in src/data/luogo.json)
 ```
 
@@ -474,10 +475,30 @@ Il contatore in basso a destra lo mostra: "fermo" quando la scena non si ridiseg
 dal ridimensionamento e dall'evento `change` dei controlli della camera.
 
 
-Le mesh statiche vengono fuse per materiale dopo la costruzione; quelle con un materiale per
-faccia (muri esterni, solette, falde del tetto) vengono prima divise per gruppo di facce, cosi'
-si fondono anche loro: la vista esterna completa (due piani, tetto e giardino) passa da circa
-2000 a circa 950 draw call, ombre incluse, e circa 370k triangoli. Le ombre sono proiettate solo dal sole; le luci artificiali sono luci
+**Meno draw call** (`src/ottimizza.js`), dopo la costruzione:
+- *Materiali uniti*: i materiali con gli stessi parametri, nati uno per oggetto (paralumi,
+  lampadine, vetri...), diventano uno solo: da 290 a 212. I paralumi che di sera si accendono
+  si uniscono solo fra loro.
+- *Gruppi uniti*: le stanze del piano primo, che si accendono e si spengono insieme, stanno in un
+  gruppo solo; lo stesso per le stanze del piano terra (cognata e suoceri). Cosi' lo stesso
+  materiale in stanze diverse diventa una draw call sola.
+- *Fusione per materiale*: in ogni gruppo le mesh statiche si fondono per materiale; quelle con
+  un materiale per faccia (muri esterni, solette, falde del tetto) vengono prima divise per
+  gruppo di facce.
+- *Sagome d'ombra*: le forme che fanno ombra si fondono anche tutte insieme, senza materiale, in
+  una sagoma per gruppo (una per verso delle facce). La mappa d'ombra del sole disegna le sagome
+  invece di ogni mesh. Le sagome stanno sul livello 1, che la camera accende solo mentre si
+  disegna la mappa d'ombra: nell'immagine non compaiono.
+- *Una mappa d'ombra per fotogramma*: prima, in qualità alta, si ridisegnava anche durante le
+  ombre di contatto (GTAO), che ridisegnano la scena.
+
+Risultato, vista esterna completa (due piani, tetto e giardino), ombre incluse: da circa 1.290 a
+circa 510 draw call; in qualità alta da circa 2.550 (calcolate sommando i passaggi) a 965
+(misurate) per fotogramma. Le immagini
+restano le stesse (confrontate pixel per pixel prima e dopo: cambia solo il rumore delle ombre
+di contatto lungo i bordi).
+
+Le ombre sono proiettate solo dal sole; le luci artificiali sono luci
 puntiformi senza ombre, attive nella modalità sera; di sera si accendono solo quelle del piano
 in vista, e al piano terra (due appartamenti) quelle entro 2,4 m si fondono in una sola, cosi'
 restano circa venti. Pixel ratio limitato a 1,5.
