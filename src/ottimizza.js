@@ -73,7 +73,17 @@ function conIndice(g) {
   return g;
 }
 
-export function ottimizza(root) {
+// Quante mesh usano ogni geometria, in tutti i gruppi da ottimizzare: una geometria usata da una
+// mesh sola si trasforma e si fonde senza farne una copia (la mesh poi sparisce); quelle condivise
+// (gambe tornite, spigoli arrotondati dalla cache) si copiano.
+export function contaUtenti(roots) {
+  const n = new Map();
+  for (const r of roots) r.traverse((o) => { if (o.isMesh) n.set(o.geometry, (n.get(o.geometry) || 0) + 1); });
+  return n;
+}
+
+// utenti: da contaUtenti; senza, ogni geometria si copia
+export function ottimizza(root, utenti = null) {
   root.updateMatrixWorld(true);
   // le geometrie fuse restano figlie di root: si portano nelle sue coordinate (root puo' essere spostato)
   const inv = root.matrixWorld.clone().invert();
@@ -112,7 +122,7 @@ export function ottimizza(root) {
         sub.clearGroups();
         metti(mat, sub);
       }
-    } else metti(o.material, o.geometry.clone());
+    } else metti(o.material, utenti?.get(o.geometry) === 1 ? o.geometry : o.geometry.clone());
     daRimuovere.push(o);
   });
   for (const o of daRimuovere) o.parent.remove(o);

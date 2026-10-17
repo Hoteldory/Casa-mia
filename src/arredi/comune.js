@@ -29,6 +29,9 @@ export function conSmusso(fn) {
   try { return fn(); } finally { SMUSSO = prima; }
 }
 const _smussate = new Map();
+// a casa costruita la cache si svuota: ottimizza() puo' aver trasformato sul posto le geometrie
+// usate da una mesh sola
+export function dimenticaSmussate() { _smussate.clear(); }
 function geomSmussata(w, h, d, r) {
   const key = [w, h, d, r].map((v) => v.toFixed(4)).join('|');
   let g = _smussate.get(key);

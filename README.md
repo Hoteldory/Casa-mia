@@ -475,6 +475,19 @@ Il contatore in basso a destra lo mostra: "fermo" quando la scena non si ridiseg
 dal ridimensionamento e dall'evento `change` dei controlli della camera.
 
 
+**Avvio più veloce.** Misurato con un profilo della CPU durante il caricamento (Chromium senza
+scheda grafica, quindi tempi assoluti gonfiati: contano le proporzioni), da 51,7 a 12,4 secondi:
+- *Tele disegnate in memoria normale*: le texture disegnate (canvas) nascono con
+  `willReadFrequently`, cosi' si disegnano subito e si rileggono senza fermare il browser. Prima
+  il colore medio di ogni materiale coperto da una foto (`mediaColore`) costava da solo 25 secondi:
+  ogni lettura obbligava a rasterizzare la tela sulla scheda grafica e a riportarla indietro. Ora
+  la media e' quella vera, su tutti i pixel (prima su 16 campioni): i colori cambiano di meno di
+  un terzo di livello su 255.
+- *Niente copie inutili*: `ottimizza` trasforma sul posto le geometrie usate da una mesh sola e
+  copia solo quelle condivise (`contaUtenti`); l'ultima tappa passa da 3,6 a 1,5 secondi.
+- *Shader compilati durante il caricamento* (`renderer.compileAsync`, tappa "Gli shader"): dove
+  il browser lo permette si compilano in parallelo, e non c'e' lo scatto al primo movimento.
+
 **Meno draw call** (`src/ottimizza.js`), dopo la costruzione:
 - *Materiali uniti*: i materiali con gli stessi parametri, nati uno per oggetto (paralumi,
   lampadine, vetri...), diventano uno solo: da 290 a 212. I paralumi che di sera si accendono

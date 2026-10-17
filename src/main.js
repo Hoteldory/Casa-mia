@@ -14,10 +14,10 @@ import { costruisciPianoTerra, PIANO_TERRA, PIANO_SUOCERI, QUOTA_TERRA, ORIGINE_
 import { arredaPianoTerra } from './arredi/piano_terra.js';
 import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
-import { conSmusso, raggioSmusso, preparaModelli } from './arredi/comune.js';
+import { conSmusso, raggioSmusso, preparaModelli, dimenticaSmussate } from './arredi/comune.js';
 import { preparaFoto } from './data/stile.js';
 import { posizioneSole, direzioneSole } from './sole.js';
-import { ottimizza, unificaMateriali, ombreSuLivello } from './ottimizza.js';
+import { ottimizza, contaUtenti, unificaMateriali, ombreSuLivello } from './ottimizza.js';
 
 // ---------- schermata di caricamento: la costruzione procede a tappe, la barra avanza ----------
 const caricamento = document.getElementById('caricamento');
@@ -172,9 +172,14 @@ await passo('Gli ultimi ritocchi', 0.82);
   const sostituti = unificaMateriali(scene, paralumi);
   for (const e of emissivi) if (e.shade) e.shade = sostituti.get(e.shade) || e.shade;
 }
-for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
-  archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, stanzeTerra, gGiardino,
-  ...Object.values(versioni).flatMap((v) => [v.walls, v.low])]) ottimizza(g);
+{
+  const gruppi = [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo, ...gruppiArredi, ...Object.values(varianti),
+    archT.walls, archT.wallsLow, archT.floors, archT.ceilings, archT.soletta, archT.esterno, stanzeTerra, gGiardino,
+    ...Object.values(versioni).flatMap((v) => [v.walls, v.low])];
+  const utenti = contaUtenti([...gruppi, arch.porta]);
+  for (const g of gruppi) ottimizza(g, utenti);
+  dimenticaSmussate();
+}
 for (const v of Object.values(versioni)) { arch.walls.add(v.walls); arch.wallsLow.add(v.low); }
 // la porta telescopica: ogni anta si fonde per conto suo e resta libera di scorrere
 const porta = arch.porta;
@@ -532,6 +537,10 @@ function loop() {
   requestAnimationFrame(loop);
 }
 leggiLink();
+// gli shader si compilano mentre si vede ancora il caricamento (in parallelo, dove il browser lo
+// permette), non al primo fotogramma
+await passo('Gli shader', 0.92);
+try { await renderer.compileAsync(scene, camera); } catch { /* si compilano al primo fotogramma */ }
 loop();
 caricamento.style.setProperty('--avanzamento', 1);
 requestAnimationFrame(() => { caricamento.classList.add('fatto'); setTimeout(() => caricamento.remove(), 1400); });

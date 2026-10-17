@@ -40,10 +40,12 @@ function rng(seed) {
   };
 }
 
+// Le tele stanno in memoria normale (willReadFrequently), non sulla scheda grafica: si disegnano
+// subito e si rileggono senza fermare il browser (vedi mediaColore).
 function canvasTexture(size, draw, { repeat = [1, 1], srgb = true, seed = 1 } = {}) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true });
   draw(ctx, size, rng(seed));
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -912,13 +914,10 @@ export async function preparaFoto(renderer) {
   loader.dispose(); // chiude i worker del traduttore: le texture restano
 }
 
-// colore medio di una texture disegnata (canvas), letto su una copia di 4 x 4 pixel
+// colore medio di una texture disegnata (canvas): la media di tutti i suoi pixel
 function mediaColore(tex) {
-  const c = document.createElement('canvas');
-  c.width = c.height = 4;
-  const g = c.getContext('2d');
-  g.drawImage(tex.image, 0, 0, 4, 4);
-  const px = g.getImageData(0, 0, 4, 4).data;
+  const c = tex.image;
+  const px = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, c.width, c.height).data;
   let r = 0, gg = 0, b = 0;
   for (let i = 0; i < px.length; i += 4) { r += px[i]; gg += px[i + 1]; b += px[i + 2]; }
   const n = px.length / 4;
