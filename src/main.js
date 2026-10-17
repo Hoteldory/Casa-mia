@@ -565,7 +565,8 @@ let piantinaAperta = false;
 const btnPiantina = document.getElementById('btn-piantina');
 function mostraPiantina(on) {
   if (on && !piantinaEl) {
-    piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined);
+    // il piano primo si disegna come da progetto (varco e porta telescopica), uguale per le due versioni
+    piantinaEl = creaPiantina(piano === 'terra' ? [PIANO_TERRA, PIANO_SUOCERI] : undefined, { versione: piano === 'terra' ? null : 'v2' });
     document.body.appendChild(piantinaEl);
     piantinaEl.querySelector('#pg-chiudi').onclick = () => mostraPiantina(false);
     piantinaEl.querySelector('#pg-stampa').onclick = () => window.print();

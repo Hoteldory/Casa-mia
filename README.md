@@ -149,19 +149,64 @@ Tappa 1 (fatta): base comune e zona giorno.
   lampada da terra sono stati tolti.
 
 Tappa 2 (fatta): il resto del piano.
-- Camera matrimoniale: parete a doghe verde oliva con mensola in rovere e stampe botaniche,
-  letto in rovere con testiera in lino avena, coperta azzurra e plaid ruggine, comodini in
-  rovere, armadi bianco latte e rovere, tappeto persiano, lampadario a tamburo.
+- Camera matrimoniale: rifatta dalla foto di riferimento (vedi sotto, "Camera matrimoniale blu avio").
 - Camera sud: era la seconda camera da letto; ora e' l'open space gaming e allenamento (vedi sotto).
 - Camera est (studio e lavanderia): parete azzurro polvere con perlinato bianco latte, colonna
   lavanderia salvia con ceste, scrittoio in rovere con sedia Windsor.
-- Bagno: piastrelle metro a 1,20 m con listello in ottone, salvia chiaro sopra, pavimento in
-  ardesia, mobile lavabo in rovere con catino in ceramica, specchio con cornice in ottone,
-  scaletta portasciugamani, ceste.
+- Bagno: rifatto dalle due foto di riferimento (vedi sotto, "Bagno con doccia blu").
 - Disimpegno: perlinato a mezza parete, passatoia persiana, lanterna in ottone e vetro.
 - Terrazzo: tavolo da fattoria con sedie Windsor sotto il gazebo, festoni di lampadine,
   lanterne a pavimento, ulivi in vasi di cotto.
 - Telai delle porte in rovere miele.
+
+## Camera matrimoniale blu avio (dalla foto di riferimento)
+
+La camera nord-est del piano primo segue una foto scelta: pareti blu, velluto verde oliva,
+noce anni '60 e ottone.
+
+- Pareti in **blu avio** su tutti e quattro i lati, cornice modanata a soffitto dello stesso blu,
+  soffitto bianco. L'armadio a muro sulla parete nord è verniciato blu come le pareti, con
+  maniglie in ottone.
+- **Tende in velluto oliva** a tutta altezza, su bastone d'ottone, alla portafinestra e alla
+  finestra est.
+- **Letto in noce** con testiera a pannello e gambe affusolate, piumone bianco, plaid in maglia
+  panna, cuscini azzurri e oliva in velluto.
+- Due **comodini in noce** con cassetto e vano a giorno. A est: lampada in ceramica bianca e
+  applique a braccio in ottone. A ovest: lampada d'ottone, una piantina, libri nel vano.
+- **Parete di quadri** sopra il letto: una stampa astratta in cornice d'ottone al centro e cinque
+  stampe botaniche in cornici di rovere.
+- **Lampadario sputnik** in ottone sopra il letto.
+- Parete ovest: **cassettiera in noce** a sei cassetti con **specchio tondo** in ottone, vaso
+  oliva con eucalipto, libri e candela.
+- Angolo lettura vicino alla portafinestra: **poltrona in velluto oliva** e tavolino in ottone
+  su tre gambe.
+- **Tappeto persiano sbiadito**, azzurro e panna, sotto il letto.
+- Rispetto a prima: niente parete a doghe, niente panca ai piedi del letto, e l'armadio in
+  rovere della parete ovest lascia il posto alla cassettiera.
+
+## Bagno con doccia blu (dalle due foto di riferimento)
+
+Il bagno del piano primo segue due foto: perlinato panna, doccia in piastrelle blu lucide,
+ottone, rovere e un tocco di salvia.
+
+- **Perlinato bianco latte a tutta altezza** sulle pareti, con la cimasa a fare da cornice.
+- **Pavimento a ottagonette** bianche con tozzetti neri, anche dentro la doccia.
+- **Soffitto a doghe di rovere** con tre travetti e due faretti incassati in ottone.
+- **Doccia 80 x 110** nell'angolo sud-ovest, a filo pavimento:
+  - piastrelle blu lucide 7,5 x 30 in verticale, fatte a mano, su tutte e due le pareti;
+  - controparete sul fondo con la **nicchia illuminata** e i flaconi;
+  - soffione a pioggia, miscelatore a incasso e doccetta col flessibile, tutto in ottone;
+  - scarico a canalina, vetro fisso a nord e porta a battente a est, con profili, cerniere e
+    maniglione in ottone.
+- **Mobile lavabo in rovere** sulla parete ovest: cassetto con maniglia in ottone, due ripiani a
+  giorno con spugne salvia e una cesta, piano in marmo, **lavabo d'appoggio smerlato** e
+  rubinetto a muro in ottone con manopole a croce, flaconi in vetro ambrato.
+- **Specchio laccato azzurro** con cornice a tubo e angoli arrotondati, **applique a collo di
+  cigno** in ottone con paralume in rattan.
+- **Vaso e bidet sospesi** su una controparete bassa sotto la finestra, rivestita a doghe con
+  piano in marmo; placca di scarico e scopino in ottone, una piantina sul davanzale.
+- Parete est: scaldasalviette in ottone con spugna azzurra, **sgabello in noce tornito**,
+  stampa botanica. Tappeto da bagno blu davanti alla doccia.
 
 ## Camera sud: open space gaming e allenamento
 
@@ -172,8 +217,10 @@ cosi' in tutte e due le versioni del piano primo.
 Il varco:
 
 - È largo 2,40 m (da z 6,85 a 9,25) e alto 2,50 m.
-- Sta nel muro di spina fra l'appendice est del soggiorno e la camera, al posto della porta
-  (in `planimetria.json` e' `P-varco-camera-sud`, tipo "vano").
+- Sta nel muro di spina fra l'appendice est del soggiorno e la camera, al posto della porta.
+  In `planimetria.json` le porte restano quelle del disegno originale; il varco e la porta
+  telescopica stanno in `versioni.v2` (il progetto), da cui li prendono sia il modello 3D sia la
+  piantina quotata.
 - Ha telaio e soglia in rovere, perché il pavimento continua senza stacchi.
 - **Il muro di spina potrebbe essere portante.** Prima di aprire va sentito un ingegnere: può
   servire una cerchiatura, con le relative pratiche.
@@ -279,18 +326,43 @@ src/sole.js                  posizione del sole, alba e tramonto (luogo in src/d
 ## Misure
 
 Le misure sono in `src/data/planimetria.json`. I muri sono stati rilevati sui pixel della piantina
-e la scala calibrata ai minimi quadrati sulle superfici quotate (soggiorno calcolato 43,9 mq
-contro "circa 44"). Altezza soffitto **270 cm (assunta)**, muri esterni 25 cm, interni 15 cm.
+e la scala calibrata ai minimi quadrati sulle superfici quotate. Altezza soffitto **270 cm
+(assunta)**, muri esterni 25 cm, interni 15 cm.
 
-| Stanza | Interno (cm) | Calcolata | Quotata |
+**Verifica** (`python3 tools/verifica_misure.py`): rasterizza la pianta al centimetro e controlla
+che ogni stanza chiuda sui suoi muri, che non ci siano buchi o sovrapposizioni, che ogni apertura
+stia nel suo muro fra due ambienti, il varco della camera sud e tutte le superfici.
+- Muri e aperture coincidono con il disegno originale entro 3 cm.
+- Il disegno originale e' schematico: le superfici scritte delle singole stanze non stanno tutte
+  nella stessa scala (scarti da -5% a +3%), ma il totale torna (93,11 contro 93,21 mq). Le misure
+  vanno confermate con il rilievo sul posto.
+
+| Stanza | Interno (cm) | Calcolata (mq) | Sul disegno (mq) |
 |---|---|---|---|
-| Soggiorno pranzo-cucina (a L) | 391 × 912 + appendici | 43,9 mq | ~44 |
-| Bagno | 168 × 256 | 4,30 | 4,56 |
+| Soggiorno pranzo-cucina (a L) | 391 × 912 + 36 × 640 + 147 × 401 | 43,86 | circa 44 |
+| Bagno | 168 × 257 | 4,32 | 4,56 |
 | Disimpegno | 132 × 224 | 2,96 | — |
-| Camera nord-est | 412 × 378 | 15,57 | 15,43 |
-| Camera est | 412 × 229 | 9,43 | 9,74 |
-| Camera sud-est | 412 × 412 | 16,97 | 16,52 |
-| Terrazzo nord (con risega) | 634×684 + 594×384 | 66,18 | 67,12 |
+| Camera nord-est | 412 × 379 | 15,61 | 15,43 |
+| Camera est | 412 × 228 | 9,39 | 9,74 |
+| Camera sud-est (open space) | 412 × 412 | 16,97 | 16,52 |
+| **Calpestabile** | | **93,11** | 93,21 |
+| Lorda, al filo esterno dei muri | 1051 × 965 + 467 × 132 | 107,59 | — |
+| Open space (soggiorno + camera + soglia del varco) | | 61,19 | — |
+| Terrazzo nord (con risega) | 634 × 684 + 594 × 384 | 66,18 | 67,12 |
+
+### Piantina quotata per il geometra
+
+La piantina quotata del piano primo disegna il progetto, con il varco e la porta telescopica: e'
+la stessa per le due versioni del soggiorno, perche' non disegna gli arredi. E' anche in
+`piantina-quotata-v2.pdf` (A4, tre pagine; li' il progetto si chiama ancora "versione 2"):
+- **Pianta**: varco 240 x 250 con le sue quote, porta telescopica (ante aperte e chiuse, cassonetto)
+  e la finestra tamponata a retino.
+- **Bolli neri**: le aperture nuove, modificate o tamponate rispetto al disegno originale.
+- **Modifiche rispetto al disegno originale**: prima e dopo, con la posizione.
+- **Abaco delle aperture**: con stato, misure e posizione in cm dall'angolo esterno nord-ovest.
+- **Superfici**: confrontate con quelle del disegno, con calpestabile, lorda e open space.
+- **Impianti e sanitari da riportare** (bagno nuovo, attacco lavatrice) e l'avviso sul muro di
+  spina, forse portante.
 
 Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde salvia chiaro.
 
@@ -299,8 +371,8 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
 - **Cucina**: maioliche blu cobalto/bianco dipinte (pattern generato) dietro il piano cottura, sotto
   la cappa in muratura, e dietro il piano di appoggio sulla parete est.
 - **Soggiorno**: parete sud in verde salvia profondo con boiserie a riquadri.
-- **Bagno**: cementine a terra con motivo a stella terracotta, salvia, nero e crema.
-- **Camera nord** (matrimoniale principale): testiera imbottita in velluto senape a tutta parete.
+- **Bagno**: doccia in piastrelle blu lucide, pavimento a ottagonette bianche e nere.
+- **Camera nord** (matrimoniale principale): pareti e cornice in blu avio, tende in velluto oliva.
 - **Camera sud** (seconda matrimoniale): carta da parati botanica verde bottiglia.
 - **Camera est** (studio e lavanderia): parete in terracotta bruciata con lavanderia in noce.
 - **Disimpegno**: soffitto in verde salvia.

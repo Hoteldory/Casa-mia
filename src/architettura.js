@@ -296,11 +296,11 @@ function buildFinestra(f, seg, ctx) {
 }
 
 // ---------- battiscopa ----------
-function battiscopa(st, ctx, P = plan) {
+function battiscopa(st, ctx, P = plan, porte = P.porte) {
   const M = getMateriali();
   const g = new THREE.Group();
   const segs = P.muri.segmenti;
-  const aper = aperturePerMuro(P);
+  const aper = aperturePerMuro(P, porte);
   const inWall = (x, y) => segs.find((s) => x >= s.rect.x && x <= s.rect.x + s.rect.w && y >= s.rect.y && y <= s.rect.y + s.rect.d);
   for (const k of Object.keys(st)) {
     for (const rc of P.stanze[k].rettangoli || [P.stanze[k].rect]) {
@@ -569,13 +569,17 @@ function travi(st) {
   }
   // trave di colmo longitudinale
   g.add(box(0.18, 0.24, main.d, M.rovereMiele, main.cx, H - 0.12, main.cz));
+  // bagno: soffitto a doghe di rovere con tre travetti
+  const b = st.bagno.rects[0];
+  for (let i = 0; i < 3; i++) g.add(box(b.w, 0.12, 0.1, M.rovereMiele, b.cx, H - 0.06, b.z + b.d * (i + 0.5) / 3));
   return g;
 }
 
 // ---------- involucro di un piano: muri con aperture, porte, finestre, battiscopa ----------
 // hMuro(seg) = altezza del muro in metri (i muri esterni del piano terra salgono fino al piano primo)
-function involucro(P, st, ctx, walls, wallsLow, hMuro) {
-  const aper = aperturePerMuro(P);
+// porte: le porte del piano (al piano primo quelle del progetto, con il varco al posto della porta)
+function involucro(P, st, ctx, walls, wallsLow, hMuro, porte = P.porte) {
+  const aper = aperturePerMuro(P, porte);
   const segById = {};
   const precedenti = [];
   for (const seg of P.muri.segmenti) {
@@ -586,13 +590,13 @@ function involucro(P, st, ctx, walls, wallsLow, hMuro) {
   }
   // porte e finestre con gli spigoli arrotondati (telai, ante, scuri), come gli arredi
   conSmusso(() => {
-    for (const p of P.porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
+    for (const p of porte) walls.add(buildPorta(aper[p.muro].find((x) => x.id === p.id), segById[p.muro], ctx, P));
     for (const f of P.finestre) {
       const o = aper[f.muro].find((x) => x.id === f.id);
       walls.add(buildFinestra(o, segById[f.muro], ctx));
     }
   });
-  walls.add(battiscopa(st, ctx, P));
+  walls.add(battiscopa(st, ctx, P, porte));
 }
 
 // ---------- un piano generico (piano terra): involucro, pavimenti e soffitti ----------
@@ -699,10 +703,16 @@ function tettoCapanna() {
   return g;
 }
 
-// ---------- porta telescopica sul varco fra soggiorno e camera sud (P-varco-camera-sud) ----------
+// ---------- open space: varco fra soggiorno e camera sud, porta telescopica ----------
+// Il varco (2,40 x 2,50, soglia in rovere) e la porta telescopica stanno in planimetria.json, in
+// versioni.v2: il progetto rispetto al disegno originale, lo stesso della piantina quotata. Nel
+// modello vale per tutte e due le versioni del soggiorno.
+const PROGETTO = plan.versioni.v2;
+const PORTE = [...plan.porte.filter((p) => !PROGETTO.porte_tolte.includes(p.id)), ...PROGETTO.porte_nuove];
+const PT = PROGETTO.porta_telescopica;
 // porta dal lato della camera: tre ante su tre binari; aperta, si impacchettano a sud del varco
 // davanti al muro del vano scala, chiusa coprono tutto il varco
-export const PORTA_TELESCOPICA = { xMuro: 6.14, z0: 6.85, z1: 9.25, h: 2.5, ante: 3 };
+export const PORTA_TELESCOPICA = { xMuro: PT.x_muro_cm / 100, z0: PT.y_da / 100, z1: PT.y_a / 100, h: PT.h_cm / 100, ante: PT.ante };
 
 // ---------- costruzione completa del piano primo ----------
 export function costruisciArchitettura(ctx) {
@@ -712,7 +722,7 @@ export function costruisciArchitettura(ctx) {
   const wallsLow = new THREE.Group();
   const floors = new THREE.Group();
   const ceilings = new THREE.Group();
-  involucro(plan, st, ctx, walls, wallsLow, () => H);
+  involucro(plan, st, ctx, walls, wallsLow, () => H, PORTE);
   const porta = conSmusso(() => portaTelescopica(ctx, PORTA_TELESCOPICA));
   // le due versioni del soggiorno: ognuna ha un suo gruppo per i pezzi appesi ai muri
   // (pitture, quadri, tende), che si accende con lei
@@ -720,10 +730,10 @@ export function costruisciArchitettura(ctx) {
   for (const tag of ['v1', 'v2']) versioni[tag] = { walls: new THREE.Group(), low: new THREE.Group() };
 
   // pavimenti e soffitti
-  // rovere a listoni larghi in tutto il piano, ardesia nel bagno
+  // rovere a listoni larghi in tutto il piano, ottagonette bianche e nere nel bagno (soffitto a doghe di rovere)
   const R = M.rovereListoni;
-  const floorMat = { soggiorno: R, bagno: M.ardesia, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
-  const ceilMat = {};
+  const floorMat = { soggiorno: R, bagno: M.ottagonette, disimpegno: R, camera_nord: R, camera_est: R, camera_sud: R };
+  const ceilMat = { bagno: R };
   for (const k of Object.keys(st)) {
     for (const r of st[k].rects) {
       floors.add(plane(r.w, r.d, floorMat[k], r.cx, 0.005, r.cz, 'y+'));

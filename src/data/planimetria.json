@@ -17,10 +17,11 @@
       "Tolta l'isola della cucina; tavolo da pranzo in verticale (lato lungo nord-sud) che entra nella zona cucina",
       "Piano di appoggio sulla parete est della cucina accanto alle colonne (planetaria, macchina del caffe', microonde)",
       "Finestra 124 x 130 sul muro est della camera nord",
-      "Scuri delle finestre in verde salvia chiaro invece che in noce scuro (entrambi i piani)",
-      "Camera sud aperta sul soggiorno: varco di 2,40 m al posto della porta, con porta telescopica (open space gioco e allenamento)"
+      "Scuri delle finestre in verde salvia chiaro invece che in noce scuro (entrambi i piani)"
     ],
-    "sorgente_terrazzo": "piantina-terrazzo.jpg (PIANO PRIMO aggiornato)"
+    "sorgente_terrazzo": "piantina-terrazzo.jpg (PIANO PRIMO aggiornato)",
+    "verifica_misure": "rilievo ricontrollato sui pixel di piantina.png (tools/verifica_misure.py): muri e aperture coincidono con il disegno entro 3 cm; ogni stanza chiude sui muri che la delimitano",
+    "aperture_chiuse_nota": "aperture del disegno originale tamponate"
   },
   "altezze": {
     "soffitto_cm": 270,
@@ -40,7 +41,9 @@
     "ingombro_esterno": {
       "larghezza_cm": 1051,
       "profondita_cm": 1097,
-      "nota": "profondita 1097 solo sul corpo est (x>=584); il corpo ovest (soggiorno) si ferma a y=965 (filo esterno)"
+      "nota": "profondita 1097 solo sul corpo est (x>=584); il corpo ovest (soggiorno) si ferma a y=965 (filo esterno)",
+      "superficie_lorda_mq": 107.59,
+      "superficie_lorda_nota": "al filo esterno dei muri: 1051 x 965 (corpo intero fino al muro sud del soggiorno) + 467 x 132 (camera sud-est oltre il pianerottolo)"
     },
     "segmenti": [
       {
@@ -120,7 +123,7 @@
         "rect": {
           "x": 416,
           "y": 285,
-          "w": 97,
+          "w": 183,
           "d": 15
         },
         "tipo": "interno"
@@ -131,7 +134,7 @@
           "x": 452,
           "y": 285,
           "w": 15,
-          "d": 151
+          "d": 239
         },
         "tipo": "interno"
       },
@@ -194,22 +197,25 @@
           "x": 416,
           "y": 300,
           "w": 36,
-          "d": 641
+          "d": 640
         },
         {
           "x": 452,
-          "y": 538,
+          "y": 539,
           "w": 147,
-          "d": 402
+          "d": 401
         }
       ],
       "corpo_principale_cm": {
         "larghezza": 391,
         "profondita": 912
       },
-      "superficie_calcolata_mq": 43.92,
+      "superficie_calcolata_mq": 43.86,
       "zona_cucina": "parete ovest, tratto nord (blocco cucina disegnato x 410-517 px -> lungo 380 cm dalla parete nord)",
-      "note": "zona pranzo a nord (tavolo 6 posti disegnato), zona living a sud (divano contro il muro sud)"
+      "note": "zona pranzo a nord (tavolo 6 posti disegnato), zona living a sud (divano contro il muro sud)",
+      "nome_breve": "Soggiorno pranzo-cucina",
+      "superficie_quotata_mq": 44,
+      "superficie_quotata_circa": true
     },
     "bagno": {
       "nome": "Bagno",
@@ -217,13 +223,14 @@
         "x": 431,
         "y": 28,
         "w": 168,
-        "d": 256
+        "d": 257
       },
       "larghezza_cm": 168,
-      "profondita_cm": 256,
-      "superficie_calcolata_mq": 4.3,
+      "profondita_cm": 257,
+      "superficie_calcolata_mq": 4.32,
       "superficie_quotata_mq": 4.56,
-      "note": "finestra a nord 71 cm; wc+bidet sul lato nord, lavabo a ovest (dal disegno)"
+      "note": "finestra a nord 71 cm; wc+bidet sul lato nord, lavabo a ovest (dal disegno)",
+      "nome_breve": "Bagno"
     },
     "disimpegno": {
       "nome": "Disimpegno (Dis.)",
@@ -237,7 +244,8 @@
       "profondita_cm": 224,
       "superficie_calcolata_mq": 2.96,
       "superficie_quotata_mq": null,
-      "note": "non quotato in piantina"
+      "note": "non quotato in piantina",
+      "nome_breve": "Disimpegno"
     },
     "camera_nord": {
       "nome": "Camera 15,43 (nord-est, matrimoniale)",
@@ -245,13 +253,14 @@
         "x": 614,
         "y": 28,
         "w": 412,
-        "d": 378
+        "d": 379
       },
       "larghezza_cm": 412,
-      "profondita_cm": 378,
-      "superficie_calcolata_mq": 15.57,
+      "profondita_cm": 379,
+      "superficie_calcolata_mq": 15.61,
       "superficie_quotata_mq": 15.43,
-      "note": "letto matrimoniale e armadio a nord disegnati"
+      "note": "letto matrimoniale e armadio a nord disegnati",
+      "nome_breve": "Camera nord-est"
     },
     "camera_est": {
       "nome": "Camera est (vano scala, lavanderia e studio)",
@@ -259,11 +268,11 @@
         "x": 614,
         "y": 422,
         "w": 412,
-        "d": 229
+        "d": 228
       },
       "larghezza_cm": 412,
-      "profondita_cm": 229,
-      "superficie_calcolata_mq": 9.43,
+      "profondita_cm": 228,
+      "superficie_calcolata_mq": 9.39,
       "superficie_quotata_mq": 9.74,
       "vano_scala": {
         "tipo": "scala a chiocciola al secondo piano",
@@ -280,7 +289,8 @@
         },
         "assunto": true,
         "nota": "scala preesistente, addossata al muro nord vicino alla porta"
-      }
+      },
+      "nome_breve": "Camera est"
     },
     "camera_sud": {
       "nome": "Camera 16,52 (sud-est, matrimoniale)",
@@ -294,7 +304,8 @@
       "profondita_cm": 412,
       "superficie_calcolata_mq": 16.97,
       "superficie_quotata_mq": 16.52,
-      "note": "letto matrimoniale, armadio sulla parete est disegnati; portafinestra sul balcone"
+      "note": "letto matrimoniale, armadio sulla parete est disegnati; portafinestra sul balcone",
+      "nome_breve": "Camera sud-est"
     }
   },
   "porte": [
@@ -335,7 +346,8 @@
       "battente": "scorrevole a scomparsa nel muro, tasca a nord",
       "tasca": "nord",
       "modifica_richiesta": true,
-      "nota_modifica": "era a battente verso il soggiorno: resa scorrevole per risparmiare spazio"
+      "nota_modifica": "era a battente verso il soggiorno: resa scorrevole per risparmiare spazio",
+      "stato": "modificata"
     },
     {
       "id": "P-camera-nord",
@@ -362,22 +374,20 @@
       "battente": "scorrevole a scomparsa nel muro, tasca a sud",
       "tasca": "sud",
       "modifica_richiesta": true,
-      "nota_modifica": "porta verso la scala a chiocciola: resa scorrevole per risparmiare spazio"
+      "nota_modifica": "porta verso la scala a chiocciola: resa scorrevole per risparmiare spazio",
+      "stato": "modificata"
     },
     {
-      "id": "P-varco-camera-sud",
-      "tipo": "vano",
+      "id": "P-camera-sud",
+      "tipo": "interna",
       "muro": "I-spina-camere",
       "da": "soggiorno",
       "a": "camera_sud",
       "orientamento": "verticale",
-      "y_da": 685,
-      "y_a": 925,
-      "luce_cm": 240,
-      "h_cm": 250,
-      "soglia": "legno",
-      "modifica_richiesta": true,
-      "nota_modifica": "era la porta della camera sud (81 cm, y 843-924): ora varco di 2,40 m sul soggiorno, chiuso dalla porta telescopica. Il muro di spina potrebbe essere portante: serve un ingegnere (cerchiatura)."
+      "y_da": 843,
+      "y_a": 924,
+      "luce_cm": 81,
+      "battente": "apre verso la camera, cerniera a nord"
     }
   ],
   "finestre": [
@@ -391,7 +401,8 @@
       "tipo": "portafinestra",
       "verso": "terrazzo_nord",
       "nota": "modifica richiesta: era una finestra, ora portafinestra di accesso al terrazzo nord",
-      "modifica_richiesta": true
+      "modifica_richiesta": true,
+      "stato": "modificata"
     },
     {
       "id": "F-bagno-nord",
@@ -412,7 +423,8 @@
       "tipo": "portafinestra",
       "verso": "terrazzo_nord",
       "nota": "modifica richiesta: era una finestra 121 cm, ora portafinestra delle stesse dimensioni di PF-soggiorno-nord",
-      "modifica_richiesta": true
+      "modifica_richiesta": true,
+      "stato": "modificata"
     },
     {
       "id": "PF-soggiorno-balcone",
@@ -465,7 +477,8 @@
       "altezza_cm": 130,
       "nota": "modifica richiesta: finestra sopra il lavello, a filo del piano di lavoro. Larghezza come PF-soggiorno-nord, davanzale interno costituito dal top in pietra della cucina.",
       "modifica_richiesta": true,
-      "davanzale": "esterno"
+      "davanzale": "esterno",
+      "stato": "nuova"
     },
     {
       "id": "F-camera-nord-est",
@@ -478,7 +491,8 @@
       "davanzale_cm": 90,
       "altezza_cm": 130,
       "modifica_richiesta": true,
-      "nota": "modifica richiesta: finestra sul muro est della camera nord, grande come quella sopra il lavello (124 x 130, davanzale 90), fra l'armadio e il comodino"
+      "nota": "modifica richiesta: finestra sul muro est della camera nord, grande come quella sopra il lavello (124 x 130, davanzale 90), fra l'armadio e il comodino",
+      "stato": "nuova"
     }
   ],
   "esterni": {
@@ -611,5 +625,150 @@
       "armadio a est"
     ],
     "camera_est": []
-  }
+  },
+  "aperture_chiuse": [
+    {
+      "id": "F-cucina-ovest",
+      "muro": "E-ovest",
+      "y_da": 468,
+      "y_a": 528,
+      "larghezza_cm": 60,
+      "tipo": "finestra",
+      "stanza": "soggiorno",
+      "nota": "finestra della cucina tamponata (misurata sul disegno: 468-528)",
+      "stato": "tamponata"
+    }
+  ],
+  "versioni": {
+    "v2": {
+      "nome": "Progetto · open space",
+      "porte_tolte": [
+        "P-camera-sud"
+      ],
+      "porte_nuove": [
+        {
+          "id": "P-varco-camera-sud",
+          "tipo": "vano",
+          "muro": "I-spina-camere",
+          "da": "soggiorno",
+          "a": "camera_sud",
+          "orientamento": "verticale",
+          "y_da": 685,
+          "y_a": 925,
+          "luce_cm": 240,
+          "h_cm": 250,
+          "soglia": "legno",
+          "modifica_richiesta": true,
+          "nota_modifica": "varco al posto della porta P-camera-sud (843-924, luce 81): il vano esistente si allarga di 159 cm verso nord, lo stipite sud resta dov'e'",
+          "stato": "nuova"
+        }
+      ],
+      "porta_telescopica": {
+        "x_muro_cm": 614,
+        "y_da": 685,
+        "y_a": 925,
+        "h_cm": 250,
+        "ante": 3,
+        "anta_cm": 84,
+        "cassonetto_cm": 15,
+        "pacco_aperto_y_da": 929,
+        "pacco_aperto_y_a": 1013,
+        "nota": "tre ante in legno su tre binari a soffitto, cassonetto in rovere dal lato della camera; aperte si impacchettano a sud del varco (929-1013), davanti al muro del vano scala"
+      },
+      "camera_sud_nome": "Open space",
+      "strutturale": "Il muro di spina potrebbe essere portante: prima di aprire il varco serve la verifica di un ingegnere ed eventualmente una cerchiatura, con le relative pratiche.",
+      "camera_sud_uso": "gaming e allenamento"
+    }
+  },
+  "impianti": [
+    {
+      "stanza": "bagno",
+      "testo": "Doccia a filo pavimento nell'angolo sud-ovest: 80 x 111 compresa la controparete da 8 cm sul fondo (con la nicchia), vetro fisso a nord, porta a battente a est, canalina di scarico a sud."
+    },
+    {
+      "stanza": "bagno",
+      "testo": "Mobile lavabo 80 x 50 contro la parete ovest, da 62 a 142 cm dal muro nord; rubinetto a muro."
+    },
+    {
+      "stanza": "bagno",
+      "testo": "Vaso e bidet sospesi sotto la finestra, su una controparete profonda 15 cm e alta 87 cm per tutta la parete nord; assi a 69 e 131 cm dal muro ovest del bagno."
+    },
+    {
+      "stanza": "camera_est",
+      "testo": "Colonna lavatrice 68 x 64 contro il muro nord, fra 244 e 312 cm dal muro ovest della camera: attacco acqua e scarico."
+    }
+  ],
+  "modifiche": [
+    {
+      "dove": "soggiorno, muro nord",
+      "prima": "finestra",
+      "dopo": "portafinestra 124 x 220 verso il terrazzo",
+      "posizione": "x 206-330",
+      "apertura": "PF-soggiorno-nord"
+    },
+    {
+      "dove": "camera nord-est, muro nord",
+      "prima": "finestra 121",
+      "dopo": "portafinestra 124 x 220 verso il terrazzo",
+      "posizione": "x 688-812",
+      "apertura": "PF-camera-nord"
+    },
+    {
+      "dove": "camera nord-est, muro est",
+      "prima": "muro pieno",
+      "dopo": "finestra nuova 124 x 130, davanzale 90",
+      "posizione": "y 163-287",
+      "apertura": "F-camera-nord-est"
+    },
+    {
+      "dove": "cucina, muro ovest",
+      "prima": "muro pieno",
+      "dopo": "finestra nuova 124 x 130 sopra il lavello, davanzale 90 (a filo del piano di lavoro)",
+      "posizione": "y 293-417",
+      "apertura": "F-cucina-lavello"
+    },
+    {
+      "dove": "cucina, muro ovest",
+      "prima": "finestra 60",
+      "dopo": "tamponata",
+      "posizione": "y 468-528",
+      "apertura": "F-cucina-ovest"
+    },
+    {
+      "dove": "disimpegno / soggiorno",
+      "prima": "porta a battente",
+      "dopo": "porta scorrevole a scomparsa 88, controtelaio nel muro a nord",
+      "posizione": "y 436-524",
+      "apertura": "P-dis"
+    },
+    {
+      "dove": "disimpegno / camera est",
+      "prima": "porta a battente",
+      "dopo": "porta scorrevole a scomparsa 81, controtelaio nel muro a sud",
+      "posizione": "y 426-507",
+      "apertura": "P-camera-est"
+    },
+    {
+      "dove": "soggiorno / camera sud-est (versione 2)",
+      "prima": "porta a battente 81 (y 843-924)",
+      "dopo": "varco 240 x 250 con soglia in rovere; il vano esistente si allarga di 159 cm verso nord, lo stipite sud resta. Porta telescopica a 3 ante su binari a soffitto, cassonetto da 15 cm dal lato della camera",
+      "posizione": "y 685-925",
+      "versione": "v2",
+      "apertura": "P-varco-camera-sud"
+    },
+    {
+      "dove": "camera est",
+      "prima": "-",
+      "dopo": "scala a chiocciola diametro 150 con foro nel solaio 170 x 163 (posizione assunta, da verificare)",
+      "posizione": "centro x 760, y 501",
+      "apertura": null
+    },
+    {
+      "dove": "bagno",
+      "prima": "wc e bidet a nord, lavabo",
+      "dopo": "nuova disposizione dei sanitari e doccia a filo pavimento (vedi Impianti)",
+      "posizione": "-",
+      "apertura": null
+    }
+  ]
 }
