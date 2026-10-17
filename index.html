@@ -36,11 +36,6 @@
     #pannello .row button { flex: 1; text-align: center; }
     #pannello button.largo { width: 100%; margin-top: 6px; text-align: center; }
     #pannello .hint { font-size: 11.5px; color: var(--tortora); margin-top: 8px; line-height: 1.45; }
-    .cursore { display: grid; grid-template-columns: 42px 1fr 76px; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; color: var(--inchiostro); }
-    .cursore output { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--noce); text-align: right; white-space: nowrap; }
-    .cursore input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: rgba(90,59,37,0.3); outline: none; margin: 8px 0; }
-    .cursore input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--ottone); border: 2px solid var(--calce); box-shadow: 0 1px 4px rgba(0,0,0,0.35); cursor: pointer; }
-    .cursore input[type=range]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--ottone); border: 2px solid var(--calce); cursor: pointer; }
     #fps { position: fixed; right: 12px; bottom: 10px; color: rgba(239,233,221,0.6); font-size: 11px; font-family: ui-monospace, monospace; }
     /* ---- caricamento ---- */
     #caricamento {
@@ -199,7 +194,7 @@
       body.pannello-aperto #pannello { display: block; }
       #pannello button { padding: 9px 10px; font-size: 14px; }
     }
-    body.touch .hint:not(.touch-hint):not(#nota-sole):not(#nota-tavolo):not(#nota-versione) { display: none; }
+    body.touch .hint:not(.touch-hint):not(#nota-tavolo):not(#nota-versione) { display: none; }
     .touch-hint { display: none; } body.touch .touch-hint { display: block; }
   </style>
 </head>
@@ -235,10 +230,6 @@
     </div>
     <div class="hint" id="nota-tavolo"></div>
     </div>
-    <h2>Sole</h2>
-    <label class="cursore"><span>Ora</span><input id="sl-ora" type="range" min="5" max="22" step="0.25" /><output id="out-ora"></output></label>
-    <label class="cursore"><span>Giorno</span><input id="sl-mese" type="range" min="0" max="11" step="1" /><output id="out-mese"></output></label>
-    <div class="hint" id="nota-sole"></div>
     <h2>Scena</h2>
     <button id="btn-tetto" class="on">Tetto e soffitti</button>
     <button id="btn-pareti" class="on">Pareti intere</button>

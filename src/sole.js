@@ -4,10 +4,7 @@
 // all'ultima di ottobre).
 import LUOGO from './data/luogo.json';
 
-export { LUOGO };
 const RAD = Math.PI / 180;
-
-export const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
 
 function ultimaDomenica(anno, mese0) {
   const d = new Date(Date.UTC(anno, mese0 + 1, 0));
@@ -48,23 +45,3 @@ export function direzioneSole({ altezza, azimut }) {
   const a = (azimut + LUOGO.nord_gradi) * RAD, h = altezza * RAD;
   return { x: Math.sin(a) * Math.cos(h), y: Math.sin(h), z: -Math.cos(a) * Math.cos(h) };
 }
-
-// alba e tramonto (ora locale decimale) del giorno, cercando quando il sole passa l'orizzonte
-export function albaTramonto(mese0, giorno = 21) {
-  const sopra = (o) => posizioneSole({ mese0, giorno, ora: o }).altezza > -0.83;
-  let alba = null, tramonto = null;
-  for (let o = 3; o < 23; o += 1 / 60) {
-    const s = sopra(o);
-    if (s && alba === null) alba = o;
-    if (!s && alba !== null && tramonto === null) tramonto = o;
-  }
-  return { alba, tramonto };
-}
-
-const PUNTI = ['nord', 'nord-nordest', 'nordest', 'est-nordest', 'est', 'est-sudest', 'sudest', 'sud-sudest',
-  'sud', 'sud-sudovest', 'sudovest', 'ovest-sudovest', 'ovest', 'ovest-nordovest', 'nordovest', 'nord-nordovest'];
-export const puntoCardinale = (az) => PUNTI[Math.round(((az % 360) + 360) % 360 / 22.5) % 16];
-export const hhmm = (o) => {
-  const m = Math.round(o * 60);
-  return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
-};

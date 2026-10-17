@@ -17,7 +17,7 @@ import { arredaSuoceri } from './arredi/suoceri.js';
 import { giardino } from './arredi/giardino.js';
 import { conSmusso, raggioSmusso, preparaModelli } from './arredi/comune.js';
 import { preparaFoto } from './data/stile.js';
-import { posizioneSole, direzioneSole, albaTramonto, puntoCardinale, hhmm, MESI, LUOGO } from './sole.js';
+import { posizioneSole, direzioneSole } from './sole.js';
 
 // ---------- schermata di caricamento: la costruzione procede a tappe, la barra avanza ----------
 const caricamento = document.getElementById('caricamento');
@@ -261,7 +261,7 @@ riempimento.position.set(12, 8, -6);
 scene.add(riempimento);
 
 let giorno = true;
-// giorno dell'anno e ora del sole: di partenza il mese corrente, alle 11
+// giorno dell'anno e ora del sole: il mese corrente, alle 11 (non si cambiano dal menu)
 const statoSole = { mese0: new Date().getMonth(), ora: 11 };
 const soleAdesso = () => posizioneSole(statoSole);
 const C_TRAMONTO = new THREE.Color('#ffa75e'), C_MEZZODI = new THREE.Color('#fff1d6');
@@ -441,34 +441,7 @@ function impostaGiorno(g) {
   bg.textContent = giorno ? 'Luce del giorno' : 'Luce della sera';
   applicaLuce();
 }
-// tornando al giorno con il sole gia' tramontato si riparte dalle 11
-bg.onclick = () => {
-  if (!giorno && soleAdesso().altezza <= -1) statoSole.ora = 11;
-  impostaGiorno(!giorno);
-  aggiornaSoleUI();
-};
-
-// ---------- sole: ora e mese, sul luogo della casa ----------
-const slOra = document.getElementById('sl-ora'), slMese = document.getElementById('sl-mese');
-const outOra = document.getElementById('out-ora'), outMese = document.getElementById('out-mese');
-const notaSole = document.getElementById('nota-sole');
-function aggiornaSoleUI() {
-  slOra.value = statoSole.ora; slMese.value = statoSole.mese0;
-  outOra.textContent = hhmm(statoSole.ora);
-  outMese.textContent = `21 ${MESI[statoSole.mese0]}`;
-  const s = soleAdesso();
-  const { alba, tramonto } = albaTramonto(statoSole.mese0);
-  const dove = s.altezza > -0.83 ? `Sole a ${puntoCardinale(s.azimut)}, ${Math.round(s.altezza)}° sull'orizzonte.` : 'Il sole è tramontato: luce della sera.';
-  notaSole.textContent = `${dove} Alba ${hhmm(alba)}, tramonto ${hhmm(tramonto)}. ${LUOGO.comune}${LUOGO.provvisorio ? ' (luogo provvisorio)' : ''}.`;
-}
-function impostaSole(ora, mese0) {
-  statoSole.ora = ora; statoSole.mese0 = mese0;
-  impostaGiorno(soleAdesso().altezza > -1); // dopo il tramonto si passa da soli alla sera
-  aggiornaSoleUI();
-}
-slOra.oninput = () => impostaSole(+slOra.value, statoSole.mese0);
-slMese.oninput = () => impostaSole(statoSole.ora, +slMese.value);
-aggiornaSoleUI();
+bg.onclick = () => impostaGiorno(!giorno);
 
 // ---------- voli di camera: niente salti fra un punto e l'altro ----------
 let volo = null;
@@ -495,7 +468,7 @@ function mostraAvviso(testo) {
 function linkVista() {
   const f = (v) => v.toArray().map((x) => x.toFixed(2)).join(',');
   const m = orbit.target;
-  const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), ora: statoSole.ora, mese: statoSole.mese0 + 1, luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo, versione: versione.slice(1) });
+  const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo, versione: versione.slice(1) });
   q.set('porta', portaChiusa ? 'chiusa' : 'aperta');
   return `${location.origin}${location.pathname}#${q}`;
 }
@@ -514,11 +487,7 @@ function leggiLink() {
   if (q.get('piano') === 'terra' || q.get('piano') === 'primo') cambiaPiano(q.get('piano'), true);
   if (TAVOLO_STATI[q.get('tavolo')]) applicaTavolo(q.get('tavolo'));
   if (VERSIONI['v' + q.get('versione')]) applicaVersione('v' + q.get('versione'), { chiusa: q.get('porta') === 'chiusa', subito: true });
-  const ora = +q.get('ora'), mese = +q.get('mese');
-  if (ora >= 5 && ora <= 22) statoSole.ora = ora;
-  if (mese >= 1 && mese <= 12) statoSole.mese0 = mese - 1;
-  impostaGiorno(q.get('luce') === 'sera' ? false : soleAdesso().altezza > -1);
-  aggiornaSoleUI();
+  impostaGiorno(q.get('luce') !== 'sera');
   const c = vec('c'), t = vec('t');
   if (c && t) { camera.position.copy(c); orbit.target.copy(t); orbit.update(); }
 }
@@ -573,4 +542,4 @@ leggiLink();
 loop();
 caricamento.style.setProperty('--avanzamento', 1);
 requestAnimationFrame(() => { caricamento.classList.add('fatto'); setTimeout(() => caricamento.remove(), 1400); });
-window.__casa = { applicaVersione, porta, vola, impostaSole, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, arch, archT, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+window.__casa = { applicaVersione, porta, vola, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, arch, archT, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

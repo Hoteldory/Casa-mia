@@ -22,7 +22,7 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 - **Orbita**: trascina per ruotare, rotella per zoom, tasto destro per traslare (su telefono:
   un dito per ruotare, due dita per zoom e spostamento).
 - **Pannello laterale**: piano primo o piano terra, versione 1 o 2 del soggiorno (cucina a nord
-  o cucina a sud con l'isola), porta telescopica della camera sud, tavolo chiuso o aperto, sole, toggle tetto/soffitti, toggle pareti intere
+  o cucina a sud con l'isola), porta telescopica della camera sud, tavolo chiuso o aperto, toggle tetto/soffitti, toggle pareti intere
   (pareti a 45 cm per la vista dall'alto), toggle luce del giorno / luce della sera, qualità,
   piantina quotata, link alla vista.
 
@@ -333,7 +333,7 @@ src/data/piano-suoceri.json  misure della casa dei suoceri in cm
 src/arredi/suoceri.js        arredi della casa dei suoceri
 src/arredi/giardino.js       giardino, recinzioni e orto
 src/main.js                  scena, luci, controlli, pannello, ottimizzazione
-src/sole.js                  posizione del sole, alba e tramonto (luogo in src/data/luogo.json)
+src/sole.js                  posizione del sole (luogo in src/data/luogo.json)
 ```
 
 ## Misure
@@ -453,15 +453,14 @@ plastico.
 
 ## Esperienza di visita
 
-- **Sole vero**: cursori Ora e Giorno (il 21 di ogni mese). La posizione del sole e' calcolata
-  per luogo, data e ora italiana (con l'ora legale), con alba e tramonto; il sole basso e' caldo
-  e fa ombre lunghe, dopo il tramonto si passa da soli alla luce della sera. Il luogo e
+- **Sole vero**: il 21 del mese corrente alle 11, ora italiana. La posizione del sole e'
+  calcolata per luogo, data e ora (con l'ora legale); non si cambia dal menu. Il luogo e
   l'orientamento stanno in `src/data/luogo.json` (per ora Riccione, provvisorio, con il nord in
   alto nella piantina).
 - **Voli di camera** al posto dei salti nel cambio di piano.
 - **Schermata di caricamento** con le tappe della costruzione; tipografia Cormorant Garamond e
   Jost, menu rifinito.
-- **Copia il link di questa vista**: il link riapre piano, camera, ora, giorno, luce, tavolo,
+- **Copia il link di questa vista**: il link riapre piano, camera, luce, tavolo,
   versione e porta.
 
 ## Prestazioni
