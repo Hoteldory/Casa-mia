@@ -297,6 +297,19 @@ Come funziona nel codice:
   accende con lei.
 - La versione e lo stato della porta finiscono nel link alla vista (`versione=2&porta=chiusa`).
 
+## Skill per Claude Code (Three.js)
+
+In `.claude/skills/` ci sono 13 skill del [Three.js Claude Skill Package](https://github.com/Impertio-Studio/Three.js-Claude-Skill-Package)
+(licenza MIT, testo in ogni cartella): renderer, scene graph, matematica, prestazioni, errori di
+resa, ombre, luci, post-processing, materiali, geometrie, loader, controlli e ottimizzazione dei
+modelli glTF. Sono solo istruzioni in markdown, niente script. Le altre 11 del pacchetto (React
+Three Fiber, Drei, fisica, WebXR, IFC, audio, WebGPU, animazioni, shader, raycaster, scene
+builder) non servono a questo progetto e non sono installate.
+
+Il pacchetto e' scritto per Three.js r160+; il progetto usa la r186. Nelle skill di renderer e
+ombre c'e' una nota: `PCFSoftShadowMap` nella r186 non esiste piu', si usa `PCFShadowMap` (che
+ora tiene conto di `shadow.radius`).
+
 ## Struttura
 
 ```
