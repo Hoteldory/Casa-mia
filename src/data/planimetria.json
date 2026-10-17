@@ -17,7 +17,8 @@
       "Tolta l'isola della cucina; tavolo da pranzo in verticale (lato lungo nord-sud) che entra nella zona cucina",
       "Piano di appoggio sulla parete est della cucina accanto alle colonne (planetaria, macchina del caffe', microonde)",
       "Finestra 124 x 130 sul muro est della camera nord",
-      "Scuri delle finestre in verde salvia chiaro invece che in noce scuro (entrambi i piani)"
+      "Scuri delle finestre in verde salvia chiaro invece che in noce scuro (entrambi i piani)",
+      "Camera sud aperta sul soggiorno: varco di 2,40 m al posto della porta, con porta telescopica (open space gioco e allenamento)"
     ],
     "sorgente_terrazzo": "piantina-terrazzo.jpg (PIANO PRIMO aggiornato)"
   },
@@ -364,16 +365,19 @@
       "nota_modifica": "porta verso la scala a chiocciola: resa scorrevole per risparmiare spazio"
     },
     {
-      "id": "P-camera-sud",
-      "tipo": "interna",
+      "id": "P-varco-camera-sud",
+      "tipo": "vano",
       "muro": "I-spina-camere",
       "da": "soggiorno",
       "a": "camera_sud",
       "orientamento": "verticale",
-      "y_da": 843,
-      "y_a": 924,
-      "luce_cm": 81,
-      "battente": "apre verso la camera, cerniera a nord"
+      "y_da": 685,
+      "y_a": 925,
+      "luce_cm": 240,
+      "h_cm": 250,
+      "soglia": "legno",
+      "modifica_richiesta": true,
+      "nota_modifica": "era la porta della camera sud (81 cm, y 843-924): ora varco di 2,40 m sul soggiorno, chiuso dalla porta telescopica. Il muro di spina potrebbe essere portante: serve un ingegnere (cerchiatura)."
     }
   ],
   "finestre": [

@@ -1,9 +1,11 @@
-// Soggiorno (zona sud del soggiorno-pranzo-cucina e appendice est), stile country chiaro:
+// Soggiorno (salotto del soggiorno-pranzo-cucina e appendice est), stile country chiaro:
 // boiserie bianco latte, divano in lino avena con cuscini azzurri e a fiorellini, tappeto
 // persiano panna e blu, rovere e ottone, tende in lino azzurro e a pacchetto in bambu'.
+// Il salotto cambia con la versione: in V1 a sud sotto la finestra, in V2 a nord verso il
+// terrazzo (a sud c'e' la cucina). Stufa, appendice e tende dei balconi sono di tutte e due.
 import * as THREE from 'three';
 import { specchio } from './bagno.js';
-import { box, cyl, sphere, plane, group, place, matColore, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, quadro, pianta, libri, lampadaTavolo, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
+import { box, cyl, sphere, plane, group, place, matColore, pomolo, cuscino, tappeto, tappetoPersiano, tendaBambu, stampaBotanica, quadro, pianta, libri, lampadaTavolo, lampadaTerra, applique, tende, manigliaOttone, antaTelaio, MAT } from './comune.js';
 
 // ---- boiserie a riquadri su una parete (piano XY locale, normale +Z verso la stanza) ----
 export function boiserie(ctx, { w, h, righe = 2, colonne = 3, finestra = null, mat }) {
@@ -302,10 +304,32 @@ function cestaLegna(x, z) {
   return g;
 }
 
+// Le parti di tutte e due le versioni: stufa e specchio nell'appendice, tende delle finestre
 export function arredaSoggiorno(ctx, stanze) {
   const M = MAT();
   const g = new THREE.Group();
-  const [R, A, B] = stanze.soggiorno.rects; // R x 0.25-4.16 z 0.28-9.40 | B x 4.52-5.99 z 5.38-9.40
+  const [R, , B] = stanze.soggiorno.rects; // R x 0.25-4.16 z 0.28-9.40 | B x 4.52-5.99 z 5.38-9.40
+  const zS = R.z + R.d; // parete sud
+  // appendice est: stufa a legna contro la parete est, specchio lungo sulla parete nord
+  g.add(stufaLegna(ctx, { xMuro: B.x + B.w, z: 6.1 }));
+  ctx.pareti.add(specchio(ctx, 0.8, 1.9, B.cx, 1.22, B.z + 0.01, 'z+', M.ottone));
+  g.add(cestaLegna(B.x + 0.3, B.z + 0.4));
+  g.add(tappeto(1.3, 1.5, M.juta, B.cx, B.z + 1.95));
+  // la pianta grande lascia libero il varco verso l'open space
+  g.add(pianta(B.x + 0.3, B.z + B.d - 0.35, { h: 1.4, vaso: 0.2, matVaso: M.ceramica }));
+  // tende in lino azzurro alla portafinestra del balcone; a pacchetto in bambu' sulla finestra sud
+  // e su quella della parete ovest
+  ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+', M.linoAzzurro));
+  ctx.pareti.add(tendaBambu(1.42, 2.16, 2.32, zS - 0.04, 'z-'));
+  ctx.pareti.add(tendaBambu(1.24, R.x + 0.04, 2.22, 3.55, 'x+'));
+  return g;
+}
+
+// ---- V1: salotto a sud, divano sotto la finestra e mobile TV che separa dalla zona pranzo ----
+export function salottoV1(ctx, stanze) {
+  const M = MAT();
+  const g = new THREE.Group();
+  const [R] = stanze.soggiorno.rects;
   const zS = R.z + R.d; // parete sud
   // parete sud con boiserie bianco latte (finestra F-soggiorno-sud x 1.45-2.87, y 0.9-2.3)
   const bw = R.w;
@@ -335,24 +359,36 @@ export function arredaSoggiorno(ctx, stanze) {
   ctx.pareti.add(applique(ctx, 3.3, 1.9, zS - 0.02, 'z-'));
   ctx.pareti.add(stampaBotanica(0.5, 0.65, 0.8, 1.75, zS - 0.03, 'z-', 97, M.rovereMiele));
   ctx.pareti.add(stampaBotanica(0.5, 0.65, 3.5, 1.75, zS - 0.03, 'z-', 98, M.rovereMiele));
-  // appendice est: stufa a legna contro la parete est, specchio lungo sulla parete nord
-  g.add(stufaLegna(ctx, { xMuro: B.x + B.w, z: 6.1 }));
-  ctx.pareti.add(specchio(ctx, 0.8, 1.9, B.cx, 1.22, B.z + 0.01, 'z+', M.ottone));
-  g.add(cestaLegna(B.x + 0.3, B.z + 0.4));
-  g.add(tappeto(1.3, 1.5, M.juta, B.cx, B.z + 1.95));
-  // tende in lino azzurro; tende a pacchetto in bambu' sulla finestra sud e su quella del lavello
-  ctx.pareti.add(tende(1.21, 2.2, R.x + 0.03, 1.15, 6.9, 'x+', M.linoAzzurro));
+  // tende in lino azzurro alla finestra sud (in V2 sopra il lavello resta solo quella in bambu')
   ctx.pareti.add(tende(1.42, 1.5, 2.16, 1.62, zS - 0.03, 'z-', M.linoAzzurro));
-  ctx.pareti.add(tendaBambu(1.42, 2.16, 2.32, zS - 0.04, 'z-'));
-  ctx.pareti.add(tendaBambu(1.24, R.x + 0.04, 2.22, 3.55, 'x+'));
   return g;
 }
 
-// La pianta grande dell'appendice: in V1 nell'angolo verso la porta della camera, in V2 si
-// sposta dall'altra parte e lascia libero il varco verso l'open space
-export function piantaAppendice(stanze, versione) {
+// ---- V2: salotto a nord, verso il terrazzo: divano contro la parete ovest rivolto a est,
+// TV sul muro del bagno, la luce della portafinestra arriva di lato ----
+export const SALOTTO_V2 = { divanoX: 0.84, cz: 1.8, tvX: 3.91 };
+export function salottoV2(ctx, stanze) {
   const M = MAT();
-  const B = stanze.soggiorno.rects[2];
-  const x = versione === 'v2' ? B.x + 0.3 : B.x + B.w - 0.3;
-  return pianta(x, B.z + B.d - 0.35, { h: 1.4, vaso: 0.2, matVaso: M.ceramica });
+  const g = new THREE.Group();
+  const [R] = stanze.soggiorno.rects;
+  const S = SALOTTO_V2;
+  g.add(divano(ctx, S.divanoX, S.cz, Math.PI / 2, 2.2, {
+    mat: M.linoAvena, profondo: true, plaid: M.linoAzzurro,
+    cuscini: [M.floreale, M.linoAzzurro, M.righeAzzurre, M.linoBianco, M.floreale],
+  }));
+  g.add(tappetoPersiano(2.9, 2.1, 2.4, S.cz));
+  g.add(tavolino(ctx, 2.45, S.cz));
+  // mobile TV in rovere sul muro del bagno, rivolto verso il divano
+  g.add(mobileTv(ctx, { x: S.tvX, z: S.cz, w: 1.6, d: 0.46, h: 0.46, ry: -Math.PI / 2, legno: M.rovereMiele, top: M.marmo }));
+  g.add(tvOled(ctx, { x: S.tvX + 0.03, y: 0.495, z: S.cz, ry: -Math.PI / 2 }));
+  // lampada da terra accanto al divano, pianta nell'angolo verso il terrazzo
+  g.add(lampadaTerra(ctx, R.x + 0.3, R.z + 0.25));
+  g.add(pianta(3.85, R.z + 0.35, { h: 1.1, vaso: 0.18, matVaso: M.ceramica }));
+  // galleria botanica sopra il divano
+  [[1.55, 1.35], [1.55, 1.8], [1.55, 2.25], [2.05, 1.57], [2.05, 2.03]].forEach(([y, z], i) => {
+    ctx.pareti.add(stampaBotanica(0.32, 0.42, R.x + 0.03, y, z, 'x+', 91 + i, M.rovereMiele));
+  });
+  // la finestra della parete ovest (in V1 sopra il lavello) qui ha il suo davanzale interno in pietra
+  ctx.pareti.add(box(0.08, 0.035, 1.4, M.pietra, R.x + 0.04, 0.883, 3.55));
+  return g;
 }

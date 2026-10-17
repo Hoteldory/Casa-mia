@@ -21,8 +21,8 @@ Requisiti: Node 18+ e un browser con WebGL 2.
 
 - **Orbita**: trascina per ruotare, rotella per zoom, tasto destro per traslare (su telefono:
   un dito per ruotare, due dita per zoom e spostamento).
-- **Pannello laterale**: piano primo o piano terra, versione 1 o 2 del piano primo (con la porta
-  telescopica), tavolo chiuso o aperto, sole, toggle tetto/soffitti, toggle pareti intere
+- **Pannello laterale**: piano primo o piano terra, versione 1 o 2 del soggiorno (cucina a nord
+  o cucina a sud con l'isola), porta telescopica della camera sud, tavolo chiuso o aperto, sole, toggle tetto/soffitti, toggle pareti intere
   (pareti a 45 cm per la vista dall'alto), toggle luce del giorno / luce della sera, qualità,
   piantina quotata, link alla vista.
 
@@ -152,8 +152,7 @@ Tappa 2 (fatta): il resto del piano.
 - Camera matrimoniale: parete a doghe verde oliva con mensola in rovere e stampe botaniche,
   letto in rovere con testiera in lino avena, coperta azzurra e plaid ruggine, comodini in
   rovere, armadi bianco latte e rovere, tappeto persiano, lampadario a tamburo.
-- Camera sud: carta a righe azzurre, testiera in lino azzurro, cuscini a fiorellini, armadio
-  bianco latte, scrittoio in rovere con sedia Windsor, tende a righe e a pacchetto in bambu'.
+- Camera sud: era la seconda camera da letto; ora e' l'open space gaming e allenamento (vedi sotto).
 - Camera est (studio e lavanderia): parete azzurro polvere con perlinato bianco latte, colonna
   lavanderia salvia con ceste, scrittoio in rovere con sedia Windsor.
 - Bagno: piastrelle metro a 1,20 m con listello in ottone, salvia chiaro sopra, pavimento in
@@ -164,18 +163,17 @@ Tappa 2 (fatta): il resto del piano.
   lanterne a pavimento, ulivi in vasi di cotto.
 - Telai delle porte in rovere miele.
 
-## Piano primo, versione 2: open space gaming e allenamento
+## Camera sud: open space gaming e allenamento
 
-Nel menu, sezione "Versione", si sceglie fra:
-
-- **Versione 1 · camera**: la configurazione attuale, con la seconda camera da letto e la sua porta.
-- **Versione 2 · open space**: la seconda camera si apre sul soggiorno. Ci sono l'angolo gaming
-  e lo spazio per allenarsi, e una porta telescopica in legno la chiude quando serve.
+La camera sud non e' piu' una camera da letto: si apre sul soggiorno con un varco, ha l'angolo
+gaming e lo spazio per allenarsi, e una porta telescopica in legno la chiude quando serve. E'
+cosi' in tutte e due le versioni del piano primo.
 
 Il varco:
 
 - È largo 2,40 m (da z 6,85 a 9,25) e alto 2,50 m.
-- Sta nel muro di spina fra l'appendice est del soggiorno e la camera, al posto della porta.
+- Sta nel muro di spina fra l'appendice est del soggiorno e la camera, al posto della porta
+  (in `planimetria.json` e' `P-varco-camera-sud`, tipo "vano").
 - Ha telaio e soglia in rovere, perché il pavimento continua senza stacchi.
 - **Il muro di spina potrebbe essere portante.** Prima di aprire va sentito un ingegnere: può
   servire una cerchiatura, con le relative pratiche.
@@ -191,7 +189,7 @@ La porta telescopica:
   Chiusa, coprono tutto il varco.
 - Il pulsante "Chiudi/Apri la porta" le fa scorrere insieme.
 
-Gli arredi della versione 2:
+Gli arredi:
 
 - Angolo gaming:
   - parete est in azzurro polvere, che si vede dal soggiorno attraverso il varco;
@@ -207,27 +205,50 @@ Gli arredi della versione 2:
 - Mobile basso bianco latte con asciugamani e corda.
 - Lampadario a tamburo alto, tende in lino avena e tenda a pacchetto in bambù.
 
-Nel soggiorno la pianta grande dell'appendice passa dall'altra parte, così il varco resta libero.
+Nell'appendice del soggiorno la pianta grande sta dalla parte dell'ingresso, così il varco resta libero.
+
+## Le due versioni del soggiorno
+
+Nel menu, sezione "Versione", si sceglie come disporre cucina, tavolo e salotto. Il resto del
+piano (camere, bagno, camera sud open space, stufa nell'appendice) e' uguale.
+
+**Versione 1 · cucina a nord.** La cucina lineare sta sulla parete ovest, a nord, con il lavello
+sotto la finestra; le colonne dispensa sono sul muro del bagno.
+- Il tavolo da pranzo sta in verticale (lato lungo nord-sud), spostato verso est per lasciare un
+  corridoio di circa 1 m davanti alla cucina, e da aperto entra nella zona cucina.
+- Sulla parete est, accanto alle colonne dispensa, un piano di appoggio da 130 cm con
+  planetaria, macchina del caffe' e microonde, maiolica alle spalle e mensola in noce.
+- Il salotto e' a sud: divano sotto la finestra, mobile TV che fa da separazione con il pranzo,
+  boiserie bianco latte sulla parete sud, consolle sulla parete ovest.
+
+**Versione 2 · cucina a sud, con l'isola.** La cucina va sul muro sud, vicino all'ingresso, e il
+salotto va a nord, verso il terrazzo.
+- Cucina: piano di lavoro lungo il muro sud con il lavello sotto la finestra (si interrompe il
+  paraspruzzi in piastrelle metro), piano cottura in fondo verso est con la cappa in muratura e
+  la trave in rovere, colonne frigo e forno nell'angolo sud-ovest. Sul piano, macchina del caffe'
+  e planetaria. Acqua, scarico e uscita della cappa sono da portare nuovi.
+- Isola 200 x 100 parallela al piano di lavoro, a 1,10 m: ante azzurre con maniglie in ottone
+  verso la cucina, riquadri verso il pranzo, piano in marmo che sporge 10 cm; due globi di vetro
+  sopra.
+- Tavolo al centro, lato lungo est-ovest: chiuso quattro posti, aperto otto (una sedia in rovere
+  per testa). Il lampadario a tamburo e' appeso alla trave che gli passa sopra.
+- Salotto a nord: divano contro la parete ovest rivolto a est, TV sul muro del bagno, tavolino
+  ovale, tappeto persiano, lampada da terra e stampe botaniche sopra il divano. La portafinestra
+  del terrazzo da' luce di lato, senza riflessi sullo schermo.
+- La finestra della parete ovest, che in V1 sta sopra il lavello, qui ha il suo davanzale interno.
+- Passaggi liberi: 1,10 m fra cucina e isola, circa 85 cm fra le sedie e l'isola, la zona davanti
+  alla porta del disimpegno e le portafinestre del balcone e del terrazzo.
+
+Il selettore "Tavolo" mostra il tavolo chiuso (140 x 100, quattro posti) o aperto (220 x 100, otto
+posti, con le linee delle prolunghe sul piano) nella versione in vista.
 
 Come funziona nel codice:
 
-- Il muro di spina è escluso dall'involucro comune. Ogni versione ha il suo, con porte e
-  battiscopa (`muroVariabile` in `architettura.js`).
-- Muri, arredi e lampade di ogni versione sono marcati `v1` o `v2` e si accendono solo con
-  la loro versione.
+- Arredi e lampade di ogni versione sono gruppi marcati `v1` o `v2`; il tavolo e' marcato con
+  stato e versione (`chiuso.v1`, `aperto.v2`...). Si accende solo quello scelto.
+- I pezzi appesi ai muri (boiserie, quadri, tende) di ogni versione stanno in un gruppo che si
+  accende con lei.
 - La versione e lo stato della porta finiscono nel link alla vista (`versione=2&porta=chiusa`).
-
-## Zona pranzo e cucina del piano primo
-
-Niente isola: il tavolo da pranzo sta in verticale (lato lungo nord-sud), spostato verso est
-per lasciare un corridoio di circa 1 m davanti alla cucina, e da aperto entra nella zona
-cucina. Il selettore "Tavolo" lo mostra chiuso (140 x 100, quattro posti) o aperto
-(220 x 100, otto posti, con le linee delle prolunghe sul piano); i due pendenti restano fissi.
-Sulla parete est, accanto alle colonne dispensa, un piano di appoggio da 130 cm con
-planetaria, macchina del caffe' e microonde, maiolica alle spalle e mensola in noce.
-
-I due stati del tavolo sono gruppi marcati ('chiuso', 'aperto'): si accende solo quello
-scelto.
 
 ## Struttura
 
@@ -240,9 +261,9 @@ src/architettura.js          muri con aperture, pavimenti, soffitti, porte, fine
                              battiscopa, travi, balconi, pianerottolo e scala esterna
 src/arredi/comune.js         helper geometrici e oggetti ricorrenti (lampade, tende, quadri…)
 src/arredi/<stanza>.js       una funzione per mobile, ognuna ritorna un THREE.Group
-src/arredi/index.js          registro delle stanze, del tavolo chiuso/aperto e delle due versioni
-src/arredi/camera_sud_v2.js  versione 2: angolo gaming e allenamento
-src/arredi/porta_telescopica.js  versione 2: porta telescopica a tre ante
+src/arredi/index.js          registro delle stanze, delle due versioni del soggiorno e del tavolo
+src/arredi/camera_sud_v2.js  camera sud open space: angolo gaming e allenamento
+src/arredi/porta_telescopica.js  porta telescopica a tre ante sul varco della camera sud
 piantina-terra.jpg           piantina del piano terra
 src/data/piano-terra.json    misure del piano terra in cm
 src/pianoTerra.js            involucro del piano terra (cognata e suoceri), solaio, lanterne

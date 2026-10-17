@@ -34,7 +34,7 @@ const luciArtificiali = []; // punti luce accesi di sera
 const emissivi = [];        // lampadine e paralumi che si illuminano di sera
 const ctx = {
   H,
-  variante: null, // tag del gruppo in costruzione ('chiuso' | 'aperto' | 'v1' | 'v2'): le sue luci si accendono con lui
+  variante: null, // tag del gruppo in costruzione ('v1' | 'v2' | 'aperto.v1'...): le sue luci si accendono con lui
   addCollider() {},
   addColliderBox() {},
   solid(obj) { return obj; },
@@ -134,8 +134,8 @@ ctx.pareti = new THREE.Group();
 arch.walls.add(ctx.pareti);
 scene.add(arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.exterior, arch.terrazzo);
 arch.wallsLow.visible = false;
-// le due versioni del muro fra soggiorno e seconda camera: ognuna con il suo gruppo per i pezzi
-// appesi ai muri; si uniscono ai muri dopo l'ottimizzazione, per accenderle una alla volta
+// le due versioni del soggiorno: ognuna con il suo gruppo per i pezzi appesi ai muri; si
+// uniscono ai muri dopo l'ottimizzazione, per accenderle una alla volta
 const versioni = arch.versioni;
 const paretiVersione = {};
 for (const [tag, v] of Object.entries(versioni)) { paretiVersione[tag] = new THREE.Group(); v.walls.add(paretiVersione[tag]); }
@@ -225,10 +225,10 @@ for (const g of [arch.walls, arch.wallsLow, arch.floors, arch.ceilings, arch.ext
   ...Object.values(versioni).flatMap((v) => [v.walls, v.low])]) ottimizza(g);
 for (const v of Object.values(versioni)) { arch.walls.add(v.walls); arch.wallsLow.add(v.low); }
 // la porta telescopica: ogni anta si fonde per conto suo e resta libera di scorrere
-const porta = versioni.v2.porta;
+const porta = arch.porta;
 for (const a of porta.userData.ante) ottimizza(a);
 ottimizza(porta);
-versioni.v2.walls.add(porta);
+arch.walls.add(porta);
 
 // materiali lucidi o metallici: riflettono l'ambiente per intero
 scene.traverse((o) => {
@@ -366,8 +366,8 @@ const quotaPiano = () => (piano === 'terra' ? QUOTA_TERRA : 0);
 
 // ---------- allestimento: versione del piano primo, porta telescopica, tavolo da pranzo ----------
 let statoTavolo = 'aperto';
-let versione = 'v1';          // 'v1' seconda camera | 'v2' open space gaming e allenamento
-let portaChiusa = false;    // solo in V2
+let versione = 'v1';          // 'v1' cucina a nord | 'v2' cucina a sud con l'isola
+let portaChiusa = false;    // porta telescopica della camera sud
 let portaK = 0;             // posizione delle ante: 0 aperta, 1 chiusa (scorre verso portaChiusa)
 const attivi = new Set(); // i tag dei gruppi accesi in questo momento
 const bottoniTavolo = { chiuso: document.getElementById('btn-t-chiuso'), aperto: document.getElementById('btn-t-aperto') };
@@ -377,13 +377,12 @@ const btnPorta = document.getElementById('btn-porta');
 const notaVersione = document.getElementById('nota-versione');
 function applicaAllestimento() {
   attivi.clear();
-  attivi.add(statoTavolo);
   attivi.add(versione);
+  attivi.add(`${statoTavolo}.${versione}`); // il tavolo e' diverso in ogni versione
   for (const [tag, g] of Object.entries(varianti)) g.visible = piano === 'primo' && attivi.has(tag);
   for (const [tag, v] of Object.entries(versioni)) v.walls.visible = v.low.visible = attivi.has(tag);
   for (const k of Object.keys(bottoniTavolo)) bottoniTavolo[k].classList.toggle('on', k === statoTavolo);
   for (const k of Object.keys(bottoniVersione)) bottoniVersione[k].classList.toggle('on', k === versione);
-  btnPorta.style.display = versione === 'v2' ? '' : 'none';
   btnPorta.textContent = portaChiusa ? 'Apri la porta' : 'Chiudi la porta';
   btnPorta.classList.toggle('on', portaChiusa);
   notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota;
@@ -533,7 +532,7 @@ function linkVista() {
   const f = (v) => v.toArray().map((x) => x.toFixed(2)).join(',');
   const m = orbit.target;
   const q = new URLSearchParams({ piano, c: f(camera.position), t: f(m), ora: statoSole.ora, mese: statoSole.mese0 + 1, luce: giorno ? 'giorno' : 'sera', tavolo: statoTavolo, versione: versione.slice(1) });
-  if (versione === 'v2') q.set('porta', portaChiusa ? 'chiusa' : 'aperta');
+  q.set('porta', portaChiusa ? 'chiusa' : 'aperta');
   return `${location.origin}${location.pathname}#${q}`;
 }
 document.getElementById('btn-link').onclick = () => {

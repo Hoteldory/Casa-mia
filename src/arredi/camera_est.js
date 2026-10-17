@@ -3,10 +3,26 @@
 // perlinato bianco latte, colonna lavanderia salvia, ceste, scrittoio in rovere.
 import * as THREE from 'three';
 import { box, cyl, plane, place, tappeto, quadro, stampaBotanica, pareteDoghe, cesta, pendente, pendenteGlobo, applique, lampadaTavolo, tende, pianta, libri, manigliaOttone, MAT } from './comune.js';
-import { scrittoio } from './camera_sud.js';
 import { sediaWindsor } from './cucina.js';
 import { libreria } from './soggiorno.js';
 import { scalaChiocciola } from './scala.js';
+
+// ---- scrittoio in noce con cassetto ----
+export function scrittoio(ctx, x, z, ry = 0, w = 1.1, legno) {
+  const M = MAT();
+  const Lg = legno || M.noce;
+  const g = new THREE.Group();
+  g.add(box(w, 0.04, 0.55, Lg, 0, 0.75, 0));
+  g.add(box(w - 0.1, 0.1, 0.5, Lg, 0, 0.68, 0));
+  g.add(box(0.4, 0.07, 0.02, M.noceScuro, 0, 0.68, 0.26));
+  g.add(cyl(0.01, 0.01, 0.02, M.ottone, 0, 0.68, 0.28, 8).rotateX(Math.PI / 2));
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(cyl(0.02, 0.028, 0.63, Lg, sx * (w / 2 - 0.08), 0.315, sz * 0.22, 10));
+  g.add(box(0.3, 0.005, 0.4, M.carta, -0.15, 0.775, 0));
+  g.add(cyl(0.035, 0.03, 0.09, M.ceramicaSalvia, 0.35, 0.82, -0.12, 12));
+  place(g, x, z, ry);
+  ctx.solid(g);
+  return g;
+}
 
 // ---- colonna lavanderia in noce: lavatrice nel vano basso, vano alto predisposto
 // per una futura asciugatrice (attacchi a vista, ripiano e tenda in lino) ----
