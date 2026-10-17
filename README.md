@@ -354,7 +354,7 @@ stia nel suo muro fra due ambienti, il varco della camera sud e tutte le superfi
 
 La piantina quotata del piano primo disegna il progetto, con il varco e la porta telescopica: e'
 la stessa per le due versioni del soggiorno, perche' non disegna gli arredi. E' anche in
-`piantina-quotata-v2.pdf` (A4, tre pagine; li' il progetto si chiama ancora "versione 2"):
+`piantina-quotata-progetto.pdf` (A4, tre pagine; si rigenera stampando la piantina dal browser):
 - **Pianta**: varco 240 x 250 con le sue quote, porta telescopica (ante aperte e chiuse, cassonetto)
   e la finestra tamponata a retino.
 - **Bolli neri**: le aperture nuove, modificate o tamponate rispetto al disegno originale.
