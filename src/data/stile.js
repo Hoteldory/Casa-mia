@@ -898,9 +898,10 @@ const _foto = {}; // sorgente -> { d, n, r } texture caricate
 // quei materiali restano con la texture disegnata.
 // Le foto sono KTX2 (tools/texture_ktx2.mjs): sulla scheda grafica restano compresse, nel formato
 // che la scheda sa leggere (BC7 sui computer, ASTC o ETC sui telefoni), con le mipmap gia' fatte.
+// Il traduttore Basis e' quello del pacchetto di three: Vite lo mette da solo nella build.
 export async function preparaFoto(renderer) {
   const base = `${import.meta.env.BASE_URL}tex/`;
-  const loader = new KTX2Loader().setTranscoderPath(`${import.meta.env.BASE_URL}basis/`).detectSupport(renderer);
+  const loader = new KTX2Loader().detectSupport(renderer);
   const carica = (f) => loader.loadAsync(base + f).catch(() => null);
   const sorgenti = {};
   for (const c of Object.values(FOTO)) sorgenti[c.src] = sorgenti[c.src] || !!c.r;

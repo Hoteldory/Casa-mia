@@ -268,6 +268,13 @@ const C_TRAMONTO = new THREE.Color('#ffa75e'), C_MEZZODI = new THREE.Color('#fff
 const CIELO_TRAMONTO = new THREE.Color('#e7c3a2'), CIELO_GIORNO = new THREE.Color('#c9d6df');
 const FATTORE_SERA = 0.85; // di sera le lampade restano sotto la nominale: pozze di luce, non luce piatta
 
+// ---------- disegno a richiesta ----------
+// Si disegna solo quando la vista cambia: la camera si muove (anche per inerzia), c'e' un volo,
+// la porta scorre, o dal menu cambia qualcosa (ridisegna). Da ferma la scena non costa nulla:
+// sul telefono niente batteria e calore sprecati.
+let daDisegnare = 2; // fotogrammi ancora da disegnare
+function ridisegna(n = 2) { daDisegnare = Math.max(daDisegnare, n); }
+
 function applicaLuce() {
   if (giorno) {
     // sole vero: basso e caldo all'alba e al tramonto, alto e bianco a mezzogiorno
@@ -313,6 +320,7 @@ function applicaLuce() {
       if (e.shade) e.shade.emissiveIntensity = 0.3;
     }
   }
+  ridisegna();
 }
 applicaLuce();
 
@@ -325,6 +333,8 @@ orbit.minDistance = 0.5;
 orbit.maxDistance = 45;
 camera.position.set(-6, 12, 18);
 orbit.target.set(5.2, 0.5, 5.2);
+// ogni movimento della camera (mouse, dita, link alla vista) chiede un fotogramma
+orbit.addEventListener('change', () => ridisegna(1));
 
 const quotaPiano = () => (piano === 'terra' ? QUOTA_TERRA : 0);
 
@@ -351,6 +361,7 @@ function applicaAllestimento() {
   btnPorta.classList.toggle('on', portaChiusa);
   notaTavolo.textContent = TAVOLO_STATI[statoTavolo].nota;
   notaVersione.textContent = VERSIONI[versione].nota;
+  ridisegna();
 }
 function applicaTavolo(t) { statoTavolo = t; applicaAllestimento(); }
 // subito: le ante vanno in posizione senza scorrere (link alla vista)
@@ -369,13 +380,14 @@ for (const k of Object.keys(bottoniVersione)) {
   bottoniVersione[k].onclick = () => applicaVersione(k);
 }
 btnPorta.onclick = () => { portaChiusa = !portaChiusa; applicaAllestimento(); };
-// le ante scorrono insieme in circa un secondo e mezzo
+// le ante scorrono insieme in circa un secondo e mezzo; true finche' si muovono
 function aggiornaPorta(dt) {
   const meta = portaChiusa ? 1 : 0;
-  if (portaK === meta) return;
+  if (portaK === meta) return false;
   portaK = meta > portaK ? Math.min(meta, portaK + dt / 1.6) : Math.max(meta, portaK - dt / 1.6);
   const k = portaK * portaK * (3 - 2 * portaK);
   porta.userData.imposta(k);
+  return true;
 }
 applicaAllestimento();
 
@@ -432,6 +444,7 @@ const bq = document.getElementById('btn-qualita');
 function applicaQualita() {
   bq.classList.toggle('on', qualita === 'alta');
   bq.textContent = qualita === 'alta' ? 'Qualità alta' : 'Qualità leggera';
+  ridisegna();
 }
 bq.onclick = () => { qualita = qualita === 'alta' ? 'leggera' : 'alta'; applicaQualita(); };
 applicaQualita();
@@ -508,7 +521,7 @@ function mostraPiantina(on) {
   document.body.classList.toggle('piantina', on);
   btnPiantina.classList.toggle('on', on);
   btnPiantina.textContent = on ? 'Torna al modello 3D' : 'Piantina quotata';
-  if (!on) { tPrev = performance.now(); loop(); }
+  if (!on) { tPrev = performance.now(); ridisegna(); loop(); }
 }
 btnPiantina.onclick = () => mostraPiantina(!piantinaAperta);
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && piantinaAperta) mostraPiantina(false); });
@@ -518,6 +531,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
+  ridisegna();
 });
 
 // ---------- loop ----------
@@ -527,19 +541,25 @@ let frames = 0, acc = 0;
 function loop() {
   if (piantinaAperta) return; // niente rendering mentre si guarda la piantina
   const tNow = performance.now();
-  const dt = Math.min((tNow - tPrev) / 1000, 0.05);
+  const passati = (tNow - tPrev) / 1000;
+  const dt = Math.min(passati, 0.05);
   tPrev = tNow;
-  if (volo) aggiornaVolo(dt);
-  else orbit.update();
-  aggiornaPorta(dt);
-  if (qualita === 'alta') composer.render(dt);
-  else renderer.render(scene, camera);
-  frames++; acc += dt;
-  if (acc > 0.5) { fpsEl.textContent = `${Math.round(frames / acc)} fps`; frames = 0; acc = 0; }
+  // la camera si muove da sola durante un volo e, finito il trascinamento, per inerzia
+  let muove = false;
+  if (volo) { aggiornaVolo(dt); muove = true; } else muove = orbit.update();
+  if (aggiornaPorta(dt)) muove = true;
+  if (muove || daDisegnare > 0) {
+    if (qualita === 'alta') composer.render(dt);
+    else renderer.render(scene, camera);
+    daDisegnare = Math.max(0, daDisegnare - 1);
+    frames++;
+  }
+  acc += passati; // tempo vero, per il contatore
+  if (acc > 0.5) { fpsEl.textContent = frames ? `${Math.round(frames / acc)} fps` : 'fermo'; frames = 0; acc = 0; }
   requestAnimationFrame(loop);
 }
 leggiLink();
 loop();
 caricamento.style.setProperty('--avanzamento', 1);
 requestAnimationFrame(() => { caricamento.classList.add('fatto'); setTimeout(() => caricamento.remove(), 1400); });
-window.__casa = { applicaVersione, porta, vola, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, arch, archT, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };
+window.__casa = { applicaVersione, porta, vola, ridisegna, statoSole, linkVista, composer, gtao, bloom, scene, camera, renderer, arch, archT, orbit, varianti, applicaTavolo, cambiaPiano, luci: luciArtificiali };

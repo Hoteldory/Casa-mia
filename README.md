@@ -422,8 +422,8 @@ Le finestre di entrambi i piani hanno scuri esterni in legno verniciato verde sa
   - Da scaricare sono 4,4 MB contro i 5,3 dei webp.
   - Tutte in ETC1S: le trame grigie, le ruvidità e le normal map lineari, le foto a colori in sRGB.
     Le normal map in UASTC sarebbero più fedeli ma 4-5 volte più pesanti.
-  - Il traduttore (`basis/`) arriva dal pacchetto di three, alla stessa versione del caricatore:
-    lo serve e lo copia nella build `vite.config.js`.
+  - Il traduttore arriva dal pacchetto di three, alla stessa versione del caricatore: Vite lo
+    mette da solo nella build (`assets/basis_transcoder-*.js` e `.wasm`).
 - **Come si rigenerano**:
   - `python3 tools/texture_foto.py` scarica le foto e scrive i webp sorgenti in
     `tools/sorgenti/tex/` (serve accesso a dl.polyhaven.org);
@@ -464,6 +464,15 @@ plastico.
   versione e porta.
 
 ## Prestazioni
+
+**Disegno a richiesta.** La scena si disegna solo quando la vista cambia: la camera si muove
+(anche per inerzia, dopo il trascinamento), c'è un volo di camera, la porta telescopica scorre, o
+dal menu cambia qualcosa (versione, tavolo, piano, luce, tetto, pareti, qualità, finestra
+ridimensionata). Da ferma non disegna nulla: sul telefono niente batteria e calore sprecati.
+Il contatore in basso a destra lo mostra: "fermo" quando la scena non si ridisegna. Nel codice:
+`ridisegna()` in `main.js`, chiamata da `applicaLuce`, `applicaAllestimento`, `applicaQualita`,
+dal ridimensionamento e dall'evento `change` dei controlli della camera.
+
 
 Le mesh statiche vengono fuse per materiale dopo la costruzione; quelle con un materiale per
 faccia (muri esterni, solette, falde del tetto) vengono prima divise per gruppo di facce, cosi'
